@@ -1,11 +1,12 @@
-# Proyecto SAHA - MVP Full-Stack
+<<<<<<< HEAD
+# AppSaha - MVP Full-Stack
 
 Proyecto MVP desarrollado con TypeScript, separando Frontend y Backend para una arquitectura escalable.
 
 ## 🏗️ Arquitectura
 
 ```
-Proyect SAHA/
+AppSaha/
 ├── FrontEnd/          # Next.js + React + TypeScript
 ├── BackEnd/           # Express + Node.js + TypeScript
 └── .github/           # Configuraciones GitHub
@@ -111,3 +112,6 @@ FRONTEND_URL=http://localhost:3000
 ## 📄 Licencia
 
 ISC
+=======
+# AppSaha
+>>>>>>> 7b3e04ddeca31e7482a6180e3eae94a668da70a2
