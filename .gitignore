@@ -16,6 +16,12 @@ build/
 .env.test.local
 .env.production.local
 
+# Database
+*.db
+*.db-journal
+prisma/dev.db
+prisma/*.db
+
 # IDE files
 .vscode/settings.json
 .idea/

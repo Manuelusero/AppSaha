@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+// import usersRouter from './routes/users.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -62,6 +63,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// Rutas de API
+// app.use('/api/users', usersRouter);
 
 // Manejo de errores básico
 app.use((req, res) => {

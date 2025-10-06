@@ -30,6 +30,8 @@ AppSaha/
 - **TypeScript** - Tipado estático
 - **CORS** - Cross-origin requests
 - **dotenv** - Variables de entorno
+- **Prisma** - ORM para base de datos
+- **SQLite** - Base de datos (desarrollo)
 
 ## ⚡ Inicio Rápido
 
@@ -103,7 +105,33 @@ FrontEnd/
 PORT=8000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
+DATABASE_URL="file:./prisma/dev.db"
 ```
+
+## 🗄️ Base de Datos
+
+Este proyecto usa **Prisma ORM** con **SQLite** para desarrollo local.
+
+### Comandos de Base de Datos:
+
+```bash
+# Ver/editar datos con interfaz visual
+cd BackEnd
+npx prisma studio
+
+# Crear nueva migración después de cambios en schema
+npx prisma migrate dev --name nombre_migracion
+
+# Ver más información
+cat BackEnd/DATABASE.md
+```
+
+### Modelos actuales:
+
+- **User**: Usuarios del sistema
+- **Post**: Publicaciones/Artículos
+
+Para más detalles, ver [`BackEnd/DATABASE.md`](BackEnd/DATABASE.md)
 
 ## 🚀 Deploy
 
