@@ -38,7 +38,7 @@ AppSaha/
 ```bash
 cd BackEnd
 npm install
-npm run dev     # Servidor en http://localhost:5000
+npm run dev     # Servidor en http://localhost:8000
 ```
 
 ### Frontend
@@ -78,8 +78,8 @@ FrontEnd/
 
 ## 🔗 API Endpoints
 
-- `GET /` - Estado del servidor
-- `GET /api/health` - Health check
+- `GET http://localhost:8000/` - Estado del servidor
+- `GET http://localhost:8000/api/health` - Health check
 
 ## 🛠️ Scripts Disponibles
 
@@ -100,7 +100,7 @@ FrontEnd/
 ### Backend (`.env`)
 
 ```env
-PORT=5000
+PORT=8000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:3000
 ```
