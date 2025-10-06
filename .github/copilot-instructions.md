@@ -5,17 +5,8 @@
 - [x] Clarify Project Requirements
 <!-- Next.js Frontend + Express TypeScript Backend structure confirmed -->
 
-- [ ] Scaffold the Project
-<!--
-Ensure that the previous step has been marked as completed.
-Call project setup tool with projectType parameter.
-Run scaffolding command to create project files and folders.
-Use '.' as the working directory.
-If no appropriate projectType is available, search documentation using available tools.
-Otherwise, create the project structure manually using available file creation tools.
--->
-
-- [ ] Customize the Project
+- [x] Scaffold the Project
+    <!-- Next.js Frontend + Express TypeScript Backend structure created -->- [ ] Customize the Project
 <!--
 Verify that all previous steps have been completed successfully and you have marked the step as completed.
 Develop a plan to modify codebase according to user requirements.
