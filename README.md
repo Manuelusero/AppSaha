@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+
 # AppSaha - MVP Full-Stack
 
 Proyecto MVP desarrollado con TypeScript, separando Frontend y Backend para una arquitectura escalable.
@@ -111,7 +112,8 @@ FRONTEND_URL=http://localhost:3000
 
 ## 📄 Licencia
 
-ISC
-=======
+# ISC
+
 # AppSaha
->>>>>>> 7b3e04ddeca31e7482a6180e3eae94a668da70a2
+
+> > > > > > > 7b3e04ddeca31e7482a6180e3eae94a668da70a2
