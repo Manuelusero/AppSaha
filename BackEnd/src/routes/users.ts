@@ -1,6 +1,7 @@
 import express from 'express';
-import prisma from '../db/prisma.js';
+import { PrismaClient } from '../generated/prisma/index.js';
 
+const prisma = new PrismaClient();
 const router = express.Router();
 
 // GET todos los usuarios
