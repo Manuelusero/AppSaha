@@ -35,21 +35,11 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST crear un nuevo usuario
+// NOTA: Este endpoint está deshabilitado. Usa /api/auth/signup o /api/auth/signup-client
 router.post('/', async (req, res) => {
-  try {
-    const { email, name } = req.body;
-    
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name
-      }
-    });
-    
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ error: 'Error al crear usuario' });
-  }
+  res.status(400).json({ 
+    error: 'Este endpoint está deshabilitado. Usa /api/auth/signup o /api/auth/signup-client' 
+  });
 });
 
 // PUT actualizar un usuario
