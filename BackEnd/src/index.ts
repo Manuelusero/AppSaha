@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import usersRouter from './routes/users.js';
+import authRouter from './routes/auth.js';
+import providersRouter from './routes/providers.js';
+import bookingsRouter from './routes/bookings.js';
+import reviewsRouter from './routes/reviews.js';
 
 // Configurar variables de entorno
 dotenv.config();
@@ -65,7 +69,11 @@ app.get('/api/health', (req, res) => {
 });
 
 // Rutas de API
+app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/providers', providersRouter);
+app.use('/api/bookings', bookingsRouter);
+app.use('/api/reviews', reviewsRouter);
 
 // Manejo de errores básico
 app.use((req, res) => {
@@ -79,4 +87,22 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
   console.log(`🌍 URL: http://localhost:${PORT}`);
+  console.log(`📋 Rutas disponibles:`);
+  console.log(`   AUTH:`);
+  console.log(`   - POST /api/auth/signup - Registro de proveedores`);
+  console.log(`   - POST /api/auth/signup-client - Registro de clientes`);
+  console.log(`   - POST /api/auth/login - Login`);
+  console.log(`   - GET  /api/auth/me - Usuario actual`);
+  console.log(`   PROVIDERS:`);
+  console.log(`   - GET  /api/providers - Listar proveedores`);
+  console.log(`   - GET  /api/providers/:id - Detalle de proveedor`);
+  console.log(`   BOOKINGS:`);
+  console.log(`   - POST /api/bookings - Crear solicitud`);
+  console.log(`   - GET  /api/bookings - Listar solicitudes`);
+  console.log(`   - PATCH /api/bookings/:id/status - Actualizar estado`);
+  console.log(`   REVIEWS:`);
+  console.log(`   - POST /api/reviews - Crear reseña`);
+  console.log(`   - GET  /api/reviews/provider/:providerId - Reseñas de proveedor`);
+  console.log(`   - GET  /api/reviews/booking/:bookingId - Reseña de booking`);
+  console.log(`   - PATCH /api/reviews/:id/response - Responder reseña`);
 });

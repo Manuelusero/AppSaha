@@ -14,22 +14,217 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// Modelo de ejemplo - Usuario
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// Enums
+enum UserRole {
+  CLIENT
+  PROVIDER
+  ADMIN
 }
 
-// Modelo de ejemplo - Post/Artículo
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum ServiceCategory {
+  PLOMERIA
+  ELECTRICIDAD
+  CARPINTERIA
+  PINTURA
+  LIMPIEZA
+  JARDINERIA
+  MECANICA
+  CONSTRUCCION
+  REPARACIONES
+  MUDANZAS
+  TECNOLOGIA
+  OTRO
+}
+
+enum BookingStatus {
+  PENDING      // Solicitud enviada, esperando respuesta del proveedor
+  ACCEPTED     // Proveedor aceptó la solicitud
+  REJECTED     // Proveedor rechazó la solicitud
+  CONFIRMED    // Cliente confirmó después de aceptación
+  IN_PROGRESS  // Servicio en progreso
+  COMPLETED    // Servicio completado
+  CANCELLED    // Cancelado por cliente o proveedor
+}
+
+enum NotificationType {
+  BOOKING_REQUEST    // Nueva solicitud recibida
+  BOOKING_ACCEPTED   // Solicitud aceptada
+  BOOKING_REJECTED   // Solicitud rechazada
+  BOOKING_CANCELLED  // Solicitud cancelada
+  BOOKING_COMPLETED  // Servicio completado
+  NEW_REVIEW        // Nueva reseña recibida
+  NEW_MESSAGE       // Nuevo mensaje
+  SYSTEM            // Notificación del sistema
+}
+
+// Modelo de Usuario (Clientes y Proveedores)
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  password        String
+  name            String
+  phone           String?
+  avatar          String?         // URL de la foto de perfil
+  role            UserRole        @default(CLIENT)
+  isEmailVerified Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  lastLogin       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  // Relación con perfil de proveedor (si aplica)
+  providerProfile ProviderProfile?
+  
+  // Relaciones como cliente
+  bookingsAsClient Booking[]      @relation("ClientBookings")
+  reviewsGiven     Review[]       @relation("ClientReviews")
+  favoriteProviders Favorite[]
+  notifications    Notification[]
+  messagesSent     Message[]      @relation("SentMessages")
+  messagesReceived Message[]      @relation("ReceivedMessages")
+}
+
+// Perfil del Proveedor de Servicios
+model ProviderProfile {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  bio              String?
+  serviceCategory  ServiceCategory
+  serviceDescription String?
+  experience       Int?             // años de experiencia
+  pricePerHour     Float?
+  location         String?
+  serviceRadius    Int?             // Radio de servicio en km
+  isAvailable      Boolean          @default(true)
+  isVerified       Boolean          @default(false) // Verificado por la plataforma
+  rating           Float            @default(0)
+  totalReviews     Int              @default(0)
+  totalBookings    Int              @default(0)
+  completedBookings Int             @default(0)
+  
+  // URLs de certificaciones o portfolio
+  certifications   String?          // JSON con URLs de certificados
+  portfolioImages  String?          // JSON con URLs de imágenes
+  
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  
+  // Relaciones
+  bookings         Booking[]
+  reviews          Review[]
+  favoritedBy      Favorite[]
+}
+
+// Reservas/Contrataciones
+model Booking {
+  id          String          @id @default(cuid())
+  clientId    String
+  client      User            @relation("ClientBookings", fields: [clientId], references: [id])
+  providerId  String
+  provider    ProviderProfile @relation(fields: [providerId], references: [id])
+  
+  // Información del servicio solicitado
+  serviceDate DateTime
+  serviceTime String?         // Hora preferida (ej: "10:00 AM")
+  description String
+  address     String?         // Dirección donde se realizará el servicio
+  
+  // Estado y precio
+  status      BookingStatus   @default(PENDING)
+  totalPrice  Float?
+  estimatedHours Float?        // Horas estimadas del trabajo
+  
+  // Notas adicionales
+  providerNotes String?       // Notas del proveedor
+  clientNotes   String?       // Notas del cliente
+  
+  // Fechas de cambio de estado
+  acceptedAt    DateTime?
+  rejectedAt    DateTime?
+  completedAt   DateTime?
+  cancelledAt   DateTime?
+  cancellationReason String?   // Razón de cancelación
+  
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // Relación con reseña (una booking puede tener una reseña)
+  review      Review?
+}
+
+// Reseñas/Reviews
+model Review {
+  id         String          @id @default(cuid())
+  bookingId  String          @unique  // Una reseña por booking
+  booking    Booking         @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  clientId   String
+  client     User            @relation("ClientReviews", fields: [clientId], references: [id])
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id])
+  
+  rating     Int             // 1-5 estrellas
+  comment    String?
+  
+  // Respuesta del proveedor (opcional)
+  providerResponse String?
+  respondedAt      DateTime?
+  
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  
+  @@index([providerId])
+  @@index([clientId])
+}
+
+// Favoritos
+model Favorite {
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime        @default(now())
+  
+  @@unique([userId, providerId]) // Un usuario no puede agregar el mismo proveedor dos veces
+  @@index([userId])
+  @@index([providerId])
+}
+
+// Notificaciones
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type       NotificationType
+  title      String
+  message    String
+  isRead     Boolean          @default(false)
+  
+  // Datos adicionales (JSON)
+  metadata   String?          // Por ejemplo: bookingId, reviewId, etc.
+  
+  createdAt  DateTime         @default(now())
+  
+  @@index([userId, isRead])
+}
+
+// Mensajes entre usuarios
+model Message {
+  id         String          @id @default(cuid())
+  senderId   String
+  sender     User            @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User            @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  
+  content    String
+  isRead     Boolean         @default(false)
+  
+  createdAt  DateTime        @default(now())
+  
+  @@index([senderId, receiverId])
+  @@index([receiverId, isRead])
 }
