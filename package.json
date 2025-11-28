@@ -1,0 +1,23 @@
+{
+    "name": "proyect-saha-monorepo",
+    "version": "1.0.0",
+    "private": true,
+    "description": "SaHa - Plataforma para conectar profesionales con clientes",
+    "scripts": {
+        "dev:front": "npm --prefix ./FrontEnd run dev",
+        "dev:back": "npm --prefix ./BackEnd run dev",
+        "dev": "npm run dev:front",
+        "install:front": "npm --prefix ./FrontEnd install",
+        "install:back": "npm --prefix ./BackEnd install",
+        "install:all": "npm run install:front && npm run install:back",
+        "build:front": "npm --prefix ./FrontEnd run build",
+        "build:back": "npm --prefix ./BackEnd run build"
+    },
+    "keywords": [
+        "saha",
+        "profesionales",
+        "servicios"
+    ],
+    "author": "",
+    "license": "ISC"
+}
