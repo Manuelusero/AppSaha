@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 
 // Array de profesiones para la animación
@@ -90,12 +91,12 @@ export default function Home() {
   }, []);
 
   const handleBuscar = () => {
-    // Navegar a la página de job-request con los datos seleccionados
+    // Navegar a la página de selección de especialidades
     const params = new URLSearchParams();
     if (servicioSeleccionado) params.append('servicio', servicioSeleccionado);
     if (ubicacion) params.append('ubicacion', ubicacion);
     
-    router.push(`/job-request?${params.toString()}`);
+    router.push(`/select-specialty?${params.toString()}`);
   };
 
   return (
@@ -112,9 +113,12 @@ export default function Home() {
             priority
           />
         </div>
-        <div className="text-xs sm:text-sm text-gray-600 font-light">
+        <Link 
+          href="/provider-signup"
+          className="text-xs sm:text-sm text-gray-600 font-light hover:text-[#244C87] transition-colors"
+        >
           Espacio del trabajador
-        </div>
+        </Link>
       </header>
 
       {/* Hero Section */}

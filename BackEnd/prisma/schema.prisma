@@ -90,9 +90,11 @@ model ProviderProfile {
   userId           String           @unique
   user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  // Datos básicos
   bio              String?
   serviceCategory  ServiceCategory
   serviceDescription String?
+  specialties      String?          // JSON array con especialidades específicas del oficio
   experience       Int?             // años de experiencia
   pricePerHour     Float?
   location         String?
@@ -104,9 +106,25 @@ model ProviderProfile {
   totalBookings    Int              @default(0)
   completedBookings Int             @default(0)
   
-  // URLs de certificaciones o portfolio
+  // Redes sociales
+  instagram        String?
+  facebook         String?
+  linkedin         String?
+  website          String?
+  
+  // Multimedia
+  profilePhoto     String?          // URL de foto de perfil
+  workPhotos       String?          // JSON array con URLs de fotos de trabajos
+  videoUrls        String?          // JSON array con URLs de videos (YouTube, Vimeo, etc.)
+  
+  // Documentación oficial
+  dniNumber        String?
+  dniDocument      String?          // URL del archivo escaneado del DNI
+  criminalRecord   String?          // URL del certificado de antecedentes penales
+  
+  // Certificados profesionales
   certifications   String?          // JSON con URLs de certificados
-  portfolioImages  String?          // JSON con URLs de imágenes
+  portfolioImages  String?          // JSON con URLs de imágenes (legacy, usar workPhotos)
   
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
@@ -115,6 +133,22 @@ model ProviderProfile {
   bookings         Booking[]
   reviews          Review[]
   favoritedBy      Favorite[]
+  references       ProviderReference[]
+}
+
+// Referencias de proveedores
+model ProviderReference {
+  id           String           @id @default(cuid())
+  providerId   String
+  provider     ProviderProfile  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  
+  name         String           // Nombre completo de la referencia
+  phone        String           // Teléfono de contacto
+  relationship String           // Relación: cliente, colega, empleador, etc.
+  
+  createdAt    DateTime         @default(now())
+  
+  @@index([providerId])
 }
 
 // Reservas/Contrataciones
