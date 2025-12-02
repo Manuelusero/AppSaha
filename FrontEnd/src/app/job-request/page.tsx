@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 // Array de servicios (igual que en la landing)
@@ -19,10 +20,21 @@ const servicios = [
 ];
 
 export default function JobRequest() {
+  const searchParams = useSearchParams();
+  const servicioInicial = searchParams.get('servicio') || 'Carpintería';
+  
   const [descripcion, setDescripcion] = useState('');
-  const [categoria, setCategoria] = useState('Carpintería');
+  const [categoria, setCategoria] = useState(servicioInicial);
   const [mostrarCategorias, setMostrarCategorias] = useState(false);
   const [foto, setFoto] = useState<File | null>(null);
+
+  // Actualizar categoría si cambian los parámetros de URL
+  useEffect(() => {
+    const servicio = searchParams.get('servicio');
+    if (servicio) {
+      setCategoria(servicio);
+    }
+  }, [searchParams]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

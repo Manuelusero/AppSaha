@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 // Array de profesiones para la animación
@@ -72,6 +73,7 @@ const ciudadesArgentina = [
 ];
 
 export default function Home() {
+  const router = useRouter();
   const [profesionActual, setProfesionActual] = useState(0);
   const [servicioSeleccionado, setServicioSeleccionado] = useState('');
   const [ubicacion, setUbicacion] = useState('');
@@ -88,14 +90,12 @@ export default function Home() {
   }, []);
 
   const handleBuscar = () => {
-    // Por ahora solo console.log, más adelante se conectará con la búsqueda real
-    console.log('Buscando:', {
-      servicio: servicioSeleccionado,
-      ubicacion: ubicacion
-    });
+    // Navegar a la página de job-request con los datos seleccionados
+    const params = new URLSearchParams();
+    if (servicioSeleccionado) params.append('servicio', servicioSeleccionado);
+    if (ubicacion) params.append('ubicacion', ubicacion);
     
-    // TODO: Implementar búsqueda cuando haya proveedores en la DB
-    alert(`Buscando ${servicioSeleccionado || 'todos los servicios'} en ${ubicacion || 'todas las ubicaciones'}.\n\n(Funcionalidad completa próximamente)`);
+    router.push(`/job-request?${params.toString()}`);
   };
 
   return (
