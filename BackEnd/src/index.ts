@@ -1,11 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import usersRouter from './routes/users.js';
 import authRouter from './routes/auth.js';
 import providersRouter from './routes/providers.js';
 import bookingsRouter from './routes/bookings.js';
 import reviewsRouter from './routes/reviews.js';
+
+// Obtener __dirname en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configurar variables de entorno
 dotenv.config();
@@ -51,6 +57,9 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Servir archivos estáticos desde la carpeta uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Rutas básicas
 app.get('/', (req, res) => {
   res.json({ 
@@ -94,8 +103,11 @@ app.listen(PORT, () => {
   console.log(`   - POST /api/auth/login - Login`);
   console.log(`   - GET  /api/auth/me - Usuario actual`);
   console.log(`   PROVIDERS:`);
+  console.log(`   - POST /api/providers/register - Registro de proveedor con archivos`);
   console.log(`   - GET  /api/providers - Listar proveedores`);
   console.log(`   - GET  /api/providers/:id - Detalle de proveedor`);
+  console.log(`   FILES:`);
+  console.log(`   - GET  /uploads/:folder/:filename - Servir archivos estáticos`);
   console.log(`   BOOKINGS:`);
   console.log(`   - POST /api/bookings - Crear solicitud`);
   console.log(`   - GET  /api/bookings - Listar solicitudes`);

@@ -80,14 +80,21 @@ export default function Home() {
   const [ubicacion, setUbicacion] = useState('');
   const [mostrarServicios, setMostrarServicios] = useState(false);
   const [mostrarUbicaciones, setMostrarUbicaciones] = useState(false);
+  const [mostrarModalLogin, setMostrarModalLogin] = useState(false);
 
-  // Animación automática de desplazamiento de profesiones
+  // Animación automática de desplazamiento de profesiones con pausa en el centro
   useEffect(() => {
-    const intervalo = setInterval(() => {
+    let timeout: NodeJS.Timeout;
+    
+    const nextProfesion = () => {
       setProfesionActual((prev) => (prev + 1) % profesiones.length);
-    }, 2000); // Cambia cada 2 segundos
-
-    return () => clearInterval(intervalo);
+      // Esperar más tiempo en la siguiente iteración (pausa en el centro)
+      timeout = setTimeout(nextProfesion, 2000);
+    };
+    
+    timeout = setTimeout(nextProfesion, 2000);
+    
+    return () => clearTimeout(timeout);
   }, []);
 
   const handleBuscar = () => {
@@ -101,44 +108,62 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <header className="px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white border-b border-gray-100">
+      {/* Header con degradado */}
+      <header 
+        className="px-6 py-4 flex items-center justify-between"
+        style={{ 
+          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
+          height: '150px'
+        }}
+      >
         <div className="flex items-center gap-2">
-          <Image 
-            src="/Logo.png" 
-            alt="SaHa Logo" 
-            width={120} 
-            height={40}
-            className="h-8 w-auto sm:h-10"
-            priority
+          <div style={{ 
+            width: '145px', 
+            height: '66px',
+            background: 'url(/LOGO.svg) no-repeat center center',
+            mixBlendMode: 'multiply',
+            opacity: 1,
+            borderRadius: '25px',
+            transform: 'rotate(0deg)'
+          }} 
+          aria-label="SaHa Logo"
           />
         </div>
-        <Link 
-          href="/provider-signup"
-          className="text-xs sm:text-sm text-gray-600 font-light hover:text-[#244C87] transition-colors"
+        <button
+          onClick={() => setMostrarModalLogin(true)}
+          style={{ 
+            fontFamily: 'Maitree, serif',
+            fontWeight: 400,
+            fontStyle: 'normal',
+            fontSize: '13px',
+            lineHeight: '100%',
+            letterSpacing: '0%',
+            width: 'auto',
+            height: '40px',
+            gap: '10px',
+            opacity: 1,
+            borderRadius: '24px',
+            padding: '8px 16px',
+            backgroundColor: 'rgba(191, 198, 238, 0.2)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            color: '#000000',
+            cursor: 'pointer',
+            transform: 'rotate(0deg)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}
         >
           Espacio del trabajador
-        </Link>
+        </button>
       </header>
 
       {/* Hero Section */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-8 sm:py-12">
-        {/* Decorative Wave */}
-        <div className="w-full max-w-md mb-8">
-          <svg 
-            viewBox="0 0 400 80" 
-            className="w-full h-auto opacity-30"
-            preserveAspectRatio="none"
-          >
-            <path 
-              d="M 0 40 Q 100 10, 200 40 T 400 40" 
-              stroke="#4F46E5" 
-              strokeWidth="2" 
-              fill="none"
-            />
-          </svg>
-        </div>
-
         {/* Título principal con palabra animada */}
         <div className="text-center mb-10 sm:mb-12 max-w-lg px-4">
           <h1 className="font-normal text-[48px] leading-[100%] text-center text-[#244C87] mb-6" style={{ fontFamily: 'Maitree, serif' }}>
@@ -146,33 +171,27 @@ export default function Home() {
           </h1>
           
           {/* Carrusel horizontal de profesiones */}
-          <div className="relative h-16 sm:h-20 overflow-hidden mb-4">
-            <div 
-              className="absolute inset-0 flex items-center justify-center transition-transform duration-500 ease-in-out"
-              style={{ 
-                transform: `translateX(-${profesionActual * 100}%)`,
-                width: `${profesiones.length * 100}%`
-              }}
-            >
-              {profesiones.map((profesion, index) => {
-                const isCenter = index === profesionActual;
-                const distanceFromCenter = Math.abs(index - profesionActual);
-                const opacity = distanceFromCenter === 0 ? 1 : distanceFromCenter === 1 ? 0.4 : 0.2;
+          <div className="relative h-16 sm:h-20 overflow-hidden mb-4 flex items-center justify-center">
+            <div className="flex items-center gap-4">
+              {/* Mostrar 3 palabras: anterior, actual (centro), siguiente */}
+              {[-1, 0, 1].map((offset) => {
+                const index = (profesionActual + offset + profesiones.length) % profesiones.length;
+                const profesion = profesiones[index];
+                const isCenter = offset === 0;
                 
                 return (
                   <div
-                    key={index}
-                    className="flex-shrink-0 transition-all duration-500"
+                    key={`${index}-${offset}`}
+                    className="transition-all duration-700 ease-in-out"
                     style={{ 
-                      width: `${100 / profesiones.length}%`,
-                      opacity: opacity
+                      opacity: isCenter ? 1 : 0.4,
                     }}
                   >
                     <span 
-                      className={`text-[48px] leading-[100%] text-center transition-all duration-500 ${
+                      className={`block text-center transition-all duration-700 whitespace-nowrap ${
                         isCenter 
-                          ? 'font-bold text-[#244C87] scale-110' 
-                          : 'font-normal text-gray-400'
+                          ? 'text-[48px] font-bold text-[#244C87]' 
+                          : 'text-[36px] font-normal text-gray-400'
                       }`}
                       style={{ fontFamily: 'Maitree, serif' }}
                     >
@@ -674,6 +693,113 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Modal: ¿Ya tienes una cuenta? */}
+      {mostrarModalLogin && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          onClick={() => setMostrarModalLogin(false)}
+        >
+          <div 
+            className="relative mx-6"
+            style={{
+              width: '432px',
+              height: '223px',
+              maxWidth: '90%',
+              backgroundColor: '#B45B39',
+              borderRadius: '24px',
+              padding: '32px 24px',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+              opacity: 1,
+              transform: 'rotate(0deg)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Botón cerrar */}
+            <button
+              onClick={() => setMostrarModalLogin(false)}
+              className="absolute top-4 right-4"
+              style={{ cursor: 'pointer', background: 'none', border: 'none', padding: '8px' }}
+            >
+              <svg width="24" height="24" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
+
+            {/* Contenido del modal */}
+            <div className="text-center">
+              <h2 
+                style={{ 
+                  fontFamily: 'Maitree, serif', 
+                  fontSize: '32px', 
+                  fontWeight: 400,
+                  fontStyle: 'normal',
+                  color: '#FFFFFF',
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  textAlign: 'center',
+                  marginBottom: '24px'
+                }}
+              >
+                ¿Ya tenes una cuenta?
+              </h2>
+              
+              {/* Botones */}
+              <div className="flex flex-row gap-4 justify-center items-center">
+                <button
+                  onClick={() => router.push('/login')}
+                  className="px-6 py-3 rounded-full transition-colors"
+                  style={{ 
+                    fontFamily: 'Maitree, serif', 
+                    fontSize: '16px',
+                    fontWeight: 400,
+                    fontStyle: 'normal',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    backgroundColor: 'rgba(217, 165, 137, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    cursor: 'pointer',
+                    minWidth: '180px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  Si, Iniciar sesión
+                </button>
+                
+                <button
+                  onClick={() => router.push('/provider-signup')}
+                  className="px-6 py-3 rounded-full transition-colors"
+                  style={{ 
+                    fontFamily: 'Maitree, serif', 
+                    fontSize: '16px',
+                    fontWeight: 400,
+                    fontStyle: 'normal',
+                    lineHeight: '100%',
+                    letterSpacing: '0%',
+                    color: '#000000',
+                    backgroundColor: 'rgba(217, 165, 137, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    cursor: 'pointer',
+                    minWidth: '180px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  No, registrarme
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

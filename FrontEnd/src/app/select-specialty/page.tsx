@@ -42,20 +42,34 @@ export default function SelectSpecialty() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white border-b">
+      <header 
+        className="px-6 py-4 flex items-center justify-between"
+        style={{ 
+          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
+          height: '150px'
+        }}
+      >
         <div className="flex items-center gap-2">
           <Image 
             src="/Logo.png" 
             alt="SaHa Logo" 
             width={120} 
             height={40}
-            className="h-8 w-auto sm:h-10"
+            className="h-10 w-auto"
             priority
           />
         </div>
         <a 
           href="/provider-signup"
-          className="px-4 py-2 rounded-full border border-[#244C87] text-[#244C87] text-sm hover:bg-[#244C87] hover:text-white transition-colors"
+          className="px-6 py-2 rounded-full border-2 transition-colors"
+          style={{ 
+            fontFamily: 'Maitree, serif',
+            fontSize: '16px',
+            borderColor: '#244C87',
+            color: '#244C87',
+            backgroundColor: 'transparent',
+            cursor: 'pointer'
+          }}
         >
           Espacio del trabajador
         </a>

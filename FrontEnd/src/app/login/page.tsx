@@ -37,10 +37,22 @@ export default function Login() {
       // Guardar token en localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Si es proveedor, guardar también el providerId
+      if (data.user.role === 'PROVIDER' && data.user.providerProfileId) {
+        localStorage.setItem('providerId', data.user.providerProfileId.toString());
+      }
 
       // Redirigir al dashboard según el rol
-      const redirectPath = data.user.role === 'PROVIDER' ? '/dashboard' : '/dashboard-client';
-      router.push(redirectPath);
+      // Por ahora solo tenemos dashboard de proveedores
+      // El dashboard de clientes se implementará más adelante
+      if (data.user.role === 'PROVIDER') {
+        router.push('/dashboard-provider');
+      } else {
+        // Cliente: por ahora redirigir al inicio
+        router.push('/');
+        alert('Bienvenido! Por ahora la plataforma está enfocada en proveedores. Pronto tendrás tu dashboard.');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {

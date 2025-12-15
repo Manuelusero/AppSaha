@@ -4,108 +4,110 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-// Datos mock de profesionales (luego vendrán de la DB)
-const profesionalesMock = [
-  {
-    id: 1,
-    nombre: 'Ricardo Rodriguez',
-    profesion: 'Pintores',
-    descripcion: 'Pintor profesional - CABA y AMBA',
-    categoria: 'Pintura',
-    foto: '/Frame16.png',
-    rating: 5,
-    ubicacion: 'Buenos Aires',
-    especialidades: ['Pintura de interiores', 'Pintura de exteriores', 'Pintura decorativa'],
-    reviews: []
-  },
-  {
-    id: 2,
-    nombre: 'Mauro Perez',
-    profesion: 'Pintores',
-    descripcion: 'Pintor profesional - Zona norte PBA',
-    categoria: 'Pintura',
-    foto: '/Frame17.png',
-    rating: 4,
-    ubicacion: 'Buenos Aires',
-    especialidades: ['Pintura de interiores', 'Pintura de rejas y portones'],
-    reviews: []
-  },
-  {
-    id: 3,
-    nombre: 'Laura Gomez',
-    profesion: 'Carpinteros',
-    descripcion: 'Carpintera certificada - CABA',
-    categoria: 'Carpintería',
-    foto: '/Frame18.png',
-    rating: 5,
-    ubicacion: 'Buenos Aires',
-    especialidades: ['Carpintería de muebles', 'Carpintería de techos'],
-    reviews: []
-  },
-  {
-    id: 4,
-    nombre: 'Carlos Martinez',
-    profesion: 'Electricistas',
-    descripcion: 'Electricista matriculado - GBA Sur',
-    categoria: 'Electricidad',
-    foto: '/Frame19.png',
-    rating: 5,
-    ubicacion: 'Buenos Aires',
-    especialidades: ['Instalaciones eléctricas residenciales', 'Reparación de fallas eléctricas'],
-    reviews: []
-  },
-  {
-    id: 5,
-    nombre: 'Ana Silva',
-    profesion: 'Plomeros',
-    descripcion: 'Plomera profesional - GBA',
-    categoria: 'Plomería',
-    foto: '/Frame20.png',
-    rating: 5,
-    ubicacion: 'Buenos Aires',
-    especialidades: ['Reparación de fugas y filtraciones', 'Instalación de sanitarios'],
-    reviews: []
-  }
-];
+// Mapeo de categorías del backend a nombres en español
+const categoryToSpanish: { [key: string]: string } = {
+  'LIMPIEZA': 'Limpieza',
+  'PINTURA': 'Pintores',
+  'PLOMERIA': 'Plomeros',
+  'ELECTRICIDAD': 'Electricistas',
+  'CARPINTERIA': 'Carpinteros',
+  'JARDINERIA': 'Jardineros',
+  'ALBANILERIA': 'Albañiles'
+};
+
+interface Provider {
+  id: string;
+  nombre: string;
+  profesion: string;
+  descripcion: string;
+  categoria: string;
+  foto: string;
+  rating: number;
+  ubicacion: string;
+  especialidades: string[];
+  reviews: unknown[];
+}
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [profesionales, setProfesionales] = useState(profesionalesMock);
-  const [selectedProviders, setSelectedProviders] = useState<number[]>([]);
+  const [profesionales, setProfesionales] = useState<Provider[]>([]);
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    const servicio = searchParams.get('servicio');
-    const ubicacion = searchParams.get('ubicacion');
-    const especialidadesParam = searchParams.get('especialidades');
-    
-    // Filtrar profesionales según servicio, ubicación y especialidades
-    let filtrados = profesionalesMock;
-    
-    if (servicio) {
-      filtrados = filtrados.filter(p => p.profesion === servicio);
-    }
-    
-    if (ubicacion) {
-      filtrados = filtrados.filter(p => p.ubicacion.toLowerCase().includes(ubicacion.toLowerCase()));
-    }
+    const fetchProviders = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://localhost:8000/api/providers');
+        
+        if (!response.ok) {
+          throw new Error('Error al cargar profesionales');
+        }
+        
+        const data = await response.json();
+        
+        // Transformar datos del backend al formato esperado
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformedData: Provider[] = data.map((provider: any) => ({
+          id: provider.id,
+          nombre: provider.name,
+          profesion: categoryToSpanish[provider.providerProfile?.serviceCategory] || provider.providerProfile?.serviceCategory || 'Profesional',
+          descripcion: provider.providerProfile?.serviceDescription || provider.providerProfile?.bio || 'Profesional de servicios',
+          categoria: provider.providerProfile?.serviceCategory || '',
+          foto: provider.providerProfile?.profilePhoto || '/Frame16.png',
+          rating: provider.providerProfile?.rating || 0,
+          ubicacion: provider.providerProfile?.location || 'Buenos Aires',
+          especialidades: provider.providerProfile?.specialties ? 
+            (typeof provider.providerProfile.specialties === 'string' ? 
+              provider.providerProfile.specialties.split(',').map((s: string) => s.trim()) : 
+              provider.providerProfile.specialties) : 
+            [],
+          reviews: []
+        }));
+        
+        // Aplicar filtros
+        const servicio = searchParams.get('servicio');
+        const ubicacion = searchParams.get('ubicacion');
+        const especialidadesParam = searchParams.get('especialidades');
+        
+        let filtrados = transformedData;
+        
+        if (servicio) {
+          filtrados = filtrados.filter(p => p.profesion === servicio);
+        }
+        
+        if (ubicacion) {
+          filtrados = filtrados.filter(p => p.ubicacion.toLowerCase().includes(ubicacion.toLowerCase()));
+        }
 
-    if (especialidadesParam) {
-      // Convertir el string de especialidades separadas por coma en array
-      const especialidadesBuscadas = especialidadesParam.split(',').map(e => e.trim());
-      
-      // Filtrar profesionales que tengan al menos una de las especialidades buscadas
-      filtrados = filtrados.filter(p => 
-        especialidadesBuscadas.some(espBuscada => 
-          p.especialidades.some(e => e.toLowerCase().includes(espBuscada.toLowerCase()))
-        )
-      );
-    }
+        if (especialidadesParam) {
+          const especialidadesBuscadas = especialidadesParam.split(',').map(e => e.trim());
+          filtrados = filtrados.filter(p => {
+            // Si el proveedor no tiene especialidades definidas, lo incluimos
+            if (!p.especialidades || p.especialidades.length === 0) {
+              return true;
+            }
+            // Si tiene especialidades, verificamos coincidencias
+            return especialidadesBuscadas.some(espBuscada => 
+              p.especialidades.some(e => e.toLowerCase().includes(espBuscada.toLowerCase()))
+            );
+          });
+        }
+        
+        setProfesionales(filtrados);
+      } catch (error) {
+        console.error('Error al cargar profesionales:', error);
+        setProfesionales([]);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    setProfesionales(filtrados);
+    fetchProviders();
   }, [searchParams]);
 
-  const toggleProviderSelection = (id: number) => {
+  const toggleProviderSelection = (id: string) => {
     if (selectedProviders.includes(id)) {
       setSelectedProviders(selectedProviders.filter(pId => pId !== id));
     } else {
@@ -146,20 +148,34 @@ export default function SearchResults() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <header className="px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-white border-b">
+      <header 
+        className="px-6 py-4 flex items-center justify-between"
+        style={{ 
+          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
+          height: '150px'
+        }}
+      >
         <div className="flex items-center gap-2">
           <Image 
             src="/Logo.png" 
             alt="SaHa Logo" 
             width={120} 
             height={40}
-            className="h-8 w-auto sm:h-10"
+            className="h-10 w-auto"
             priority
           />
         </div>
         <a 
           href="/provider-signup"
-          className="px-4 py-2 rounded-full border border-[#244C87] text-[#244C87] text-sm hover:bg-[#244C87] hover:text-white transition-colors"
+          className="px-6 py-2 rounded-full border-2 transition-colors"
+          style={{ 
+            fontFamily: 'Maitree, serif',
+            fontSize: '16px',
+            borderColor: '#244C87',
+            color: '#244C87',
+            backgroundColor: 'transparent',
+            cursor: 'pointer'
+          }}
         >
           Espacio del trabajador
         </a>
@@ -193,14 +209,21 @@ export default function SearchResults() {
           )}
 
           {/* Grid de profesionales */}
-          <div className="flex flex-col items-center" style={{ gap: '80px' }}>
-            {profesionales.length > 0 ? (
+          <div className="flex flex-col items-center" style={{ gap: '80px'}}>
+            {loading ? (
+              <div className="text-center py-12">
+                <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#244C87' }}>
+                  Cargando profesionales...
+                </p>
+              </div>
+            ) : profesionales.length > 0 ? (
               profesionales.map((prof) => (
                 <div 
                   key={prof.id}
                   className="bg-white rounded-3xl overflow-hidden border-2 hover:shadow-2xl transition-all duration-300 relative"
                   style={{ 
-                    width: '432px', 
+                    width: '100%',
+                    maxWidth: '432px',
                     height: '514px',
                     borderColor: selectedProviders.includes(prof.id) ? '#244C87' : '#E5E7EB'
                   }}
@@ -240,7 +263,7 @@ export default function SearchResults() {
                   {/* Información del profesional */}
                   <div className="p-6 flex flex-col justify-between" style={{ height: '214px' }}>
                     <div>
-                      <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, lineHeight: '100%', letterSpacing: '0%', color: '#000000', marginBottom: '8px' }}>
+                      <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, lineHeight: '100%', letterSpacing: '0%', color: '#000000', marginBottom: '8px', textTransform: 'capitalize' }}>
                         {prof.nombre}
                       </h2>
                       <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 400, lineHeight: '100%', letterSpacing: '0%', color: '#000000', marginBottom: '12px' }}>
@@ -263,6 +286,7 @@ export default function SearchResults() {
                           backgroundColor: 'transparent',
                           color: '#000000'
                         }}
+                        onClick={() => router.push(`/providers/${prof.id}`)}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = '#BFC6EE33';
                           e.currentTarget.style.borderColor = '#244C87';
@@ -327,7 +351,7 @@ export default function SearchResults() {
 
         <div className="w-full bg-[#244C87] py-12 px-6">
           <div className="max-w-6xl mx-auto">
-            <div className="flex justify-center mb-16" style={{ gap: '86px', paddingLeft: '49.5px', paddingRight: '49.5px' }}>
+            <div className="flex justify-center mb-16" style={{ gap: '86px', paddingLeft: '49.05px', paddingRight: '49.05px' }}>
               <a href="#" className="hover:opacity-80 transition-opacity">
                 <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
