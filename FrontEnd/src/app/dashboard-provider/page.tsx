@@ -43,6 +43,7 @@ export default function DashboardProvider() {
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'perfil' | 'solicitudes'>('perfil');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Datos adicionales del registro
   const [datosAdicionales, setDatosAdicionales] = useState({
@@ -252,6 +253,21 @@ export default function DashboardProvider() {
     loadBookings();
   }, [router]);
 
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showProfileMenu) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.profile-menu-container')) {
+          setShowProfileMenu(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu]);
+
   const handleAcceptRequest = (request: JobRequest) => {
     setSelectedRequest(request);
     setShowBudgetModal(true);
@@ -360,63 +376,222 @@ export default function DashboardProvider() {
           aria-label="SaHa Logo"
           />
         </div>
-        <div className="flex items-center gap-4">
-          {/* Foto de perfil */}
-          {providerData.profileImage && (providerData.profileImage.startsWith('http') || providerData.profileImage.startsWith('/')) ? (
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              overflow: 'hidden',
-              border: '2px solid #244C87',
-              backgroundColor: '#f0f0f0'
-            }}>
-              <Image
-                src={providerData.profileImage}
-                alt="Foto de perfil"
-                width={48}
-                height={48}
-                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-              />
-            </div>
-          ) : (
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              backgroundColor: '#244C87',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontFamily: 'Maitree, serif',
-              fontSize: '20px',
-              fontWeight: 'bold'
-            }}>
-              {providerData.nombre ? providerData.nombre.charAt(0).toUpperCase() : 'P'}
-            </div>
-          )}
-          <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000' }}>
-            Hola, {providerData.nombre}
-          </span>
-          <button
-            onClick={() => {
-              localStorage.removeItem('providerId');
-              router.push('/');
-            }}
+        <div className="relative profile-menu-container">
+          <div 
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
             style={{
-              fontFamily: 'Maitree, serif',
-              fontSize: '14px',
-              padding: '8px 16px',
+              padding: '8px 12px',
               backgroundColor: 'rgba(191, 198, 238, 0.2)',
               backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               border: '1px solid rgba(255, 255, 255, 0.3)',
               borderRadius: '24px',
-              cursor: 'pointer'
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
             }}
           >
-            Cerrar sesión
-          </button>
+            {/* Foto de perfil */}
+            <div 
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveTab('perfil');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '2px solid #244C87',
+                cursor: 'pointer',
+                flexShrink: 0
+              }}
+            >
+              {providerData.profileImage && (providerData.profileImage.startsWith('http') || providerData.profileImage.startsWith('/')) ? (
+                <Image
+                  src={providerData.profileImage}
+                  alt="Foto de perfil"
+                  width={48}
+                  height={48}
+                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+                />
+              ) : (
+                <div style={{
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: '#244C87',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '20px',
+                  fontWeight: 'bold'
+                }}>
+                  {providerData.nombre ? providerData.nombre.charAt(0).toUpperCase() : 'P'}
+                </div>
+              )}
+            </div>
+            
+            {/* Nombre */}
+            <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000', whiteSpace: 'nowrap' }}>
+              Hola, {providerData.nombre}
+            </span>
+            
+            {/* Flecha hacia abajo */}
+            <svg 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="#244C87" 
+              strokeWidth="2"
+              style={{
+                transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease',
+                flexShrink: 0
+              }}
+            >
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </div>
+
+          {/* Menú desplegable */}
+          {showProfileMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '70px',
+                right: '0',
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                overflow: 'hidden',
+                minWidth: '220px',
+                zIndex: 1000
+              }}
+            >
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  setActiveTab('perfil');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  textAlign: 'left',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  color: '#244C87',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Mi Perfil
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  setActiveTab('solicitudes');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  textAlign: 'left',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  color: '#244C87',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Ver Solicitudes
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  router.push('/');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  textAlign: 'left',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  color: '#244C87',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                Volver al Inicio
+              </button>
+
+              <div style={{ height: '1px', backgroundColor: '#E5E7EB', margin: '8px 0' }}></div>
+
+              <button
+                onClick={() => {
+                  localStorage.removeItem('providerId');
+                  setShowProfileMenu(false);
+                  router.push('/');
+                }}
+                style={{
+                  width: '100%',
+                  padding: '12px 20px',
+                  textAlign: 'left',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  cursor: 'pointer',
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  color: '#DC2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/>
+                  <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Cerrar Sesión
+              </button>
+            </div>
+          )}
         </div>
       </header>
 

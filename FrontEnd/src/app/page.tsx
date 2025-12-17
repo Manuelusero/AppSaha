@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import Image from 'next/image';
 
 // Array de profesiones para la animación
@@ -81,6 +80,56 @@ export default function Home() {
   const [mostrarServicios, setMostrarServicios] = useState(false);
   const [mostrarUbicaciones, setMostrarUbicaciones] = useState(false);
   const [mostrarModalLogin, setMostrarModalLogin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [providerData, setProviderData] = useState<{
+    id: string;
+    nombre: string;
+    profileImage?: string;
+  } | null>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  // Verificar si hay un proveedor logueado
+  useEffect(() => {
+    const providerId = localStorage.getItem('providerId');
+    if (providerId) {
+      setIsLoggedIn(true);
+      // Cargar datos del proveedor
+      fetch(`http://localhost:8000/api/providers/${providerId}`)
+        .then(res => res.json())
+        .then(data => {
+          const profile = data.providerProfile;
+          let profileImageUrl = '/Frame16.png'; // Imagen por defecto
+          if (profile?.profilePhoto) {
+            if (!profile.profilePhoto.startsWith('http')) {
+              profileImageUrl = `http://localhost:8000/uploads/profile/${profile.profilePhoto}`;
+            } else {
+              profileImageUrl = profile.profilePhoto;
+            }
+          }
+          setProviderData({
+            id: providerId,
+            nombre: data.name || 'Proveedor',
+            profileImage: profileImageUrl
+          });
+        })
+        .catch(err => console.error('Error al cargar proveedor:', err));
+    }
+  }, []);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showProfileMenu) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.profile-menu-container')) {
+          setShowProfileMenu(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileMenu]);
 
   // Animación automática de desplazamiento de profesiones con pausa en el centro
   useEffect(() => {
@@ -107,7 +156,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col" style={{ scrollBehavior: 'smooth' }}>
       {/* Header con degradado */}
       <header 
         className="px-6 py-4 flex items-center justify-between"
@@ -129,41 +178,209 @@ export default function Home() {
           aria-label="SaHa Logo"
           />
         </div>
-        <button
-          onClick={() => setMostrarModalLogin(true)}
-          style={{ 
-            fontFamily: 'Maitree, serif',
-            fontWeight: 400,
-            fontStyle: 'normal',
-            fontSize: '13px',
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            width: 'auto',
-            height: '40px',
-            gap: '10px',
-            opacity: 1,
-            borderRadius: '24px',
-            padding: '8px 16px',
-            backgroundColor: 'rgba(191, 198, 238, 0.2)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            color: '#000000',
-            cursor: 'pointer',
-            transform: 'rotate(0deg)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            whiteSpace: 'nowrap',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}
-        >
-          Espacio del trabajador
-        </button>
+        
+        {/* Menú de usuario logueado o botón de login */}
+        {isLoggedIn && providerData ? (
+          <div className="relative profile-menu-container">
+            <div 
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              style={{
+                padding: '8px 12px',
+                backgroundColor: 'rgba(191, 198, 238, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '24px',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              {/* Foto de perfil */}
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push('/dashboard-provider');
+                }}
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  border: '2px solid #244C87',
+                  cursor: 'pointer'
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={providerData.profileImage}
+                  alt={providerData.nombre}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              
+              {/* Flecha hacia abajo */}
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="#244C87" 
+                strokeWidth="2"
+                style={{
+                  transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.3s ease'
+                }}
+              >
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </div>
+
+            {/* Menú desplegable */}
+            {showProfileMenu && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '60px',
+                  right: '0',
+                  backgroundColor: 'white',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  overflow: 'hidden',
+                  minWidth: '200px',
+                  zIndex: 1000
+                }}
+              >
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    router.push('/dashboard-provider');
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    textAlign: 'left',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '16px',
+                    color: '#244C87',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Mi Perfil
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    router.push('/dashboard-provider?tab=solicitudes');
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    textAlign: 'left',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '16px',
+                    color: '#244C87',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  </svg>
+                  Ver Solicitudes
+                </button>
+
+                <div style={{ height: '1px', backgroundColor: '#E5E7EB', margin: '8px 0' }}></div>
+
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('providerId');
+                    setIsLoggedIn(false);
+                    setProviderData(null);
+                    setShowProfileMenu(false);
+                    router.push('/');
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 20px',
+                    textAlign: 'left',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    cursor: 'pointer',
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '16px',
+                    color: '#DC2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                  Cerrar Sesión
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={() => setMostrarModalLogin(true)}
+            style={{ 
+              fontFamily: 'Maitree, serif',
+              fontWeight: 400,
+              fontStyle: 'normal',
+              fontSize: '13px',
+              lineHeight: '100%',
+              letterSpacing: '0%',
+              width: 'auto',
+              height: '40px',
+              gap: '10px',
+              opacity: 1,
+              borderRadius: '24px',
+              padding: '8px 16px',
+              backgroundColor: 'rgba(191, 198, 238, 0.2)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              color: '#000000',
+              cursor: 'pointer',
+              transform: 'rotate(0deg)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              whiteSpace: 'nowrap',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            Espacio del trabajador
+          </button>
+        )}
       </header>
 
       {/* Hero Section */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-8 sm:py-12">
+      <main id="buscar-servicios" className="flex-1 flex flex-col items-center justify-center px-6 py-8 sm:py-12">
         {/* Título principal con palabra animada */}
         <div className="text-center mb-10 sm:mb-12 max-w-lg px-4">
           <h1 className="font-normal text-[48px] leading-[100%] text-center text-[#244C87] mb-6" style={{ fontFamily: 'Maitree, serif' }}>
@@ -479,7 +696,7 @@ export default function Home() {
       </section>
 
       {/* Sección: ¿Cómo funciona? */}
-      <section className="w-full bg-white py-12 sm:py-16 px-6" style={{ marginTop: '13px' }}>
+      <section id="como-funciona" className="w-full bg-white py-12 sm:py-16 px-6" style={{ marginTop: '13px' }}>
         <div className="max-w-4xl mx-auto">
           {/* Título */}
           <h2 className="font-normal text-[64px] text-center text-[#244C87] mb-16" style={{ fontFamily: 'Maitree, serif', fontStyle: 'normal', lineHeight: '1.5' }}>
@@ -653,25 +870,23 @@ export default function Home() {
             <div>
               <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Para Clientes</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Buscar Servidores</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>¿Cómo Funciona?</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Seguridad y Confianza</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Ayuda</a></li>
+                <li><a href="#buscar-servicios" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Buscar Servidores</a></li>
+                <li><a href="#como-funciona" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>¿Cómo Funciona?</a></li>
+                <li><a href="/seguridad-confianza" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Seguridad y Confianza</a></li>
+                <li><a href="/ayuda" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Ayuda</a></li>
               </ul>
             </div>
 
-            {/* Para Proveedores */}
-            <div>
-              <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Para Proveedores</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Sumate como proveedor</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Experiencias</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Recursos útiles</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Soporte Proveedores</a></li>
-              </ul>
-            </div>
-
-            {/* Empresa */}
+              {/* Para Proveedores */}
+              <div>
+                <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Para Proveedores</h3>
+                <ul className="space-y-3">
+                  <li><a href="/provider-signup" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Sumate como proveedor</a></li>
+                  <li><a href="/experiencias" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Experiencias</a></li>
+                  <li><a href="/recursos" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Recursos útiles</a></li>
+                  <li><a href="/soporte-proveedores" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Soporte Proveedores</a></li>
+                </ul>
+              </div>            {/* Empresa */}
             <div>
               <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Empresa</h3>
               <ul className="space-y-3">

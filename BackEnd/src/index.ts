@@ -8,6 +8,7 @@ import authRouter from './routes/auth.js';
 import providersRouter from './routes/providers.js';
 import bookingsRouter from './routes/bookings.js';
 import reviewsRouter from './routes/reviews.js';
+import supportRouter from './routes/support.js';
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -83,6 +84,7 @@ app.use('/api/users', usersRouter);
 app.use('/api/providers', providersRouter);
 app.use('/api/bookings', bookingsRouter);
 app.use('/api/reviews', reviewsRouter);
+app.use('/api/support', supportRouter);
 
 // Manejo de errores básico
 app.use((req, res) => {
