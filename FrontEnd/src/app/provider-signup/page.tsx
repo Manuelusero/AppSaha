@@ -468,14 +468,11 @@ export default function ProviderSignup() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header con degradado */}
+      {/* Header con degradado - Responsive */}
       <header 
-        className="px-6 flex items-start"
+        className="w-full px-4 sm:px-6 py-6 sm:py-8 flex items-center"
         style={{ 
           background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
-          width: '480px',
-          height: '124px',
-          opacity: 1
         }}
       >
         <button
@@ -486,12 +483,8 @@ export default function ProviderSignup() {
               setPaso(paso - 1);
             }
           }}
-          className="hover:bg-white/20 rounded-full transition-colors"
-          style={{ 
-            cursor: 'pointer',
-            marginTop: '58px',
-            marginBottom: '38.7px'
-          }}
+          className="hover:bg-white/20 rounded-full transition-colors p-2"
+          style={{ cursor: 'pointer' }}
         >
           <svg width="32" height="32" fill="none" stroke="#000000" strokeWidth="2.5" viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6"/>
@@ -499,38 +492,75 @@ export default function ProviderSignup() {
         </button>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 px-6">
+      {/* Main Content - Responsive */}
+      <main className="flex-1 px-4 sm:px-6 py-6 sm:py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Título del paso actual */}
-          <h2 className="text-center" style={{ fontFamily: 'Maitree', fontSize: '40px', fontWeight: 400, fontStyle: 'normal', lineHeight: '100%', letterSpacing: '0%', color: '#244C87', marginTop: '0px', marginBottom: '32px' }}>
+          {/* Título del paso actual - Responsive */}
+          <h2 
+            className="text-center text-3xl sm:text-4xl mb-6 sm:mb-8"
+            style={{ 
+              fontFamily: 'Maitree', 
+              fontWeight: 400, 
+              color: '#244C87'
+            }}
+          >
             {paso === 1 && 'Datos Personales'}
             {paso === 2 && 'Datos Profesionales'}
             {paso === 3 && 'Documentación'}
             {paso === 4 && 'Extras'}
           </h2>
 
-          {/* Indicador de pasos */}
-          <div className="flex justify-center mb-12 gap-4">
+          {/* Indicador de pasos - Responsive */}
+          <div className="flex justify-center mb-8 sm:mb-12 gap-2 sm:gap-4">
             {[1, 2, 3, 4].map((num) => (
               <div
                 key={num}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
+                className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-colors text-base sm:text-xl ${
                   paso >= num ? 'bg-[#244C87] text-white' : 'bg-gray-300 text-gray-500'
                 }`}
-                style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600 }}
+                style={{ fontFamily: 'Maitree, serif', fontWeight: 600 }}
               >
                 {num}
               </div>
             ))}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Botón Demo (solo para desarrollo) */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="flex justify-center mb-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setNombre('Juan');
+                  setApellido('Perez');
+                  setEmail('juan.perez' + Date.now() + '@test.com'); // Email único
+                  setTelefono('+54 11 1234 5678');
+                  setPassword('Password123');
+                  setConfirmarPassword('Password123');
+                  setProfesion('Plomeros');
+                  setEspecialidades(['Instalación', 'Reparación']);
+                  setUbicacion('Buenos Aires, Buenos Aires');
+                  setAlcanceTrabajo('25');
+                  setDescripcion('Plomero profesional con 10 años de experiencia');
+                  setDni('12345678');
+                  setInstagram('@juanplomero');
+                  setFacebook('juanplomero');
+                  setLinkedin('juan-perez');
+                  alert('✅ Formulario autocompletado! Ahora puedes avanzar los pasos.');
+                }}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 text-sm"
+              >
+                🚀 Autocompletar (Demo)
+              </button>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* PASO 1: Datos Básicos */}
             {paso === 1 && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
                     Nombre *
                   </label>
                   <input
@@ -538,14 +568,14 @@ export default function ProviderSignup() {
                     value={nombre}
                     onChange={(e) => setNombre(capitalizeName(e.target.value))}
                     required
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
+                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
                     placeholder="JOSE"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
                     Apellido *
                   </label>
                   <input
@@ -553,14 +583,14 @@ export default function ProviderSignup() {
                     value={apellido}
                     onChange={(e) => setApellido(capitalizeName(e.target.value))}
                     required
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
+                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
                     placeholder="PEREZ"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
                     Email *
                   </label>
                   <input
@@ -568,8 +598,8 @@ export default function ProviderSignup() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
+                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
                     placeholder="algo@algo.com"
                   />
                   {/* TODO: Agregar botón de "Verificar Email" y campo para código de verificación */}
@@ -577,7 +607,7 @@ export default function ProviderSignup() {
                 </div>
 
                 <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
                     Telefono laboral *
                   </label>
                   <input
@@ -585,11 +615,11 @@ export default function ProviderSignup() {
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
                     required
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
+                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
                     placeholder="+54 1234 34 54"
                   />
-                  <p className="mt-2 text-xs text-gray-600 flex items-start gap-1" style={{ fontFamily: 'Maitree, serif' }}>
+                  <p className="mt-2 text-xs sm:text-sm text-gray-600 flex items-start gap-1" style={{ fontFamily: 'Maitree, serif' }}>
                     <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
@@ -1058,9 +1088,23 @@ export default function ProviderSignup() {
                           <p className="text-sm text-green-600" style={{ fontFamily: 'Maitree, serif' }}>
                             {fotosTrabajos.length} foto{fotosTrabajos.length > 1 ? 's' : ''} seleccionada{fotosTrabajos.length > 1 ? 's' : ''} (de 5)
                           </p>
-                          <div className="mt-2 text-xs text-gray-600" style={{ fontFamily: 'Maitree, serif' }}>
+                          <div className="mt-2 space-y-1">
                             {fotosTrabajos.map((foto, idx) => (
-                              <div key={idx}>• {foto.name}</div>
+                              <div key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded" style={{ fontFamily: 'Maitree, serif' }}>
+                                <span className="text-xs text-gray-600 truncate flex-1">• {foto.name}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFotosTrabajos(fotosTrabajos.filter((_, i) => i !== idx));
+                                  }}
+                                  className="ml-2 text-red-500 hover:text-red-700 flex-shrink-0"
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path d="M18 6L6 18M6 6l12 12"/>
+                                  </svg>
+                                </button>
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -1078,13 +1122,19 @@ export default function ProviderSignup() {
                     accept="image/*"
                     multiple
                     onChange={(e) => {
-                      const files = Array.from(e.target.files || []);
-                      if (files.length > 5) {
-                        alert('Solo podés subir un máximo de 5 fotos');
-                        setFotosTrabajos(files.slice(0, 5));
+                      const newFiles = Array.from(e.target.files || []);
+                      const currentTotal = fotosTrabajos.length;
+                      const availableSlots = 5 - currentTotal;
+                      
+                      if (newFiles.length > availableSlots) {
+                        alert(`Solo podés agregar ${availableSlots} foto${availableSlots !== 1 ? 's' : ''} más (máximo 5 fotos en total)`);
+                        setFotosTrabajos([...fotosTrabajos, ...newFiles.slice(0, availableSlots)]);
                       } else {
-                        setFotosTrabajos(files);
+                        setFotosTrabajos([...fotosTrabajos, ...newFiles]);
                       }
+                      
+                      // Resetear el input para permitir seleccionar el mismo archivo nuevamente
+                      e.target.value = '';
                     }}
                     className="hidden"
                   />
@@ -1137,22 +1187,22 @@ export default function ProviderSignup() {
               </div>
             )}
 
-            {/* Botones de navegación */}
-            <div className="flex justify-end pt-8">
+            {/* Botones de navegación - Responsive */}
+            <div className="flex justify-end pt-6 sm:pt-8">
               {paso < 4 ? (
                 <button
                   type="button"
                   onClick={handleSiguiente}
-                  className="px-8 py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer"
-                  style={{ fontFamily: 'Maitree, serif', fontSize: '18px' }}
+                  className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer text-base sm:text-lg"
+                  style={{ fontFamily: 'Maitree, serif' }}
                 >
                   {paso === 1 ? 'Guardar y seguir' : 'Siguiente'}
                 </button>
               ) : (
                 <button
                   type="submit"
-                  className="px-8 py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer"
-                  style={{ fontFamily: 'Maitree, serif', fontSize: '18px' }}
+                  className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer text-base sm:text-lg"
+                  style={{ fontFamily: 'Maitree, serif' }}
                 >
                   Finalizar registro
                 </button>
@@ -1162,62 +1212,61 @@ export default function ProviderSignup() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="w-full text-white" style={{ marginTop: '150px' }}>
+      {/* Footer - Responsive */}
+      <footer className="w-full text-white mt-12 sm:mt-24">
         {/* Franja azul superior */}
-        <div className="w-full bg-[#244C87]" style={{ height: '60px' }}></div>
+        <div className="w-full bg-[#244C87] h-12 sm:h-16"></div>
         
         {/* Contenedor del logo con fondo blanco */}
-        <div className="w-full bg-white py-8">
-          <div className="flex justify-center">
+        <div className="w-full bg-white py-6 sm:py-8">
+          <div className="flex justify-center px-4">
             <Image 
               src="/Logo.png" 
               alt="SaHa Logo" 
               width={484} 
               height={134}
-              className="w-auto"
-              style={{ maxWidth: '484px', height: 'auto' }}
+              className="w-full max-w-[280px] sm:max-w-[350px] md:max-w-[484px] h-auto"
             />
           </div>
         </div>
 
         {/* Resto del footer con fondo azul */}
-        <div className="w-full bg-[#244C87] py-12 px-6">
+        <div className="w-full bg-[#244C87] py-8 sm:py-12 px-4 sm:px-6">
           <div className="max-w-6xl mx-auto">
 
-          {/* Redes Sociales */}
-          <div className="flex justify-center mb-16" style={{ gap: '86px', paddingLeft: '49.5px', paddingRight: '49.5px' }}>
+          {/* Redes Sociales - Responsive */}
+          <div className="flex justify-center mb-8 sm:mb-12 md:mb-16 gap-6 sm:gap-12 md:gap-16">
             {/* LinkedIn */}
-            <a href="#" className="hover:opacity-80 transition-opacity" style={{ opacity: 1 }}>
-              <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+            <a href="#" className="hover:opacity-80 transition-opacity">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
               </svg>
             </a>
 
             {/* YouTube */}
-            <a href="#" className="hover:opacity-80 transition-opacity" style={{ opacity: 1 }}>
-              <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+            <a href="#" className="hover:opacity-80 transition-opacity">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
               </svg>
             </a>
 
             {/* Facebook */}
-            <a href="#" className="hover:opacity-80 transition-opacity" style={{ opacity: 1 }}>
-              <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+            <a href="#" className="hover:opacity-80 transition-opacity">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
               </svg>
             </a>
 
             {/* Instagram */}
-            <a href="#" className="hover:opacity-80 transition-opacity" style={{ opacity: 1 }}>
-              <svg width="32" height="32" fill="currentColor" viewBox="0 0 24 24">
+            <a href="#" className="hover:opacity-80 transition-opacity">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
             </a>
           </div>
 
-          {/* Navegación en 3 columnas */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-16 text-center">
+          {/* Navegación en 3 columnas - Ya es responsive */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 mb-8 sm:mb-12 md:mb-16 text-center">
             {/* Para Clientes */}
             <div>
               <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Para Clientes</h3>

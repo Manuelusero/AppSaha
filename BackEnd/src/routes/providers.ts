@@ -97,6 +97,23 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
       trabajos: fotosTrabajos.length
     });
 
+    // Mapear profesión a categoría válida del enum
+    const categoryMap: { [key: string]: string } = {
+      'Plomeros': 'PLOMERIA',
+      'Pintores': 'PINTURA',
+      'Herreros': 'OTRO',
+      'Modistas': 'OTRO',
+      'Jardineros': 'JARDINERIA',
+      'Limpiadores': 'LIMPIEZA',
+      'Profesores': 'OTRO',
+      'Electricistas': 'ELECTRICIDAD',
+      'Masajistas': 'OTRO',
+      'Albañiles': 'CONSTRUCCION',
+      'Carpinteros': 'CARPINTERIA'
+    };
+
+    const serviceCategory = categoryMap[profesion] || 'OTRO';
+
     // Crear usuario y perfil de proveedor en una transacción
     const newProvider = await prisma.user.create({
       data: {
@@ -107,7 +124,7 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
         role: 'PROVIDER',
         providerProfile: {
           create: {
-            serviceCategory: profesion.toUpperCase().replace(/[ÁÉ]/g, (c: string) => c === 'Á' ? 'A' : 'E'), // ELECTRICIDAD, PLOMERIA, etc
+            serviceCategory: serviceCategory as any,
             specialties: JSON.stringify(especialidadesArray),
             location: ubicacion,
             bio: descripcion || '',

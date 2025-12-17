@@ -133,7 +133,15 @@ export default function ProviderProfile() {
     if (!workPhotos) return [];
     try {
       const photos = JSON.parse(workPhotos);
-      return photos.slice(0, 10); // Máximo 10 fotos
+      // Construir URLs completas para cada foto
+      return photos.slice(0, 10).map((photo: string) => {
+        // Si ya es una URL completa, devolverla tal cual
+        if (photo.startsWith('http')) {
+          return photo;
+        }
+        // Si es un nombre de archivo, construir la URL
+        return `http://localhost:8000/uploads/portfolio/${photo}`;
+      });
     } catch {
       return [];
     }
@@ -232,7 +240,11 @@ export default function ProviderProfile() {
             {/* Imagen Principal */}
             <div className="relative overflow-hidden" style={{ width: '100%', height: '269px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', lineHeight: 0 }}>
               <Image
-                src={provider.providerProfile.profilePhoto || '/Frame16.png'}
+                src={
+                  provider.providerProfile.profilePhoto && !provider.providerProfile.profilePhoto.startsWith('http')
+                    ? `http://localhost:8000/uploads/profile/${provider.providerProfile.profilePhoto}`
+                    : provider.providerProfile.profilePhoto || '/Frame16.png'
+                }
                 alt={provider.name}
                 fill
                 className="object-cover"

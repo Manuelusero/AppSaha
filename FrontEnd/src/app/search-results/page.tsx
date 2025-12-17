@@ -49,22 +49,35 @@ export default function SearchResults() {
         
         // Transformar datos del backend al formato esperado
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const transformedData: Provider[] = data.map((provider: any) => ({
-          id: provider.id,
-          nombre: provider.name,
-          profesion: categoryToSpanish[provider.providerProfile?.serviceCategory] || provider.providerProfile?.serviceCategory || 'Profesional',
-          descripcion: provider.providerProfile?.serviceDescription || provider.providerProfile?.bio || 'Profesional de servicios',
-          categoria: provider.providerProfile?.serviceCategory || '',
-          foto: provider.providerProfile?.profilePhoto || '/Frame16.png',
-          rating: provider.providerProfile?.rating || 0,
-          ubicacion: provider.providerProfile?.location || 'Buenos Aires',
-          especialidades: provider.providerProfile?.specialties ? 
-            (typeof provider.providerProfile.specialties === 'string' ? 
-              provider.providerProfile.specialties.split(',').map((s: string) => s.trim()) : 
-              provider.providerProfile.specialties) : 
-            [],
-          reviews: []
-        }));
+        const transformedData: Provider[] = data.map((provider: any) => {
+          // Construir URL de la foto de perfil
+          let profileImageUrl = '/Frame16.png'; // Imagen por defecto
+          if (provider.providerProfile?.profilePhoto) {
+            // Si es un nombre de archivo, construir la URL completa
+            if (!provider.providerProfile.profilePhoto.startsWith('http')) {
+              profileImageUrl = `http://localhost:8000/uploads/profile/${provider.providerProfile.profilePhoto}`;
+            } else {
+              profileImageUrl = provider.providerProfile.profilePhoto;
+            }
+          }
+
+          return {
+            id: provider.id,
+            nombre: provider.name,
+            profesion: categoryToSpanish[provider.providerProfile?.serviceCategory] || provider.providerProfile?.serviceCategory || 'Profesional',
+            descripcion: provider.providerProfile?.serviceDescription || provider.providerProfile?.bio || 'Profesional de servicios',
+            categoria: provider.providerProfile?.serviceCategory || '',
+            foto: profileImageUrl,
+            rating: provider.providerProfile?.rating || 0,
+            ubicacion: provider.providerProfile?.location || 'Buenos Aires',
+            especialidades: provider.providerProfile?.specialties ? 
+              (typeof provider.providerProfile.specialties === 'string' ? 
+                JSON.parse(provider.providerProfile.specialties) : 
+                provider.providerProfile.specialties) : 
+              [],
+            reviews: []
+          };
+        });
         
         // Aplicar filtros
         const servicio = searchParams.get('servicio');
@@ -121,9 +134,15 @@ export default function SearchResults() {
       return;
     }
     
-    // Navegar a job-request con los IDs de los profesionales seleccionados
+    // Navegar a job-request con los IDs de los profesionales seleccionados y la ubicación
     const params = new URLSearchParams();
     params.append('professionals', selectedProviders.join(','));
+    
+    // Pasar la ubicación del searchParams
+    const ubicacion = searchParams.get('ubicacion');
+    if (ubicacion) {
+      params.append('ubicacion', ubicacion);
+    }
     
     router.push(`/job-request?${params.toString()}`);
   };

@@ -16,10 +16,12 @@ export default function Login() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('🔐 Intentando login con:', formData.email);
     setError('');
     setLoading(true);
 
     try {
+      console.log('📤 Enviando solicitud de login...');
       const response = await fetch('http://localhost:8000/api/auth/login', {
         method: 'POST',
         headers: {
@@ -28,7 +30,9 @@ export default function Login() {
         body: JSON.stringify(formData),
       });
 
+      console.log('📥 Respuesta recibida:', response.status);
       const data = await response.json();
+      console.log('📦 Datos:', data);
 
       if (!response.ok) {
         throw new Error(data.error || 'Error al iniciar sesión');
@@ -39,9 +43,13 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(data.user));
       
       // Si es proveedor, guardar también el providerId
-      if (data.user.role === 'PROVIDER' && data.user.providerProfileId) {
-        localStorage.setItem('providerId', data.user.providerProfileId.toString());
+      if (data.user.role === 'PROVIDER' && data.user.providerProfile) {
+        // El ID del providerProfile es lo que necesitamos
+        localStorage.setItem('providerId', data.user.providerProfile.id);
+        console.log('📝 ProviderId guardado:', data.user.providerProfile.id);
       }
+
+      console.log('✅ Login exitoso, redirigiendo...');
 
       // Redirigir al dashboard según el rol
       // Por ahora solo tenemos dashboard de proveedores
@@ -54,6 +62,7 @@ export default function Login() {
         alert('Bienvenido! Por ahora la plataforma está enfocada en proveedores. Pronto tendrás tu dashboard.');
       }
     } catch (err) {
+      console.error('❌ Error en login:', err);
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
       setLoading(false);
@@ -158,7 +167,7 @@ export default function Login() {
                 Regístrate como Cliente
               </Link>
               <Link 
-                href="/signup" 
+                href="/provider-signup" 
                 className="text-green-600 hover:text-green-700 font-medium text-sm"
               >
                 Regístrate como Proveedor

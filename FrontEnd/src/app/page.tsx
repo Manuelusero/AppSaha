@@ -749,13 +749,13 @@ export default function Home() {
               </h2>
               
               {/* Botones */}
-              <div className="flex flex-row gap-4 justify-center items-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center w-full px-2">
                 <button
                   onClick={() => router.push('/login')}
-                  className="px-6 py-3 rounded-full transition-colors"
+                  className="px-4 sm:px-6 py-3 rounded-full transition-colors flex-1 sm:flex-initial"
                   style={{ 
                     fontFamily: 'Maitree, serif', 
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontWeight: 400,
                     fontStyle: 'normal',
                     lineHeight: '100%',
@@ -766,8 +766,8 @@ export default function Home() {
                     WebkitBackdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
                     cursor: 'pointer',
-                    minWidth: '180px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    minWidth: 'auto'
                   }}
                 >
                   Si, Iniciar sesión
@@ -775,10 +775,10 @@ export default function Home() {
                 
                 <button
                   onClick={() => router.push('/provider-signup')}
-                  className="px-6 py-3 rounded-full transition-colors"
+                  className="px-4 sm:px-6 py-3 rounded-full transition-colors flex-1 sm:flex-initial"
                   style={{ 
                     fontFamily: 'Maitree, serif', 
-                    fontSize: '16px',
+                    fontSize: '14px',
                     fontWeight: 400,
                     fontStyle: 'normal',
                     lineHeight: '100%',
@@ -789,8 +789,8 @@ export default function Home() {
                     WebkitBackdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
                     cursor: 'pointer',
-                    minWidth: '180px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    minWidth: 'auto'
                   }}
                 >
                   No, registrarme

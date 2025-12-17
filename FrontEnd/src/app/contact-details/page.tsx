@@ -9,9 +9,7 @@ export default function ContactDetails() {
   const router = useRouter();
   
   const [nombre, setNombre] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [email, setEmail] = useState('');
-  const [metodoContacto, setMetodoContacto] = useState('');
+  const [apellido, setApellido] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [providerName, setProviderName] = useState('');
@@ -41,35 +39,78 @@ export default function ContactDetails() {
     fetchProviderName();
   }, [searchParams]);
 
-  const handleSubmit = () => {
-    // Validaciones básicas
-    if (!nombre || !telefono || !email || !metodoContacto) {
-      alert('Por favor completá todos los campos');
+  const handleSubmit = async () => {
+    // Validaciones básicas - Solo nombre y apellido
+    if (!nombre || !apellido) {
+      alert('Por favor completá tu nombre y apellido');
       return;
     }
 
     const professionalsParam = searchParams.get('professionals') || '';
     const professionalIds = professionalsParam.split(',').filter(id => id.trim());
+    const descripcion = searchParams.get('descripcion') || '';
+    const urgencia = searchParams.get('urgencia') || 'Medio';
+    const ubicacion = searchParams.get('ubicacion') || '';
 
-    // TODO: Enviar los datos al backend
-    console.log({
-      nombre,
-      telefono,
-      email,
-      metodoContacto,
-      professionals: professionalsParam,
-      descripcion: searchParams.get('descripcion'),
-      urgencia: searchParams.get('urgencia')
-    });
+    // Obtener la foto del localStorage si existe
+    const photoBase64 = localStorage.getItem('jobRequestPhoto');
 
-    // Determinar el mensaje según la cantidad de profesionales
-    if (professionalIds.length === 1 && providerName) {
-      setModalMessage(`Listo! ${providerName} recibió tu mensaje`);
-    } else {
-      setModalMessage('Listo! Tus mensajes fueron enviados');
+    try {
+      const bookingPromises = professionalIds.map(async (providerId) => {
+        // Crear FormData para enviar la foto como archivo
+        const formData = new FormData();
+        formData.append('providerId', providerId.trim());
+        formData.append('clientName', `${nombre} ${apellido}`);
+        formData.append('serviceDate', new Date().toISOString());
+        formData.append('description', descripcion);
+        formData.append('urgency', urgencia);
+        formData.append('location', ubicacion);
+
+        // Convertir base64 a archivo si existe
+        if (photoBase64) {
+          try {
+            // Convertir base64 a Blob
+            const base64Response = await fetch(photoBase64);
+            const blob = await base64Response.blob();
+            const file = new File([blob], 'problem-photo.jpg', { type: 'image/jpeg' });
+            formData.append('problemPhoto', file);
+          } catch (error) {
+            console.error('Error al convertir imagen:', error);
+          }
+        }
+
+        const response = await fetch('http://localhost:8000/api/bookings/guest', {
+          method: 'POST',
+          body: formData // Enviar FormData en lugar de JSON
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Error al enviar solicitud');
+        }
+
+        return response.json();
+      });
+
+      await Promise.all(bookingPromises);
+
+      // Limpiar localStorage después de enviar
+      localStorage.removeItem('jobRequestPhoto');
+      localStorage.removeItem('jobRequestPhotoName');
+
+      // Determinar el mensaje según la cantidad de profesionales
+      if (professionalIds.length === 1 && providerName) {
+        setModalMessage(`Listo! ${providerName} recibió tu mensaje`);
+      } else {
+        setModalMessage('Listo! Tus mensajes fueron enviados');
+      }
+
+      setShowModal(true);
+    } catch (error) {
+      console.error('Error al enviar solicitud:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error al enviar la solicitud: ${errorMessage}`);
     }
-
-    setShowModal(true);
   };
 
   const handleCloseModal = () => {
@@ -97,7 +138,7 @@ export default function ContactDetails() {
         <div className="w-full max-w-md">
           {/* Título */}
           <h1 className="text-center mb-12" style={{ fontFamily: 'Maitree, serif', fontSize: '40px', lineHeight: '100%', color: '#244C87', fontWeight: 400 }}>
-            Datos de contacto
+            ¿Quién solicita el servicio?
           </h1>
 
           {/* Formulario */}
@@ -117,90 +158,19 @@ export default function ContactDetails() {
               />
             </div>
 
-            {/* Teléfono */}
+            {/* Apellido */}
             <div>
               <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000', fontWeight: 400 }}>
-                Teléfono
+                Apellido
               </label>
               <input
-                type="tel"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="+54 1234558690"
+                type="text"
+                value={apellido}
+                onChange={(e) => setApellido(e.target.value)}
+                placeholder="González"
                 className="w-full px-5 py-4 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none bg-white"
                 style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
               />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000', fontWeight: 400 }}>
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="alguien@algo.com"
-                className="w-full px-5 py-4 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none bg-white"
-                style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
-              />
-            </div>
-
-            {/* Método preferido de contacto */}
-            <div>
-              <label className="block mb-3" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000', fontWeight: 400 }}>
-                Método preferido de contacto:
-              </label>
-              <div className="space-y-3">
-                {/* Mail */}
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="metodoContacto"
-                    value="Mail"
-                    checked={metodoContacto === 'Mail'}
-                    onChange={(e) => setMetodoContacto(e.target.value)}
-                    className="w-5 h-5 mr-3"
-                    style={{ accentColor: '#244C87' }}
-                  />
-                  <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#6B7280' }}>
-                    Mail
-                  </span>
-                </label>
-
-                {/* Llamada */}
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="metodoContacto"
-                    value="Llamada"
-                    checked={metodoContacto === 'Llamada'}
-                    onChange={(e) => setMetodoContacto(e.target.value)}
-                    className="w-5 h-5 mr-3"
-                    style={{ accentColor: '#244C87' }}
-                  />
-                  <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#6B7280' }}>
-                    Llamada
-                  </span>
-                </label>
-
-                {/* Mensaje */}
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="radio"
-                    name="metodoContacto"
-                    value="Mensaje"
-                    checked={metodoContacto === 'Mensaje'}
-                    onChange={(e) => setMetodoContacto(e.target.value)}
-                    className="w-5 h-5 mr-3"
-                    style={{ accentColor: '#244C87' }}
-                  />
-                  <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#6B7280' }}>
-                    Mensaje
-                  </span>
-                </label>
-              </div>
             </div>
 
             {/* Botón Enviar */}

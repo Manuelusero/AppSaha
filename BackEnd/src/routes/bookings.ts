@@ -1,6 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '../generated/prisma/index.js';
+import { uploadProblemPhoto } from '../middleware/upload.js';
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -23,6 +24,135 @@ const authenticateToken = (req: any, res: any, next: any) => {
     return res.status(401).json({ error: 'Token inválido' });
   }
 };
+
+// POST /api/bookings/guest - Crear solicitud sin autenticación (clientes invitados)
+router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
+  try {
+    const {
+      providerId,
+      clientName,
+      serviceDate,
+      description,
+      urgency,
+      location
+    } = req.body;
+
+    // Obtener el nombre del archivo subido (si existe)
+    const problemPhotoFilename = req.file ? req.file.filename : null;
+
+    console.log('📥 Solicitud de cliente invitado recibida:', {
+      providerId,
+      clientName,
+      urgency,
+      location,
+      problemPhoto: problemPhotoFilename
+    });
+
+    // Validaciones - Solo nombre y descripción requeridos
+    if (!providerId || !clientName || !description) {
+      return res.status(400).json({
+        error: 'Proveedor, nombre y descripción son requeridos'
+      });
+    }
+
+    // Verificar que el proveedor existe
+    // El providerId puede ser el User ID o el ProviderProfile ID
+    let provider = await prisma.providerProfile.findUnique({
+      where: { id: providerId },
+      include: {
+        user: true
+      }
+    });
+
+    // Si no se encuentra, intentar buscar por userId
+    if (!provider) {
+      provider = await prisma.providerProfile.findUnique({
+        where: { userId: providerId },
+        include: {
+          user: true
+        }
+      });
+    }
+
+    if (!provider) {
+      return res.status(404).json({ error: 'Proveedor no encontrado' });
+    }
+
+    // Crear un email temporal único para este cliente
+    const tempEmail = `client_${Date.now()}@temp.saha.com`;
+
+    // Crear usuario cliente temporal
+    const client = await prisma.user.create({
+      data: {
+        email: tempEmail,
+        name: clientName,
+        phone: '', // Vacío por ahora
+        password: '', // Sin password
+        role: 'CLIENT',
+        isActive: true
+      }
+    });
+    
+    console.log('✅ Cliente temporal creado:', client.id);
+
+    // Crear la solicitud usando el ID del ProviderProfile (no el User ID)
+    const booking = await prisma.booking.create({
+      data: {
+        clientId: client.id,
+        providerId: provider.id, // Usar el ID del ProviderProfile, no el User ID
+        serviceDate: new Date(serviceDate || new Date()),
+        serviceTime: '',
+        description,
+        address: '',
+        location: location || 'No especificada', // Guardar ubicación
+        problemPhoto: problemPhotoFilename, // Guardar nombre del archivo
+        clientNotes: `Urgencia: ${urgency || 'Media'}`,
+        status: 'PENDING'
+      },
+      include: {
+        client: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true
+          }
+        },
+        provider: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    console.log('✅ Solicitud creada exitosamente:', booking.id);
+
+    // TODO: Enviar email al proveedor notificando la nueva solicitud
+    console.log(`📧 TODO: Enviar email a ${provider.user.email} notificando nueva solicitud`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Solicitud enviada exitosamente',
+      booking: {
+        id: booking.id,
+        providerName: provider.user.name,
+        status: booking.status
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al crear solicitud de invitado:', error);
+    res.status(500).json({ error: 'Error al crear solicitud' });
+  }
+});
 
 // POST /api/bookings - Crear una nueva solicitud (requiere autenticación)
 router.post('/', authenticateToken, async (req: any, res) => {
@@ -296,6 +426,222 @@ router.patch('/:id/status', authenticateToken, async (req: any, res) => {
   } catch (error) {
     console.error('Error al actualizar solicitud:', error);
     res.status(500).json({ error: 'Error al actualizar solicitud' });
+  }
+});
+
+// POST /api/bookings/:id/send-budget - Proveedor envía presupuesto
+router.post('/:id/send-budget', authenticateToken, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      budgetPrice,
+      budgetDetails,
+      budgetMaterials,
+      budgetTime
+    } = req.body;
+
+    console.log('💰 Proveedor enviando presupuesto para booking:', id);
+    console.log('📦 Datos recibidos:', { budgetPrice, budgetDetails, budgetMaterials, budgetTime });
+
+    // Validaciones
+    if (!budgetPrice || !budgetDetails) {
+      return res.status(400).json({
+        error: 'Precio y detalles del presupuesto son requeridos'
+      });
+    }
+
+    // Validar que budgetPrice sea un número válido
+    const priceValue = parseFloat(budgetPrice);
+    if (isNaN(priceValue) || priceValue <= 0) {
+      return res.status(400).json({
+        error: 'El precio debe ser un número válido mayor a 0'
+      });
+    }
+
+    // Buscar la booking
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        provider: {
+          include: {
+            user: true
+          }
+        },
+        client: true
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+
+    // Verificar que el proveedor autenticado es el dueño de la booking
+    const providerProfile = await prisma.providerProfile.findUnique({
+      where: { userId: req.user.userId }
+    });
+
+    if (!providerProfile || providerProfile.id !== booking.providerId) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    // Generar token único para que el cliente ingrese sus datos
+    const clientDataToken = `token_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const tokenExpiry = new Date();
+    tokenExpiry.setDate(tokenExpiry.getDate() + 7); // Expira en 7 días
+
+    // Actualizar la booking con el presupuesto y el token
+    const updatedBooking = await prisma.booking.update({
+      where: { id },
+      data: {
+        budgetPrice: priceValue,
+        budgetDetails,
+        budgetMaterials: budgetMaterials || null,
+        budgetTime: budgetTime || null,
+        budgetSentAt: new Date(),
+        clientDataToken,
+        clientDataTokenExpiry: tokenExpiry,
+        status: 'ACCEPTED' // Cambiamos el estado cuando envía presupuesto
+      }
+    });
+
+    console.log('✅ Presupuesto guardado. Token generado:', clientDataToken);
+
+    // TODO: Enviar email al cliente con el link para ingresar sus datos
+    const clientDataUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/client-contact?token=${clientDataToken}`;
+    console.log(`📧 TODO: Enviar email al cliente ${booking.client.name} con el link: ${clientDataUrl}`);
+
+    res.json({
+      success: true,
+      message: 'Presupuesto enviado exitosamente',
+      booking: updatedBooking,
+      clientDataUrl // Enviamos el URL para que el proveedor pueda compartirlo manualmente por ahora
+    });
+
+  } catch (error) {
+    console.error('❌ Error al enviar presupuesto:', error);
+    res.status(500).json({ error: 'Error al enviar presupuesto' });
+  }
+});
+
+// GET /api/bookings/client-data/:token - Obtener datos de la solicitud por token
+router.get('/client-data/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const booking = await prisma.booking.findFirst({
+      where: {
+        clientDataToken: token,
+        clientDataTokenExpiry: {
+          gte: new Date() // Token no expirado
+        }
+      },
+      include: {
+        provider: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Link inválido o expirado' });
+    }
+
+    // Retornar info necesaria para mostrar el presupuesto
+    res.json({
+      booking: {
+        id: booking.id,
+        providerName: booking.provider.user.name,
+        description: booking.description,
+        budgetPrice: booking.budgetPrice,
+        budgetDetails: booking.budgetDetails,
+        budgetMaterials: booking.budgetMaterials,
+        budgetTime: booking.budgetTime
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener datos de booking:', error);
+    res.status(500).json({ error: 'Error al obtener información' });
+  }
+});
+
+// POST /api/bookings/client-data/:token - Cliente ingresa sus datos de contacto
+router.post('/client-data/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { clientEmail, clientPhone, clientContactMethod } = req.body;
+
+    console.log('📧 Cliente ingresando datos para token:', token);
+
+    // Validaciones
+    if (!clientEmail || !clientPhone || !clientContactMethod) {
+      return res.status(400).json({
+        error: 'Email, teléfono y método de contacto son requeridos'
+      });
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientEmail)) {
+      return res.status(400).json({ error: 'Email inválido' });
+    }
+
+    // Buscar booking
+    const booking = await prisma.booking.findFirst({
+      where: {
+        clientDataToken: token,
+        clientDataTokenExpiry: {
+          gte: new Date()
+        }
+      },
+      include: {
+        client: true,
+        provider: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Link inválido o expirado' });
+    }
+
+    // Actualizar el cliente con los datos reales
+    await prisma.user.update({
+      where: { id: booking.clientId },
+      data: {
+        email: clientEmail,
+        phone: clientPhone
+      }
+    });
+
+    // Actualizar la booking con los datos de contacto
+    const updatedBooking = await prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        clientEmail,
+        clientPhone,
+        clientContactMethod
+      }
+    });
+
+    console.log('✅ Datos del cliente guardados');
+
+    // TODO: Enviar presupuesto por email/WhatsApp al cliente
+    console.log(`📧 TODO: Enviar presupuesto a ${clientEmail} via ${clientContactMethod}`);
+
+    res.json({
+      success: true,
+      message: 'Datos guardados. Recibirás el presupuesto en breve.'
+    });
+
+  } catch (error) {
+    console.error('❌ Error al guardar datos del cliente:', error);
+    res.status(500).json({ error: 'Error al guardar datos' });
   }
 });
 

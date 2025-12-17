@@ -22,7 +22,43 @@ export default function JobRequest() {
     }
   };
 
-  const handleSubmit = () => {
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.createElement('img');
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Redimensionar imagen (máximo 800px de ancho)
+          let width = img.width;
+          let height = img.height;
+          const maxWidth = 800;
+          
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          // Comprimir a JPEG con calidad 0.7
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(compressedBase64);
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleSubmit = async () => {
     // Validaciones
     if (!descripcion) {
       alert('Por favor describí el problema');
@@ -34,12 +70,37 @@ export default function JobRequest() {
       return;
     }
 
+    // Convertir y comprimir la foto si existe
+    if (foto) {
+      try {
+        const compressedImage = await compressImage(foto);
+        localStorage.setItem('jobRequestPhoto', compressedImage);
+        localStorage.setItem('jobRequestPhotoName', foto.name);
+        navigateToNextPage();
+      } catch (error) {
+        console.error('Error al procesar imagen:', error);
+        alert('Error al procesar la imagen. Por favor, intentá con otra foto.');
+      }
+    } else {
+      // Si no hay foto, limpiar localStorage y continuar
+      localStorage.removeItem('jobRequestPhoto');
+      localStorage.removeItem('jobRequestPhotoName');
+      navigateToNextPage();
+    }
+  };
+
+  const navigateToNextPage = () => {
     // Navegar a contact-details con todos los parámetros
     const params = new URLSearchParams();
     params.append('professionals', professionals);
     params.append('descripcion', descripcion);
     params.append('urgencia', urgencia);
-    if (foto) params.append('foto', foto.name);
+    
+    // Pasar la ubicación si existe
+    const ubicacion = searchParams.get('ubicacion');
+    if (ubicacion) {
+      params.append('ubicacion', ubicacion);
+    }
     
     router.push(`/contact-details?${params.toString()}`);
   };

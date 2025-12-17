@@ -21,7 +21,7 @@ interface ProviderData {
 }
 
 interface JobRequest {
-  id: number;
+  id: string; // Cambiar de number a string para que coincida con los IDs de Prisma
   clientName: string;
   service: string;
   location: string;
@@ -29,6 +29,7 @@ interface JobRequest {
   urgency: string;
   contactEmail: string;
   contactPhone: string;
+  problemPhoto?: string; // Foto del problema cargada por el cliente
   createdAt: string;
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -41,6 +42,7 @@ export default function DashboardProvider() {
   const [selectedRequest, setSelectedRequest] = useState<JobRequest | null>(null);
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'perfil' | 'solicitudes'>('perfil');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Datos adicionales del registro
   const [datosAdicionales, setDatosAdicionales] = useState({
@@ -189,34 +191,65 @@ export default function DashboardProvider() {
         }
       });
 
-    // TODO: Cargar solicitudes de trabajo para este proveedor
-    // Por ahora simulamos con datos de ejemplo
-    setJobRequests([
-      {
-        id: 1,
-        clientName: 'María González',
-        service: 'Pintura',
-        location: 'Buenos Aires',
-        description: 'Necesito pintar 3 habitaciones de mi casa',
-        urgency: 'Esta semana',
-        contactEmail: 'maria@email.com',
-        contactPhone: '+54 11 1234-5678',
-        createdAt: '2024-12-03',
-        status: 'pending'
-      },
-      {
-        id: 2,
-        clientName: 'Juan Pérez',
-        service: 'Pintura',
-        location: 'Buenos Aires',
-        description: 'Pintar fachada exterior',
-        urgency: 'No es urgente',
-        contactEmail: 'juan@email.com',
-        contactPhone: '+54 11 8765-4321',
-        createdAt: '2024-12-02',
-        status: 'pending'
+    // Cargar solicitudes de trabajo reales desde el backend
+    const loadBookings = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch('http://localhost:8000/api/bookings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const bookings = await response.json();
+          
+          console.log('📦 Bookings recibidos del backend:', bookings);
+          
+          // Transformar los datos del backend al formato del frontend
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const transformedBookings = bookings.map((booking: any) => {
+            console.log('🔍 Procesando booking:', booking.id, 'problemPhoto:', booking.problemPhoto);
+            
+            // Construir URL de la foto del problema si existe
+            let problemPhotoUrl = null;
+            if (booking.problemPhoto) {
+              // Si es un nombre de archivo, construir la URL completa
+              if (!booking.problemPhoto.startsWith('http') && !booking.problemPhoto.startsWith('data:')) {
+                problemPhotoUrl = `http://localhost:8000/uploads/problems/${booking.problemPhoto}`;
+              } else {
+                problemPhotoUrl = booking.problemPhoto; // Ya es una URL completa o base64
+              }
+            }
+            
+            return {
+              id: booking.id, // Usar el ID real de la booking
+              clientName: booking.client.name,
+              service: 'Servicio solicitado', // Puedes agregar esto al schema si es necesario
+              location: booking.location || booking.address || 'Ubicación no especificada',
+              description: booking.description,
+              urgency: booking.clientNotes?.includes('Urgencia:') 
+                ? booking.clientNotes.split('Urgencia:')[1].split('.')[0].trim() 
+                : 'No especificada',
+              contactEmail: booking.client.email,
+              contactPhone: booking.client.phone || 'No especificado',
+              problemPhoto: problemPhotoUrl, // URL construida de la foto
+              createdAt: new Date(booking.createdAt).toLocaleDateString('es-AR'),
+              status: booking.status.toLowerCase() as 'pending' | 'accepted' | 'rejected'
+            };
+          });
+
+          console.log('✅ Bookings transformados:', transformedBookings);
+          setJobRequests(transformedBookings);
+        }
+      } catch (error) {
+        console.error('Error al cargar solicitudes:', error);
       }
-    ]);
+    };
+
+    loadBookings();
   }, [router]);
 
   const handleAcceptRequest = (request: JobRequest) => {
@@ -224,27 +257,67 @@ export default function DashboardProvider() {
     setShowBudgetModal(true);
   };
 
-  const handleSubmitBudget = () => {
-    // TODO: Enviar presupuesto al backend
-    console.log('Presupuesto enviado:', {
-      requestId: selectedRequest?.id,
-      ...budgetForm
-    });
-    
-    setShowBudgetModal(false);
-    setBudgetForm({ price: '', workDetails: '', materials: '', estimatedTime: '' });
-    
-    // Actualizar estado de la solicitud
-    setJobRequests(prev => 
-      prev.map(req => 
-        req.id === selectedRequest?.id 
-          ? { ...req, status: 'accepted' as const }
-          : req
-      )
-    );
+  const handleSubmitBudget = async () => {
+    if (!selectedRequest) return;
+
+    // Validaciones
+    if (!budgetForm.price || !budgetForm.workDetails) {
+      alert('El precio y los detalles del trabajo son requeridos');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Necesitás iniciar sesión');
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/bookings/${selectedRequest.id}/send-budget`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          budgetPrice: budgetForm.price,
+          budgetDetails: budgetForm.workDetails,
+          budgetMaterials: budgetForm.materials,
+          budgetTime: budgetForm.estimatedTime
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al enviar presupuesto');
+      }
+
+      const data = await response.json();
+      
+      console.log('✅ Presupuesto enviado. Link para cliente:', data.clientDataUrl);
+      
+      alert(`Presupuesto enviado exitosamente!\n\nPor ahora, compartí este link con el cliente:\n${data.clientDataUrl}`);
+      
+      setShowBudgetModal(false);
+      setBudgetForm({ price: '', workDetails: '', materials: '', estimatedTime: '' });
+      
+      // Actualizar estado de la solicitud
+      setJobRequests(prev => 
+        prev.map(req => 
+          req.id === selectedRequest?.id 
+            ? { ...req, status: 'accepted' as const }
+            : req
+        )
+      );
+    } catch (error) {
+      console.error('Error al enviar presupuesto:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      alert(`Error al enviar presupuesto: ${errorMessage}`);
+    }
   };
 
-  const handleRejectRequest = (requestId: number) => {
+  const handleRejectRequest = (requestId: string) => {
     setJobRequests(prev => 
       prev.map(req => 
         req.id === requestId 
@@ -929,21 +1002,46 @@ export default function DashboardProvider() {
                           {request.description}
                         </p>
                       </div>
-                      <div>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
-                          Email
+                      
+                      {/* Foto del problema */}
+                      <div className="md:col-span-2">
+                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87', marginBottom: '8px' }}>
+                          Foto del Problema
                         </p>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#333' }}>
-                          {request.contactEmail}
-                        </p>
-                      </div>
-                      <div>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
-                          Teléfono
-                        </p>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#333' }}>
-                          {request.contactPhone}
-                        </p>
+                        {request.problemPhoto ? (
+                          <div 
+                            onClick={() => setSelectedImage(request.problemPhoto!)}
+                            style={{
+                              width: '100%',
+                              maxWidth: '400px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              border: '1px solid #ccc',
+                              cursor: 'pointer',
+                              transition: 'transform 0.2s, box-shadow 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.02)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                          >
+                            {/* Usar img normal para base64 en lugar de Next Image */}
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={request.problemPhoto}
+                              alt="Foto del problema"
+                              style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
+                            />
+                          </div>
+                        ) : (
+                          <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999', fontStyle: 'italic' }}>
+                            El cliente no subió una foto del problema
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -1038,6 +1136,7 @@ export default function DashboardProvider() {
                   style={{
                     fontFamily: 'Maitree, serif',
                     fontSize: '16px',
+                    color: '#000000',
                     width: '100%',
                     padding: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -1059,6 +1158,7 @@ export default function DashboardProvider() {
                   style={{
                     fontFamily: 'Maitree, serif',
                     fontSize: '16px',
+                    color: '#000000',
                     width: '100%',
                     padding: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -1081,6 +1181,7 @@ export default function DashboardProvider() {
                   style={{
                     fontFamily: 'Maitree, serif',
                     fontSize: '16px',
+                    color: '#000000',
                     width: '100%',
                     padding: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -1103,6 +1204,7 @@ export default function DashboardProvider() {
                   style={{
                     fontFamily: 'Maitree, serif',
                     fontSize: '16px',
+                    color: '#000000',
                     width: '100%',
                     padding: '12px',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -1148,6 +1250,78 @@ export default function DashboardProvider() {
                 Enviar Presupuesto
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de imagen ampliada */}
+      {selectedImage && (
+        <div
+          onClick={() => setSelectedImage(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+            cursor: 'pointer'
+          }}
+        >
+          {/* Botón de cerrar */}
+          <button
+            onClick={() => setSelectedImage(null)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              border: 'none',
+              borderRadius: '50%',
+              width: '40px',
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#000',
+              zIndex: 10000,
+              boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+            }}
+          >
+            ×
+          </button>
+
+          {/* Imagen ampliada */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              position: 'relative'
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={selectedImage}
+              alt="Foto del problema ampliada"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '90vh',
+                width: 'auto',
+                height: 'auto',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 4px 30px rgba(0,0,0,0.5)'
+              }}
+            />
           </div>
         </div>
       )}

@@ -164,6 +164,8 @@ model Booking {
   serviceTime String?         // Hora preferida (ej: "10:00 AM")
   description String
   address     String?         // Dirección donde se realizará el servicio
+  location    String?         // Ubicación general (ciudad/pueblo)
+  problemPhoto String?        // URL de la foto del problema cargada por el cliente
   
   // Estado y precio
   status      BookingStatus   @default(PENDING)
@@ -173,6 +175,20 @@ model Booking {
   // Notas adicionales
   providerNotes String?       // Notas del proveedor
   clientNotes   String?       // Notas del cliente
+  
+  // Presupuesto del proveedor
+  budgetPrice     Float?      // Precio del presupuesto
+  budgetDetails   String?     // Detalles del trabajo
+  budgetMaterials String?     // Materiales necesarios
+  budgetTime      String?     // Tiempo estimado
+  budgetSentAt    DateTime?   // Fecha de envío del presupuesto
+  
+  // Link único para que el cliente ingrese sus datos
+  clientDataToken String?     @unique // Token único para el formulario del cliente
+  clientDataTokenExpiry DateTime?     // Fecha de expiración del token
+  clientEmail     String?     // Email del cliente (se completa después)
+  clientPhone     String?     // Teléfono del cliente (se completa después)
+  clientContactMethod String? // Método preferido: EMAIL o WHATSAPP
   
   // Fechas de cambio de estado
   acceptedAt    DateTime?

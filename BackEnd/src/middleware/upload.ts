@@ -12,8 +12,9 @@ const profileDir = path.join(uploadsDir, 'profile');
 const dniDir = path.join(uploadsDir, 'dni');
 const certificatesDir = path.join(uploadsDir, 'certificates');
 const portfolioDir = path.join(uploadsDir, 'portfolio');
+const problemsDir = path.join(uploadsDir, 'problems'); // Nueva carpeta para fotos de problemas
 
-[uploadsDir, profileDir, dniDir, certificatesDir, portfolioDir].forEach(dir => {
+[uploadsDir, profileDir, dniDir, certificatesDir, portfolioDir, problemsDir].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -38,6 +39,9 @@ const storage = multer.diskStorage({
         break;
       case 'fotosTrabajos':
         uploadPath = portfolioDir;
+        break;
+      case 'problemPhoto':
+        uploadPath = problemsDir;
         break;
       default:
         uploadPath = uploadsDir;
@@ -84,3 +88,6 @@ export const uploadProviderFiles = upload.fields([
   { name: 'certificados', maxCount: 5 },
   { name: 'fotosTrabajos', maxCount: 5 }
 ]);
+
+// Middleware para foto de problema del cliente
+export const uploadProblemPhoto = upload.single('problemPhoto');
