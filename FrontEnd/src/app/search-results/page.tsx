@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -28,7 +28,7 @@ interface Provider {
   reviews: unknown[];
 }
 
-export default function SearchResults() {
+function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [profesionales, setProfesionales] = useState<Provider[]>([]);
@@ -177,7 +177,7 @@ export default function SearchResults() {
         <div className="flex items-center gap-2">
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -359,7 +359,7 @@ export default function SearchResults() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"
@@ -434,5 +434,22 @@ export default function SearchResults() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function SearchResults() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#244C87] mx-auto mb-4"></div>
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#244C87' }}>
+            Cargando resultados...
+          </p>
+        </div>
+      </div>
+    }>
+      <SearchResultsContent />
+    </Suspense>
   );
 }

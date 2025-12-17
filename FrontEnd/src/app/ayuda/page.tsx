@@ -49,7 +49,7 @@ export default function Ayuda() {
       }, 5000);
     } catch (err) {
       console.error('Error:', err);
-      setError('Hubo un problema al enviar tu mensaje. Por favor, intentá nuevamente o escribinos directamente a support@saha.com');
+      setError('Hubo un problema al enviar tu mensaje. Por favor, intentá nuevamente o escribinos directamente a support@serco.com');
     } finally {
       setEnviando(false);
     }
@@ -68,7 +68,7 @@ export default function Ayuda() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -367,7 +367,7 @@ export default function Ayuda() {
               Email directo
             </h3>
             <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#666' }}>
-              support@saha.com
+              support@serco.com
             </p>
           </div>
 
@@ -528,7 +528,7 @@ export default function Ayuda() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"
@@ -591,10 +591,10 @@ export default function Ayuda() {
               <div>
                 <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Empresa</h3>
                 <ul className="space-y-3">
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Sobre nosotros</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Trabaja con nosotros</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Contacto</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Prensa</a></li>
+                  <li><button onClick={() => router.push('/sobre-nosotros')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Sobre nosotros</button></li>
+                  <li><button onClick={() => router.push('/trabaja-con-nosotros')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Trabaja con nosotros</button></li>
+                  <li><button onClick={() => router.push('/contacto')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Contacto</button></li>
+                  <li><button onClick={() => router.push('/prensa')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Prensa</button></li>
                 </ul>
               </div>
             </div>

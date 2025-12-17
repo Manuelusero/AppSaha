@@ -22,7 +22,7 @@ export default function Prensa() {
   const articles: Article[] = [
     {
       id: '1',
-      title: 'SAHA: La Plataforma que Revoluciona el Mercado de Servicios en Argentina',
+      title: 'SERCO: La Plataforma que Revoluciona el Mercado de Servicios en Argentina',
       excerpt: 'Una nueva startup argentina conecta a profesionales con clientes de manera segura y transparente, transformando la forma en que contratamos servicios en el país.',
       source: 'La Nación',
       date: '15 de diciembre, 2025',
@@ -32,7 +32,7 @@ export default function Prensa() {
     {
       id: '2',
       title: 'Emprendedores Argentinos Crean Solución Innovadora para Trabajadores Independientes',
-      excerpt: 'SAHA democratiza el acceso a oportunidades laborales para profesionales de servicios, permitiéndoles hacer crecer sus negocios sin depender del boca a boca.',
+      excerpt: 'SERCO democratiza el acceso a oportunidades laborales para profesionales de servicios, permitiéndoles hacer crecer sus negocios sin depender del boca a boca.',
       source: 'Clarín Pyme',
       date: '10 de diciembre, 2025',
       category: 'Emprendimientos',
@@ -40,7 +40,7 @@ export default function Prensa() {
     },
     {
       id: '3',
-      title: 'Tecnología al Servicio de la Confianza: Cómo SAHA Verifica Profesionales',
+      title: 'Tecnología al Servicio de la Confianza: Cómo SERCO Verifica Profesionales',
       excerpt: 'La startup implementa un sistema de verificación de identidad y reseñas que garantiza seguridad para clientes y profesionales por igual.',
       source: 'Infobae Tecnología',
       date: '5 de diciembre, 2025',
@@ -49,8 +49,8 @@ export default function Prensa() {
     },
     {
       id: '4',
-      title: 'El Futuro del Trabajo: SAHA y la Economía de Servicios Digitales',
-      excerpt: 'Análisis sobre cómo plataformas como SAHA están transformando el mercado laboral argentino y creando nuevas oportunidades para profesionales independientes.',
+      title: 'El Futuro del Trabajo: SERCO y la Economía de Servicios Digitales',
+      excerpt: 'Análisis sobre cómo plataformas como SERCO están transformando el mercado laboral argentino y creando nuevas oportunidades para profesionales independientes.',
       source: 'iProfesional',
       date: '1 de diciembre, 2025',
       category: 'Análisis',
@@ -58,7 +58,7 @@ export default function Prensa() {
     },
     {
       id: '5',
-      title: 'SAHA Entre las 10 Startups más Prometedoras de Argentina',
+      title: 'SERCO Entre las 10 Startups más Prometedoras de Argentina',
       excerpt: 'La plataforma de servicios fue reconocida por inversores y expertos como una de las propuestas más innovadoras del ecosistema emprendedor local.',
       source: 'Ámbito Financiero',
       date: '28 de noviembre, 2025',
@@ -67,7 +67,7 @@ export default function Prensa() {
     },
     {
       id: '6',
-      title: 'Testimonios: Profesionales que Triplicaron sus Ingresos Gracias a SAHA',
+      title: 'Testimonios: Profesionales que Triplicaron sus Ingresos Gracias a SERCO',
       excerpt: 'Historias reales de trabajadores independientes que lograron estabilizar y hacer crecer sus negocios utilizando la plataforma.',
       source: 'TN Economía',
       date: '20 de noviembre, 2025',
@@ -95,7 +95,7 @@ export default function Prensa() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -132,7 +132,7 @@ export default function Prensa() {
               lineHeight: '1.2'
             }}
           >
-            SAHA en los Medios
+            SERCO en los Medios
           </h1>
           <p 
             className="max-w-3xl mx-auto"
@@ -143,7 +143,7 @@ export default function Prensa() {
               lineHeight: '1.8'
             }}
           >
-            Descubrí lo que dicen los principales medios sobre SAHA y cómo estamos transformando 
+            Descubrí lo que dicen los principales medios sobre SERCO y cómo estamos transformando 
             el mercado de servicios en Argentina.
           </p>
         </div>
@@ -306,7 +306,7 @@ export default function Prensa() {
               color: '#244C87'
             }}
           >
-            SAHA en Números
+            SERCO en Números
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -384,7 +384,7 @@ export default function Prensa() {
               Contactar Prensa
             </button>
             <a
-              href="mailto:prensa@saha.com"
+              href="mailto:prensa@serco.com"
               className="px-8 py-4 rounded-full transition-all duration-300 border-2 inline-flex items-center justify-center"
               style={{ 
                 fontFamily: 'Maitree, serif', 
@@ -396,7 +396,7 @@ export default function Prensa() {
                 textDecoration: 'none'
               }}
             >
-              prensa@saha.com
+              prensa@serco.com
             </a>
           </div>
         </div>
@@ -410,7 +410,7 @@ export default function Prensa() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"

@@ -32,7 +32,7 @@ export default function Experiencias() {
         providerImage: '/Frame16.png',
         serviceType: 'Plomería',
         rating: 5,
-        comment: 'SAHA cambió mi negocio por completo. Antes dependía del boca a boca y pasaba semanas sin trabajos. Ahora tengo mi agenda llena y puedo elegir los trabajos que más me convienen. La plataforma es súper fácil de usar.',
+        comment: 'SERCO cambió mi negocio por completo. Antes dependía del boca a boca y pasaba semanas sin trabajos. Ahora tengo mi agenda llena y puedo elegir los trabajos que más me convienen. La plataforma es súper fácil de usar.',
         date: 'Miembro desde Marzo 2024',
         location: 'Buenos Aires',
         clientsServed: 127,
@@ -44,7 +44,7 @@ export default function Experiencias() {
         providerImage: '/Frame16.png',
         serviceType: 'Electricidad',
         rating: 5,
-        comment: 'Lo mejor de SAHA es que me permitió independizarme. Trabajaba para una empresa y ahora tengo mi propio negocio. Los clientes confían en mí porque ven mis verificaciones y reseñas. Mis ingresos aumentaron un 60%.',
+        comment: 'Lo mejor de SERCO es que me permitió independizarme. Trabajaba para una empresa y ahora tengo mi propio negocio. Los clientes confían en mí porque ven mis verificaciones y reseñas. Mis ingresos aumentaron un 60%.',
         date: 'Miembro desde Junio 2024',
         location: 'Córdoba',
         clientsServed: 89,
@@ -56,7 +56,7 @@ export default function Experiencias() {
         providerImage: '/Frame16.png',
         serviceType: 'Limpieza',
         rating: 5,
-        comment: 'Como mujer trabajando sola, la seguridad era mi mayor preocupación. SAHA verifica a los clientes y me da tranquilidad. Además, el sistema de pagos seguros me evita problemas de cobro. Es la mejor decisión que tomé.',
+        comment: 'Como mujer trabajando sola, la seguridad era mi mayor preocupación. SERCO verifica a los clientes y me da tranquilidad. Además, el sistema de pagos seguros me evita problemas de cobro. Es la mejor decisión que tomé.',
         date: 'Miembro desde Enero 2024',
         location: 'Rosario',
         clientsServed: 156,
@@ -68,7 +68,7 @@ export default function Experiencias() {
         providerImage: '/Frame16.png',
         serviceType: 'Jardinería',
         rating: 5,
-        comment: 'Empecé con SAHA como un ingreso extra y ahora es mi trabajo principal. La plataforma me conecta con clientes de toda la zona que nunca hubiera alcanzado por mi cuenta. El soporte técnico siempre responde rápido.',
+        comment: 'Empecé con SERCO como un ingreso extra y ahora es mi trabajo principal. La plataforma me conecta con clientes de toda la zona que nunca hubiera alcanzado por mi cuenta. El soporte técnico siempre responde rápido.',
         date: 'Miembro desde Agosto 2024',
         location: 'Mendoza',
         clientsServed: 73,
@@ -80,7 +80,7 @@ export default function Experiencias() {
         providerImage: '/Frame16.png',
         serviceType: 'Pintura',
         rating: 5,
-        comment: 'SAHA me ayudó a construir mi reputación desde cero. Cada trabajo bien hecho se refleja en las reseñas y eso atrae más clientes. Ya no tengo que andar repartiendo volantes, los clientes me encuentran solos.',
+        comment: 'SERCO me ayudó a construir mi reputación desde cero. Cada trabajo bien hecho se refleja en las reseñas y eso atrae más clientes. Ya no tengo que andar repartiendo volantes, los clientes me encuentran solos.',
         date: 'Miembro desde Abril 2024',
         location: 'La Plata',
         clientsServed: 94,
@@ -135,7 +135,7 @@ export default function Experiencias() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -183,7 +183,7 @@ export default function Experiencias() {
             lineHeight: '1.6'
           }}
         >
-          Conocé las historias reales de profesionales que transformaron sus negocios usando SAHA. 
+          Conocé las historias reales de profesionales que transformaron sus negocios usando SERCO. 
           Descubrí cómo nuestra plataforma les ayudó a conseguir más clientes y hacer crecer sus ingresos.
         </p>
 
@@ -307,7 +307,7 @@ export default function Experiencias() {
                             color: '#666'
                           }}
                         >
-                          Meses en SAHA
+                          Meses en SERCO
                         </p>
                       </div>
                     </div>
@@ -376,7 +376,7 @@ export default function Experiencias() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"
@@ -434,10 +434,10 @@ export default function Experiencias() {
               <div>
                 <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px' }}>Empresa</h3>
                 <ul className="space-y-3">
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Sobre nosotros</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Trabaja con nosotros</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Contacto</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Prensa</a></li>
+                  <li><button onClick={() => router.push('/sobre-nosotros')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Sobre nosotros</button></li>
+                  <li><button onClick={() => router.push('/trabaja-con-nosotros')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Trabaja con nosotros</button></li>
+                  <li><button onClick={() => router.push('/contacto')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Contacto</button></li>
+                  <li><button onClick={() => router.push('/prensa')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Prensa</button></li>
                 </ul>
               </div>
             </div>

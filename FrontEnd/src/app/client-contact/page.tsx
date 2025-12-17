@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -14,7 +14,7 @@ interface BookingInfo {
   budgetTime?: string;
 }
 
-export default function ClientContact() {
+function ClientContactContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
@@ -119,7 +119,7 @@ export default function ClientContact() {
         <div className="flex justify-center mb-8">
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={200} 
             height={60}
             className="h-auto"
@@ -293,5 +293,22 @@ export default function ClientContact() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ClientContact() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#244C87] mx-auto mb-4"></div>
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#244C87' }}>
+            Cargando...
+          </p>
+        </div>
+      </div>
+    }>
+      <ClientContactContent />
+    </Suspense>
   );
 }

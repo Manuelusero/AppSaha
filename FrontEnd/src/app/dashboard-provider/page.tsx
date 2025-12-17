@@ -99,7 +99,7 @@ export default function DashboardProvider() {
           specialties = typeof profile.specialties === 'string' 
             ? JSON.parse(profile.specialties) 
             : profile.specialties || [];
-        } catch (e) {
+        } catch {
           specialties = [];
         }
 
@@ -109,7 +109,7 @@ export default function DashboardProvider() {
           portfolioImages = typeof profile.portfolioImages === 'string'
             ? JSON.parse(profile.portfolioImages)
             : profile.portfolioImages || [];
-        } catch (e) {
+        } catch {
           portfolioImages = [];
         }
 
@@ -373,7 +373,7 @@ export default function DashboardProvider() {
             cursor: 'pointer'
           }} 
           onClick={() => router.push('/')}
-          aria-label="SaHa Logo"
+          aria-label="Serco Logo"
           />
         </div>
         <div className="relative profile-menu-container">

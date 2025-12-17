@@ -19,7 +19,7 @@ export default function SobreNosotros() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -67,7 +67,7 @@ export default function SobreNosotros() {
               lineHeight: '1.8'
             }}
           >
-            SAHA nació de una experiencia personal que cambió nuestra forma de ver el mercado de servicios.
+            SERCO nació de una experiencia personal que cambió nuestra forma de ver el mercado de servicios.
           </p>
         </div>
 
@@ -139,7 +139,7 @@ export default function SobreNosotros() {
                     color: '#244C87'
                   }}
                 >
-                  Cómo Nació SAHA
+                  Cómo Nació SERCO
                 </h2>
                 <p 
                   style={{ 
@@ -150,7 +150,7 @@ export default function SobreNosotros() {
                     marginBottom: '16px'
                   }}
                 >
-                  En 2024, decidimos crear la solución que nosotros mismos necesitábamos. SAHA es una plataforma 
+                  En 2024, decidimos crear la solución que nosotros mismos necesitábamos. SERCO es una plataforma 
                   que conecta de manera segura y transparente a clientes con profesionales verificados. 
                 </p>
                 <p 
@@ -377,7 +377,7 @@ export default function SobreNosotros() {
               color: '#244C87'
             }}
           >
-            ¿Querés ser parte de SAHA?
+            ¿Querés ser parte de SERCO?
           </h2>
           <p 
             className="mb-8 max-w-2xl mx-auto"
@@ -433,7 +433,7 @@ export default function SobreNosotros() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"

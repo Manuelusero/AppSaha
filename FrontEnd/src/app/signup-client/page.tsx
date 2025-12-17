@@ -77,7 +77,7 @@ export default function SignupClient() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            🛠️ SAHA
+            🛠️ SERCO
           </h1>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
             Registro de Cliente

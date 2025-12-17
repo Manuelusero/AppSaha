@@ -120,43 +120,28 @@ export default function ProviderSignup() {
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
   const [linkedin, setLinkedin] = useState('');
-  const [sitioWeb, setSitioWeb] = useState('');
 
   // Multimedia
   const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
   const [fotosTrabajos, setFotosTrabajos] = useState<File[]>([]);
-  const [videos, setVideos] = useState<string[]>(['']); // URLs de videos
 
   // Documentación
   const [dni, setDni] = useState('');
-  const [tipoDni, setTipoDni] = useState(''); // DNI, Pasaporte, etc.
   const [fotoDniFrente, setFotoDniFrente] = useState<File | null>(null);
   const [fotoDniDorso, setFotoDniDorso] = useState<File | null>(null);
-  const [antecedentes, setAntecedentes] = useState<File | null>(null);
   const [certificadosProfesionales, setCertificadosProfesionales] = useState<Array<{nombre: string, archivo: File | null}>>([
     { nombre: '', archivo: null }
   ]);
-
-  // Referencias
-  const [referencias, setReferencias] = useState([
-    { nombre: '', telefono: '', relacion: '' }
-  ]);
-
-  // Certificados (legacy - mantener por compatibilidad)
-  const [certificados, setCertificados] = useState<File[]>([]);
 
   // Credenciales
   const [password, setPassword] = useState('');
   const [confirmarPassword, setConfirmarPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [emailVerificado, setEmailVerificado] = useState(false);
-  const [codigoVerificacion, setCodigoVerificacion] = useState('');
 
   // UI states
   const [paso, setPaso] = useState(1); // 1: Datos Personales, 2: Datos Profesionales, 3: Documentación, 4: Extras
   const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
-  const [datosGuardados, setDatosGuardados] = useState(false);
 
   // Scroll al inicio cuando cambia el paso
   useEffect(() => {
@@ -220,16 +205,6 @@ export default function ProviderSignup() {
     setProfesionesAdicionales(nuevas);
   };
 
-  // Función para enviar código de verificación (a implementar con email real)
-  const enviarCodigoVerificacion = async () => {
-    // TODO: Implementar cuando tengamos el servicio de email
-    console.log('Enviando código de verificación a:', email);
-    alert('Función de verificación de email pendiente de implementar con el mail de la empresa');
-    // const codigo = Math.floor(100000 + Math.random() * 900000).toString();
-    // setCodigoVerificacion(codigo);
-    // await fetch('/api/send-verification-email', { ... });
-  };
-
   // Validación para el paso 1
   const validarPaso1 = () => {
     // Verificar que todos los campos estén llenos
@@ -288,7 +263,6 @@ export default function ProviderSignup() {
           password
         };
         localStorage.setItem('registroTemporal', JSON.stringify(datosBasicos));
-        setDatosGuardados(true);
 
         // TODO: Enviar email de verificación con el servicio de email de la empresa
         console.log('Enviando email de verificación a:', email);
@@ -306,16 +280,6 @@ export default function ProviderSignup() {
       // Para otros pasos, simplemente avanzar
       setPaso(paso + 1);
     }
-  };
-
-  const handleAgregarVideo = () => {
-    setVideos([...videos, '']);
-  };
-
-  const handleCambiarVideo = (index: number, valor: string) => {
-    const nuevosVideos = [...videos];
-    nuevosVideos[index] = valor;
-    setVideos(nuevosVideos);
   };
 
   const agregarCertificadoProfesional = () => {
@@ -1222,7 +1186,7 @@ export default function ProviderSignup() {
           <div className="flex justify-center px-4">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-full max-w-[280px] sm:max-w-[350px] md:max-w-[484px] h-auto"

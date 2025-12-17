@@ -43,7 +43,7 @@ export default function Home() {
       <div className="container mx-auto px-6 py-12">
         <header className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            🚀 Proyecto SAHA
+            🚀 Proyecto SERCO
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             MVP Full-Stack con Next.js y Express

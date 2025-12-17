@@ -19,7 +19,7 @@ export default function TrabajaConNosotros() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -71,7 +71,7 @@ export default function TrabajaConNosotros() {
           </p>
         </div>
 
-        {/* Por qué SAHA */}
+        {/* Por qué SERCO */}
         <div className="mb-16">
           <h2 
             className="text-center mb-12"
@@ -82,7 +82,7 @@ export default function TrabajaConNosotros() {
               color: '#244C87'
             }}
           >
-            ¿Por Qué Trabajar en SAHA?
+            ¿Por Qué Trabajar en SERCO?
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -305,7 +305,7 @@ export default function TrabajaConNosotros() {
               {
                 step: '1',
                 title: 'Aplicación',
-                description: 'Envianos tu CV y contanos por qué querés unirte a SAHA'
+                description: 'Envianos tu CV y contanos por qué querés unirte a SERCO'
               },
               {
                 step: '2',
@@ -389,7 +389,7 @@ export default function TrabajaConNosotros() {
               lineHeight: '1.6'
             }}
           >
-            Siempre estamos buscando talento excepcional. Envianos tu CV y contanos cómo podrías aportar a SAHA.
+            Siempre estamos buscando talento excepcional. Envianos tu CV y contanos cómo podrías aportar a SERCO.
           </p>
           <button
             onClick={() => router.push('/contacto')}
@@ -417,7 +417,7 @@ export default function TrabajaConNosotros() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"

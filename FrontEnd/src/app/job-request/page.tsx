@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
-export default function JobRequest() {
+function JobRequestContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const professionals = searchParams.get('professionals') || '';
@@ -231,7 +231,7 @@ export default function JobRequest() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"
@@ -314,5 +314,22 @@ export default function JobRequest() {
         />
       )}
     </div>
+  );
+}
+
+export default function JobRequest() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#244C87] mx-auto mb-4"></div>
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#244C87' }}>
+            Cargando...
+          </p>
+        </div>
+      </div>
+    }>
+      <JobRequestContent />
+    </Suspense>
   );
 }

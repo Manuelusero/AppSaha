@@ -121,7 +121,7 @@ export default function SignUp() {
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ar&limit=5&accept-language=es`,
         {
           headers: {
-            'User-Agent': 'ProyectoSAHA/1.0'
+            'User-Agent': 'ProyectoSERCO/1.0'
           }
         }
       );

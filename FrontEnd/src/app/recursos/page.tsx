@@ -40,7 +40,7 @@ export default function Recursos() {
     {
       id: '3',
       title: 'La Importancia de las Reseñas y Cómo Conseguirlas',
-      excerpt: 'Las reseñas son clave para tu éxito en SAHA. Aprende estrategias efectivas para solicitar feedback positivo de tus clientes satisfechos.',
+      excerpt: 'Las reseñas son clave para tu éxito en SERCO. Aprende estrategias efectivas para solicitar feedback positivo de tus clientes satisfechos.',
       category: 'Reputación',
       date: '10 de diciembre, 2025',
       readTime: '4 min',
@@ -98,7 +98,7 @@ export default function Recursos() {
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
           <Image 
             src="/Logo.png" 
-            alt="SaHa Logo" 
+            alt="Serco Logo" 
             width={120} 
             height={40}
             className="h-10 w-auto"
@@ -146,7 +146,7 @@ export default function Recursos() {
             lineHeight: '1.6'
           }}
         >
-          Artículos, guías y consejos prácticos para hacer crecer tu negocio y destacarte como profesional en SAHA.
+          Artículos, guías y consejos prácticos para hacer crecer tu negocio y destacarte como profesional en SERCO.
         </p>
 
         {/* Search bar */}
@@ -325,7 +325,7 @@ export default function Recursos() {
           <div className="flex justify-center">
             <Image 
               src="/Logo.png" 
-              alt="SaHa Logo" 
+              alt="Serco Logo" 
               width={484} 
               height={134}
               className="w-auto"
@@ -383,10 +383,10 @@ export default function Recursos() {
               <div>
                 <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px' }}>Empresa</h3>
                 <ul className="space-y-3">
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Sobre nosotros</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Trabaja con nosotros</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Contacto</a></li>
-                  <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}>Prensa</a></li>
+                  <li><button onClick={() => router.push('/sobre-nosotros')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Sobre nosotros</button></li>
+                  <li><button onClick={() => router.push('/trabaja-con-nosotros')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Trabaja con nosotros</button></li>
+                  <li><button onClick={() => router.push('/contacto')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Contacto</button></li>
+                  <li><button onClick={() => router.push('/prensa')} className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Prensa</button></li>
                 </ul>
               </div>
             </div>
