@@ -76,6 +76,8 @@ export default function ProviderProfile() {
   const [references, setReferences] = useState<ProviderReference[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     if (params.id) {
@@ -134,7 +136,7 @@ export default function ProviderProfile() {
     try {
       const photos = JSON.parse(workPhotos);
       // Construir URLs completas para cada foto
-      return photos.slice(0, 10).map((photo: string) => {
+      const urls = photos.slice(0, 10).map((photo: string) => {
         // Si ya es una URL completa, devolverla tal cual
         if (photo.startsWith('http')) {
           return photo;
@@ -142,6 +144,8 @@ export default function ProviderProfile() {
         // Si es un nombre de archivo, construir la URL
         return `http://localhost:8000/uploads/portfolio/${photo}`;
       });
+      console.log('Work photos URLs:', urls);
+      return urls;
     } catch {
       return [];
     }
@@ -549,19 +553,28 @@ export default function ProviderProfile() {
                     {workPhotos.map((photo, index) => (
                       <div 
                         key={index} 
-                        className="relative flex-shrink-0 overflow-hidden"
+                        className="relative flex-shrink-0 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                         style={{ 
                           width: '342px', 
                           height: '237px',
                           borderRadius: '24px'
                         }}
+                        onClick={() => {
+                          console.log('Opening image:', photo);
+                          setSelectedImageIndex(index);
+                          setLightboxOpen(true);
+                        }}
                       >
-                        <Image
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
                           src={photo}
                           alt={`Trabajo ${index + 1}`}
-                          fill
-                          className="object-cover"
-                          style={{ borderRadius: '24px' }}
+                          style={{ 
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            borderRadius: '24px'
+                          }}
                         />
                       </div>
                     ))}
@@ -931,6 +944,80 @@ export default function ProviderProfile() {
           </div>
         </div>
       </footer>
+
+      {/* Lightbox Modal */}
+      {lightboxOpen && workPhotos.length > 0 && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <div className="relative w-full h-full max-w-6xl max-h-[90vh] flex items-center justify-center">
+            {/* Botón cerrar */}
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Botón anterior */}
+            {selectedImageIndex > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImageIndex(selectedImageIndex - 1);
+                }}
+                className="absolute left-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Imagen */}
+            <div 
+              className="relative w-full h-full flex items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={workPhotos[selectedImageIndex]}
+                alt={`Trabajo ${selectedImageIndex + 1}`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+
+            {/* Botón siguiente */}
+            {selectedImageIndex < workPhotos.length - 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImageIndex(selectedImageIndex + 1);
+                }}
+                className="absolute right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Contador */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 px-4 py-2 rounded-full">
+              <p className="text-white text-sm">
+                {selectedImageIndex + 1} / {workPhotos.length}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
