@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Footer } from '@/components/layout';
+import { apiGet, getProfileImageUrl } from '@/utils';
 
 // Mapeo de categorías del backend a nombres en español
 const categoryToSpanish: { [key: string]: string } = {
@@ -40,27 +41,12 @@ function SearchResultsContent() {
     const fetchProviders = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:8000/api/providers');
-        
-        if (!response.ok) {
-          throw new Error('Error al cargar profesionales');
-        }
-        
-        const data = await response.json();
+        const data = await apiGet<any[]>('/providers');
         
         // Transformar datos del backend al formato esperado
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const transformedData: Provider[] = data.map((provider: any) => {
-          // Construir URL de la foto de perfil
-          let profileImageUrl = '/Frame16.png'; // Imagen por defecto
-          if (provider.providerProfile?.profilePhoto) {
-            // Si es un nombre de archivo, construir la URL completa
-            if (!provider.providerProfile.profilePhoto.startsWith('http')) {
-              profileImageUrl = `http://localhost:8000/uploads/profile/${provider.providerProfile.profilePhoto}`;
-            } else {
-              profileImageUrl = provider.providerProfile.profilePhoto;
-            }
-          }
+          const profileImageUrl = getProfileImageUrl(provider.providerProfile?.profilePhoto);
 
           return {
             id: provider.id,

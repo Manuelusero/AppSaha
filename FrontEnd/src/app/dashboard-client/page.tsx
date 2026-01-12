@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { apiGet, apiPost, TOKEN_KEY } from '@/utils';
 
 interface Booking {
   id: string;
@@ -54,7 +55,7 @@ export default function ClientDashboard() {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       router.push('/login');
       return;
@@ -64,17 +65,8 @@ export default function ClientDashboard() {
 
   const fetchBookings = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/bookings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setBookings(data);
-      }
+      const data = await apiGet<any[]>('/bookings');
+      setBookings(data);
     } catch (error) {
       console.error('Error al cargar bookings:', error);
     } finally {
@@ -93,28 +85,15 @@ export default function ClientDashboard() {
 
     setSubmittingReview(true);
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/reviews', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          bookingId: selectedBooking.id,
-          rating: reviewData.rating,
-          comment: reviewData.comment || null
-        })
+      await apiPost('/reviews', {
+        bookingId: selectedBooking.id,
+        rating: reviewData.rating,
+        comment: reviewData.comment || null
       });
-
-      if (response.ok) {
-        setShowReviewModal(false);
-        fetchBookings(); // Recargar para actualizar el estado
-        alert('¡Reseña enviada exitosamente!');
-      } else {
-        const error = await response.json();
-        alert(error.error || 'Error al enviar reseña');
-      }
+      
+      setShowReviewModal(false);
+      fetchBookings(); // Recargar para actualizar el estado
+      alert('¡Reseña enviada exitosamente!');
     } catch (error) {
       console.error('Error:', error);
       alert('Error al enviar reseña');

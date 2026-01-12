@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useFetch } from '@/hooks';
-import { apiGet, apiPost } from '@/utils/api';
+import { apiGet, apiPost, getProfileImageUrl, getPortfolioImageUrl, getProblemPhotoUrl, PROVIDER_ID_KEY } from '@/utils';
 
 interface ProviderData {
   id: number;
@@ -32,7 +32,7 @@ interface JobRequest {
   urgency: string;
   contactEmail: string;
   contactPhone: string;
-  problemPhoto?: string; // Foto del problema cargada por el cliente
+  problemPhoto?: string | null; // Foto del problema cargada por el cliente
   createdAt: string;
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -70,7 +70,7 @@ export default function DashboardProvider() {
   // Cargar datos del proveedor
   useEffect(() => {
     // TODO: Obtener el ID del proveedor desde el localStorage o contexto de auth
-    const providerId = localStorage.getItem('providerId');
+    const providerId = localStorage.getItem(PROVIDER_ID_KEY);
     
     if (!providerId) {
       router.push('/login');
@@ -79,13 +79,7 @@ export default function DashboardProvider() {
 
     // Cargar datos del proveedor desde la API
     console.log('Cargando datos del proveedor desde API:', providerId);
-    fetch(`http://localhost:8000/api/providers/${providerId}`)
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Error al cargar proveedor');
-        }
-        return res.json();
-      })
+    apiGet<any>(`/providers/${providerId}`)
       .then(data => {
         console.log('Datos del proveedor recibidos:', data);
         
@@ -117,9 +111,7 @@ export default function DashboardProvider() {
         }
 
         // Construir URLs completas para las imágenes
-        const profileImageUrl = profile.profilePhoto 
-          ? `http://localhost:8000/uploads/profile/${profile.profilePhoto}`
-          : '';
+        const profileImageUrl = getProfileImageUrl(profile.profilePhoto);
 
         setProviderData({
           id: parseInt(providerId),
@@ -135,7 +127,7 @@ export default function DashboardProvider() {
           precioHora: profile.pricePerHour || 0,
           profileImage: profileImageUrl,
           portfolioImages: portfolioImages.map((img: string) => 
-            `http://localhost:8000/uploads/portfolio/${img}`
+            getPortfolioImageUrl(img)
           )
         });
 
@@ -223,12 +215,7 @@ export default function DashboardProvider() {
           // Construir URL de la foto del problema si existe
           let problemPhotoUrl = null;
           if (booking.problemPhoto) {
-            // Si es un nombre de archivo, construir la URL completa
-            if (!booking.problemPhoto.startsWith('http') && !booking.problemPhoto.startsWith('data:')) {
-              problemPhotoUrl = `http://localhost:8000/uploads/problems/${booking.problemPhoto}`;
-            } else {
-              problemPhotoUrl = booking.problemPhoto; // Ya es una URL completa o base64
-            }
+            problemPhotoUrl = getProblemPhotoUrl(booking.problemPhoto);
           }
           
           return {

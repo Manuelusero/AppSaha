@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Footer } from '@/components/layout';
+import { apiGet, getProfileImageUrl, getPortfolioImageUrl } from '@/utils';
 
 interface ProviderReference {
   id: string;
@@ -89,13 +90,7 @@ export default function ProviderProfile() {
 
   const fetchProviderData = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/providers/${id}`);
-      
-      if (!response.ok) {
-        throw new Error('Proveedor no encontrado');
-      }
-
-      const data = await response.json();
+      const data = await apiGet<any>(`/providers/${id}`);
       setProvider(data);
       
       // Las referencias vienen en providerProfile.references
@@ -112,12 +107,8 @@ export default function ProviderProfile() {
 
   const fetchReviews = async (providerId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/reviews/provider/${providerId}?limit=10`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        setReviews(data.reviews || []);
-      }
+      const data = await apiGet<any>(`/reviews/provider/${providerId}?limit=10`);
+      setReviews(data.reviews || []);
     } catch (err) {
       console.error('Error al cargar comentarios:', err);
     }
@@ -138,12 +129,7 @@ export default function ProviderProfile() {
       const photos = JSON.parse(workPhotos);
       // Construir URLs completas para cada foto
       const urls = photos.slice(0, 10).map((photo: string) => {
-        // Si ya es una URL completa, devolverla tal cual
-        if (photo.startsWith('http')) {
-          return photo;
-        }
-        // Si es un nombre de archivo, construir la URL
-        return `http://localhost:8000/uploads/portfolio/${photo}`;
+        return getPortfolioImageUrl(photo);
       });
       console.log('Work photos URLs:', urls);
       return urls;
@@ -245,11 +231,7 @@ export default function ProviderProfile() {
             {/* Imagen Principal */}
             <div className="relative overflow-hidden" style={{ width: '100%', height: '269px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', lineHeight: 0 }}>
               <Image
-                src={
-                  provider.providerProfile.profilePhoto && !provider.providerProfile.profilePhoto.startsWith('http')
-                    ? `http://localhost:8000/uploads/profile/${provider.providerProfile.profilePhoto}`
-                    : provider.providerProfile.profilePhoto || '/Frame16.png'
-                }
+                src={getProfileImageUrl(provider.providerProfile.profilePhoto)}
                 alt={provider.name}
                 fill
                 className="object-cover"

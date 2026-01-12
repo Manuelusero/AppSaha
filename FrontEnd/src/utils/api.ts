@@ -2,7 +2,7 @@
  * Utilidades para hacer llamadas a la API con autenticación
  */
 
-const API_BASE_URL = 'http://localhost:8000/api';
+import { API_URL, TOKEN_KEY } from './constants';
 
 interface FetchOptions extends RequestInit {
   token?: string;
@@ -18,7 +18,7 @@ export async function fetchWithAuth(
   const { token, headers, ...restOptions } = options;
   
   // Obtener token del localStorage si no se proporciona
-  const authToken = token || localStorage.getItem('token');
+  const authToken = token || localStorage.getItem(TOKEN_KEY);
   
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export async function fetchWithAuth(
     ...headers,
   };
 
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
 
   return fetch(url, {
     ...restOptions,
@@ -78,7 +78,7 @@ export async function apiPost<T = unknown>(
     // Si es 401, limpiar token y redirigir a login
     if (response.status === 401) {
       console.error('❌ Token inválido o expirado, redirigiendo a login...');
-      localStorage.removeItem('token');
+      localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem('providerId');
       localStorage.removeItem('userId');
       window.location.href = '/login';
@@ -135,14 +135,14 @@ export async function apiUpload<T = unknown>(
   endpoint: string,
   formData: FormData
 ): Promise<T> {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem(TOKEN_KEY);
   
   const headers: HeadersInit = {
     ...(token && { 'Authorization': `Bearer ${token}` }),
   };
   // No incluir Content-Type, el navegador lo establece automáticamente con el boundary correcto
 
-  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
 
   const response = await fetch(url, {
     method: 'POST',
