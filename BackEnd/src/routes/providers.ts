@@ -1,16 +1,9 @@
 import express from 'express';
-import { PrismaClient } from '../generated/prisma/index.js';
+import prisma from '../db/prisma.js';
 import { uploadProviderFiles } from '../middleware/upload.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
-
-// Crear función para obtener instancia de Prisma
-const getPrismaClient = () => {
-  return new PrismaClient({
-    log: ['error', 'warn'],
-  });
-};
 
 // GET /api/providers/test - Endpoint de prueba sin base de datos
 router.get('/test', async (req, res) => {
@@ -25,7 +18,6 @@ router.get('/test', async (req, res) => {
 // POST /api/providers/register - Registrar un nuevo proveedor con archivos
 router.post('/register', uploadProviderFiles, async (req, res) => {
   console.log('📥 Request a /api/providers/register - INICIANDO');
-  const prisma = getPrismaClient();
   
   try {
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -183,7 +175,6 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
 // GET /api/providers - Listar todos los proveedores con filtros
 router.get('/', async (req, res) => {
   console.log('📥 Request a /api/providers - INICIANDO');
-  const prisma = getPrismaClient();
   
   try {
     console.log('🔍 Prisma client creado, consultando...');
@@ -264,7 +255,6 @@ router.get('/', async (req, res) => {
 
 // GET /api/providers/:id - Obtener un proveedor específico
 router.get('/:id', async (req, res) => {
-  const prisma = getPrismaClient();
   
   try {
     const { id } = req.params;
@@ -302,7 +292,6 @@ router.get('/:id', async (req, res) => {
 
 // GET /api/providers/categories/list - Obtener lista de categorías con conteo
 router.get('/categories/list', async (req, res) => {
-  const prisma = getPrismaClient();
   
   try {
     const categories = await prisma.providerProfile.groupBy({

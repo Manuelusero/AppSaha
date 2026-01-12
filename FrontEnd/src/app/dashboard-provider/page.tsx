@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { colors, typography, spacing } from '@/styles/tokens';
+import { useFetch } from '@/hooks';
+import { apiGet, apiPost } from '@/utils/api';
 
 interface ProviderData {
   id: number;
@@ -198,53 +201,55 @@ export default function DashboardProvider() {
       if (!token) return;
 
       try {
-        const response = await fetch('http://localhost:8000/api/bookings', {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const bookings = await apiGet<Array<{
+          id: string;
+          client: { name: string; email: string; phone?: string };
+          location?: string;
+          address?: string;
+          description: string;
+          clientNotes?: string;
+          problemPhoto?: string;
+          createdAt: string;
+          status: string;
+        }>>('/bookings');
+        
+        console.log('📦 Bookings recibidos del backend:', bookings);
+        
+        // Transformar los datos del backend al formato del frontend
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformedBookings = bookings.map((booking: any) => {
+          console.log('🔍 Procesando booking:', booking.id, 'problemPhoto:', booking.problemPhoto);
+          
+          // Construir URL de la foto del problema si existe
+          let problemPhotoUrl = null;
+          if (booking.problemPhoto) {
+            // Si es un nombre de archivo, construir la URL completa
+            if (!booking.problemPhoto.startsWith('http') && !booking.problemPhoto.startsWith('data:')) {
+              problemPhotoUrl = `http://localhost:8000/uploads/problems/${booking.problemPhoto}`;
+            } else {
+              problemPhotoUrl = booking.problemPhoto; // Ya es una URL completa o base64
+            }
           }
+          
+          return {
+            id: booking.id, // Usar el ID real de la booking
+            clientName: booking.client.name,
+            service: 'Servicio solicitado', // Puedes agregar esto al schema si es necesario
+            location: booking.location || booking.address || 'Ubicación no especificada',
+            description: booking.description,
+            urgency: booking.clientNotes?.includes('Urgencia:') 
+              ? booking.clientNotes.split('Urgencia:')[1].split('.')[0].trim() 
+              : 'No especificada',
+            contactEmail: booking.client.email,
+            contactPhone: booking.client.phone || 'No especificado',
+            problemPhoto: problemPhotoUrl, // URL construida de la foto
+            createdAt: new Date(booking.createdAt).toLocaleDateString('es-AR'),
+            status: booking.status.toLowerCase() as 'pending' | 'accepted' | 'rejected'
+          };
         });
 
-        if (response.ok) {
-          const bookings = await response.json();
-          
-          console.log('📦 Bookings recibidos del backend:', bookings);
-          
-          // Transformar los datos del backend al formato del frontend
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const transformedBookings = bookings.map((booking: any) => {
-            console.log('🔍 Procesando booking:', booking.id, 'problemPhoto:', booking.problemPhoto);
-            
-            // Construir URL de la foto del problema si existe
-            let problemPhotoUrl = null;
-            if (booking.problemPhoto) {
-              // Si es un nombre de archivo, construir la URL completa
-              if (!booking.problemPhoto.startsWith('http') && !booking.problemPhoto.startsWith('data:')) {
-                problemPhotoUrl = `http://localhost:8000/uploads/problems/${booking.problemPhoto}`;
-              } else {
-                problemPhotoUrl = booking.problemPhoto; // Ya es una URL completa o base64
-              }
-            }
-            
-            return {
-              id: booking.id, // Usar el ID real de la booking
-              clientName: booking.client.name,
-              service: 'Servicio solicitado', // Puedes agregar esto al schema si es necesario
-              location: booking.location || booking.address || 'Ubicación no especificada',
-              description: booking.description,
-              urgency: booking.clientNotes?.includes('Urgencia:') 
-                ? booking.clientNotes.split('Urgencia:')[1].split('.')[0].trim() 
-                : 'No especificada',
-              contactEmail: booking.client.email,
-              contactPhone: booking.client.phone || 'No especificado',
-              problemPhoto: problemPhotoUrl, // URL construida de la foto
-              createdAt: new Date(booking.createdAt).toLocaleDateString('es-AR'),
-              status: booking.status.toLowerCase() as 'pending' | 'accepted' | 'rejected'
-            };
-          });
-
-          console.log('✅ Bookings transformados:', transformedBookings);
-          setJobRequests(transformedBookings);
-        }
+        console.log('✅ Bookings transformados:', transformedBookings);
+        setJobRequests(transformedBookings);
       } catch (error) {
         console.error('Error al cargar solicitudes:', error);
       }
@@ -290,26 +295,15 @@ export default function DashboardProvider() {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/bookings/${selectedRequest.id}/send-budget`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
+      const data = await apiPost<{ clientDataUrl: string }>(
+        `/bookings/${selectedRequest.id}/send-budget`,
+        {
           budgetPrice: budgetForm.price,
           budgetDetails: budgetForm.workDetails,
           budgetMaterials: budgetForm.materials,
           budgetTime: budgetForm.estimatedTime
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al enviar presupuesto');
-      }
-
-      const data = await response.json();
+        }
+      );
       
       console.log('✅ Presupuesto enviado. Link para cliente:', data.clientDataUrl);
       
@@ -346,7 +340,7 @@ export default function DashboardProvider() {
   if (!providerData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p style={{ fontFamily: 'Maitree, serif', fontSize: '18px' }}>Cargando...</p>
+        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.lg }}>Cargando...</p>
       </div>
     );
   }
@@ -402,7 +396,7 @@ export default function DashboardProvider() {
                 height: '48px',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: '2px solid #244C87',
+                border: '2px solid colors.primary.main',
                 cursor: 'pointer',
                 flexShrink: 0
               }}
@@ -419,12 +413,12 @@ export default function DashboardProvider() {
                 <div style={{
                   width: '100%',
                   height: '100%',
-                  backgroundColor: '#244C87',
+                  backgroundColor: 'colors.primary.main',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: 'white',
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.primary,
                   fontSize: '20px',
                   fontWeight: 'bold'
                 }}>
@@ -434,7 +428,7 @@ export default function DashboardProvider() {
             </div>
             
             {/* Nombre */}
-            <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000', whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, whiteSpace: 'nowrap' }}>
               Hola, {providerData.nombre}
             </span>
             
@@ -444,7 +438,7 @@ export default function DashboardProvider() {
               height="16" 
               viewBox="0 0 24 24" 
               fill="none" 
-              stroke="#244C87" 
+              stroke="colors.primary.main" 
               strokeWidth="2"
               style={{
                 transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)',
@@ -484,14 +478,14 @@ export default function DashboardProvider() {
                   border: 'none',
                   backgroundColor: 'transparent',
                   cursor: 'pointer',
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
-                  color: '#244C87',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
+                  color: colors.primary.main,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'colors.neutral[100]'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -514,14 +508,14 @@ export default function DashboardProvider() {
                   border: 'none',
                   backgroundColor: 'transparent',
                   cursor: 'pointer',
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
-                  color: '#244C87',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
+                  color: colors.primary.main,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'colors.neutral[100]'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -542,14 +536,14 @@ export default function DashboardProvider() {
                   border: 'none',
                   backgroundColor: 'transparent',
                   cursor: 'pointer',
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
-                  color: '#244C87',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
+                  color: colors.primary.main,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '10px'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F3F4F6'}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'colors.neutral[100]'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -573,8 +567,8 @@ export default function DashboardProvider() {
                   border: 'none',
                   backgroundColor: 'transparent',
                   cursor: 'pointer',
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
                   color: '#DC2626',
                   display: 'flex',
                   alignItems: 'center',
@@ -600,15 +594,15 @@ export default function DashboardProvider() {
         <button
           onClick={() => setActiveTab('perfil')}
           style={{
-            fontFamily: 'Maitree, serif',
-            fontSize: '18px',
+            fontFamily: typography.fontFamily.primary,
+            fontSize: typography.fontSize.lg,
             fontWeight: activeTab === 'perfil' ? 700 : 400,
-            color: activeTab === 'perfil' ? '#244C87' : '#666',
+            color: activeTab === 'perfil' ? 'colors.primary.main' : '#666',
             paddingBottom: '8px',
             cursor: 'pointer',
             background: 'none',
             border: 'none',
-            borderBottom: activeTab === 'perfil' ? '3px solid #244C87' : 'none'
+            borderBottom: activeTab === 'perfil' ? '3px solid colors.primary.main' : 'none'
           }}
         >
           Mi Perfil
@@ -616,22 +610,22 @@ export default function DashboardProvider() {
         <button
           onClick={() => setActiveTab('solicitudes')}
           style={{
-            fontFamily: 'Maitree, serif',
-            fontSize: '18px',
+            fontFamily: typography.fontFamily.primary,
+            fontSize: typography.fontSize.lg,
             fontWeight: activeTab === 'solicitudes' ? 700 : 400,
-            color: activeTab === 'solicitudes' ? '#244C87' : '#666',
+            color: activeTab === 'solicitudes' ? 'colors.primary.main' : '#666',
             paddingBottom: '8px',
             cursor: 'pointer',
             background: 'none',
             border: 'none',
-            borderBottom: activeTab === 'solicitudes' ? '3px solid #244C87' : 'none'
+            borderBottom: activeTab === 'solicitudes' ? '3px solid colors.primary.main' : 'none'
           }}
         >
           Solicitudes de Trabajo
           {jobRequests.filter(r => r.status === 'pending').length > 0 && (
             <span style={{
               marginLeft: '8px',
-              backgroundColor: '#244C87',
+              backgroundColor: 'colors.primary.main',
               color: 'white',
               borderRadius: '50%',
               padding: '2px 8px',
@@ -649,16 +643,16 @@ export default function DashboardProvider() {
           <div>
             {/* Sección de perfil */}
             <div className="flex justify-between items-center mb-6">
-              <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 700, color: '#244C87' }}>
+              <h1 style={{ fontFamily: typography.fontFamily.primary, fontSize: '32px', fontWeight: 700, color: colors.primary.main }}>
                 Mi Perfil
               </h1>
               <button
                 onClick={() => setEditMode(!editMode)}
                 style={{
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
                   padding: '10px 20px',
-                  backgroundColor: editMode ? '#A0724E' : '#244C87',
+                  backgroundColor: editMode ? '#A0724E' : 'colors.primary.main',
                   color: 'white',
                   border: 'none',
                   borderRadius: '24px',
@@ -673,7 +667,7 @@ export default function DashboardProvider() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Datos personales */}
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Nombre
                   </label>
                   <input
@@ -681,8 +675,8 @@ export default function DashboardProvider() {
                     value={providerData.nombre}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -695,7 +689,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Apellido
                   </label>
                   <input
@@ -703,8 +697,8 @@ export default function DashboardProvider() {
                     value={providerData.apellido}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -717,7 +711,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Email
                   </label>
                   <input
@@ -725,8 +719,8 @@ export default function DashboardProvider() {
                     value={providerData.email}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -739,7 +733,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Teléfono
                   </label>
                   <input
@@ -747,8 +741,8 @@ export default function DashboardProvider() {
                     value={providerData.telefono}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -761,7 +755,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Ubicación
                   </label>
                   <input
@@ -769,8 +763,8 @@ export default function DashboardProvider() {
                     value={providerData.ubicacion}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -783,7 +777,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Categoría de Servicio
                   </label>
                   <input
@@ -791,8 +785,8 @@ export default function DashboardProvider() {
                     value={providerData.serviceCategory}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -805,7 +799,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Especialidades
                   </label>
                   <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -813,10 +807,10 @@ export default function DashboardProvider() {
                       <span
                         key={index}
                         style={{
-                          fontFamily: 'Maitree, serif',
+                          fontFamily: typography.fontFamily.primary,
                           fontSize: '14px',
                           padding: '6px 12px',
-                          backgroundColor: '#244C87',
+                          backgroundColor: 'colors.primary.main',
                           color: 'white',
                           borderRadius: '16px'
                         }}
@@ -828,7 +822,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Descripción
                   </label>
                   <textarea
@@ -836,8 +830,8 @@ export default function DashboardProvider() {
                     disabled={!editMode}
                     rows={4}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -851,7 +845,7 @@ export default function DashboardProvider() {
                 </div>
 
                 <div>
-                  <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                     Años de Experiencia
                   </label>
                   <input
@@ -859,8 +853,8 @@ export default function DashboardProvider() {
                     value={providerData.experiencia}
                     disabled={!editMode}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       width: '100%',
                       padding: '10px',
                       marginTop: '4px',
@@ -876,7 +870,7 @@ export default function DashboardProvider() {
                 {editMode && (
                   <>
                     <div className="md:col-span-2">
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         Profesiones Adicionales
                       </label>
                       <input
@@ -885,8 +879,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, profesionesAdicionales: e.target.value.split(',').map(p => ({profesion: p.trim(), especialidades: []}))})}
                         placeholder="Ej: Electricista, Carpintero"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -899,7 +893,7 @@ export default function DashboardProvider() {
                     </div>
 
                     <div>
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         Alcance de Trabajo (km)
                       </label>
                       <input
@@ -908,8 +902,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, alcanceTrabajo: e.target.value})}
                         placeholder="Ej: 10"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -922,7 +916,7 @@ export default function DashboardProvider() {
                     </div>
 
                     <div>
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         DNI
                       </label>
                       <input
@@ -931,8 +925,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, dni: e.target.value})}
                         placeholder="Número de DNI"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -945,7 +939,7 @@ export default function DashboardProvider() {
                     </div>
 
                     <div>
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         Instagram
                       </label>
                       <input
@@ -954,8 +948,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, instagram: e.target.value})}
                         placeholder="@usuario"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -968,7 +962,7 @@ export default function DashboardProvider() {
                     </div>
 
                     <div>
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         Facebook
                       </label>
                       <input
@@ -977,8 +971,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, facebook: e.target.value})}
                         placeholder="@usuario"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -991,7 +985,7 @@ export default function DashboardProvider() {
                     </div>
 
                     <div>
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         LinkedIn
                       </label>
                       <input
@@ -1000,8 +994,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, linkedin: e.target.value})}
                         placeholder="URL del perfil"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -1014,7 +1008,7 @@ export default function DashboardProvider() {
                     </div>
 
                     <div className="md:col-span-2">
-                      <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                         Certificados Profesionales
                       </label>
                       <input
@@ -1023,8 +1017,8 @@ export default function DashboardProvider() {
                         onChange={(e) => setDatosAdicionales({...datosAdicionales, certificadosProfesionales: e.target.value.split(',').map(c => c.trim())})}
                         placeholder="Ej: Electricista Matriculado, Curso de Seguridad"
                         style={{
-                          fontFamily: 'Maitree, serif',
-                          fontSize: '16px',
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.base,
                           width: '100%',
                           padding: '10px',
                           marginTop: '4px',
@@ -1044,8 +1038,8 @@ export default function DashboardProvider() {
                   <button
                     onClick={() => setEditMode(false)}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       padding: '10px 24px',
                       backgroundColor: 'white',
                       color: '#666',
@@ -1063,10 +1057,10 @@ export default function DashboardProvider() {
                       setEditMode(false);
                     }}
                     style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
                       padding: '10px 24px',
-                      backgroundColor: '#244C87',
+                      backgroundColor: 'colors.primary.main',
                       color: 'white',
                       border: 'none',
                       borderRadius: '24px',
@@ -1081,7 +1075,7 @@ export default function DashboardProvider() {
 
             {/* Sección de fotos (placeholder) */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 700, color: '#244C87', marginBottom: '16px' }}>
+              <h2 style={{ fontFamily: typography.fontFamily.primary, fontSize: '24px', fontWeight: 700, color: colors.primary.main, marginBottom: '16px' }}>
                 Fotos de Trabajos
               </h2>
               <div style={{ 
@@ -1091,10 +1085,10 @@ export default function DashboardProvider() {
                 textAlign: 'center',
                 cursor: 'pointer'
               }}>
-                <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#666' }}>
+                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#666' }}>
                   Haz click para subir fotos de tus trabajos
                 </p>
-                <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999', marginTop: '8px' }}>
+                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', color: '#999', marginTop: '8px' }}>
                   JPG, PNG o GIF (max. 5MB)
                 </p>
               </div>
@@ -1104,13 +1098,13 @@ export default function DashboardProvider() {
 
         {activeTab === 'solicitudes' && (
           <div>
-            <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 700, color: '#244C87', marginBottom: '24px' }}>
+            <h1 style={{ fontFamily: typography.fontFamily.primary, fontSize: '32px', fontWeight: 700, color: colors.primary.main, marginBottom: '24px' }}>
               Solicitudes de Trabajo
             </h1>
 
             {jobRequests.length === 0 ? (
               <div className="text-center py-12">
-                <p style={{ fontFamily: 'Maitree, serif', fontSize: '18px', color: '#666' }}>
+                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.lg, color: '#666' }}>
                   No tienes solicitudes de trabajo todavía
                 </p>
               </div>
@@ -1122,21 +1116,21 @@ export default function DashboardProvider() {
                     className="bg-gray-50 rounded-lg p-6 border-l-4"
                     style={{
                       borderLeftColor: 
-                        request.status === 'pending' ? '#244C87' :
+                        request.status === 'pending' ? 'colors.primary.main' :
                         request.status === 'accepted' ? '#4CAF50' : '#F44336'
                     }}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <h3 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 700, color: '#244C87' }}>
+                        <h3 style={{ fontFamily: typography.fontFamily.primary, fontSize: '20px', fontWeight: 700, color: colors.primary.main }}>
                           {request.service}
                         </h3>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#666', marginTop: '4px' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#666', marginTop: '4px' }}>
                           Cliente: {request.clientName}
                         </p>
                       </div>
                       <span style={{
-                        fontFamily: 'Maitree, serif',
+                        fontFamily: typography.fontFamily.primary,
                         fontSize: '14px',
                         padding: '6px 12px',
                         backgroundColor: 
@@ -1154,33 +1148,33 @@ export default function DashboardProvider() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                           Ubicación
                         </p>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#333' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#333' }}>
                           {request.location}
                         </p>
                       </div>
                       <div>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                           Urgencia
                         </p>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#333' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#333' }}>
                           {request.urgency}
                         </p>
                       </div>
                       <div className="md:col-span-2">
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
                           Descripción del trabajo
                         </p>
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#333' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#333' }}>
                           {request.description}
                         </p>
                       </div>
                       
                       {/* Foto del problema */}
                       <div className="md:col-span-2">
-                        <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#244C87', marginBottom: '8px' }}>
+                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main, marginBottom: '8px' }}>
                           Foto del Problema
                         </p>
                         {request.problemPhoto ? (
@@ -1213,7 +1207,7 @@ export default function DashboardProvider() {
                             />
                           </div>
                         ) : (
-                          <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999', fontStyle: 'italic' }}>
+                          <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', color: '#999', fontStyle: 'italic' }}>
                             El cliente no subió una foto del problema
                           </p>
                         )}
@@ -1225,10 +1219,10 @@ export default function DashboardProvider() {
                         <button
                           onClick={() => handleAcceptRequest(request)}
                           style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '16px',
+                            fontFamily: typography.fontFamily.primary,
+                            fontSize: typography.fontSize.base,
                             padding: '10px 24px',
-                            backgroundColor: '#244C87',
+                            backgroundColor: 'colors.primary.main',
                             color: 'white',
                             border: 'none',
                             borderRadius: '24px',
@@ -1241,8 +1235,8 @@ export default function DashboardProvider() {
                         <button
                           onClick={() => handleRejectRequest(request.id)}
                           style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '16px',
+                            fontFamily: typography.fontFamily.primary,
+                            fontSize: typography.fontSize.base,
                             padding: '10px 24px',
                             backgroundColor: 'white',
                             color: '#F44336',
@@ -1294,13 +1288,13 @@ export default function DashboardProvider() {
               </svg>
             </button>
 
-            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '28px', fontWeight: 700, color: '#FFFFFF', marginBottom: '24px' }}>
+            <h2 style={{ fontFamily: typography.fontFamily.primary, fontSize: '28px', fontWeight: 700, color: '#FFFFFF', marginBottom: '24px' }}>
               Enviar Presupuesto
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
                   Precio del presupuesto ($)
                 </label>
                 <input
@@ -1309,8 +1303,8 @@ export default function DashboardProvider() {
                   onChange={(e) => setBudgetForm({ ...budgetForm, price: e.target.value })}
                   placeholder="Ej: 50000"
                   style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '16px',
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
                     color: '#000000',
                     width: '100%',
                     padding: '12px',
@@ -1322,7 +1316,7 @@ export default function DashboardProvider() {
               </div>
 
               <div>
-                <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
                   Detalles del trabajo
                 </label>
                 <textarea
@@ -1331,8 +1325,8 @@ export default function DashboardProvider() {
                   placeholder="Describe el trabajo a realizar..."
                   rows={4}
                   style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '16px',
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
                     color: '#000000',
                     width: '100%',
                     padding: '12px',
@@ -1345,7 +1339,7 @@ export default function DashboardProvider() {
               </div>
 
               <div>
-                <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
                   Materiales necesarios
                 </label>
                 <textarea
@@ -1354,8 +1348,8 @@ export default function DashboardProvider() {
                   placeholder="Lista de materiales..."
                   rows={3}
                   style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '16px',
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
                     color: '#000000',
                     width: '100%',
                     padding: '12px',
@@ -1368,7 +1362,7 @@ export default function DashboardProvider() {
               </div>
 
               <div>
-                <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
+                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
                   Tiempo estimado
                 </label>
                 <input
@@ -1377,8 +1371,8 @@ export default function DashboardProvider() {
                   onChange={(e) => setBudgetForm({ ...budgetForm, estimatedTime: e.target.value })}
                   placeholder="Ej: 2 días, 1 semana..."
                   style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '16px',
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
                     color: '#000000',
                     width: '100%',
                     padding: '12px',
@@ -1394,8 +1388,8 @@ export default function DashboardProvider() {
               <button
                 onClick={() => setShowBudgetModal(false)}
                 style={{
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
                   padding: '12px 24px',
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   backdropFilter: 'blur(10px)',
@@ -1411,8 +1405,8 @@ export default function DashboardProvider() {
               <button
                 onClick={handleSubmitBudget}
                 style={{
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
                   padding: '12px 24px',
                   backgroundColor: 'rgba(217, 165, 137, 0.9)',
                   color: '#000000',
@@ -1466,7 +1460,7 @@ export default function DashboardProvider() {
               cursor: 'pointer',
               fontSize: '24px',
               fontWeight: 'bold',
-              color: '#000',
+              color: colors.neutral.black,
               zIndex: 10000,
               boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
             }}

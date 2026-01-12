@@ -3,18 +3,30 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/contexts';
+import { useRedirectIfAuthenticated, useForm, useToggle } from '@/hooks';
+import { apiPost } from '@/utils/api';
 
 export default function SignupClient() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: ''
+  const { login } = useAuth();
+  
+  // Redirigir si ya está autenticado
+  useRedirectIfAuthenticated();
+  
+  const { values, handleChangeEvent } = useForm({
+    initialValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      phone: ''
+    },
+    onSubmit: () => {} // Se maneja con handleSubmit personalizado
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const [showPassword, toggleShowPassword] = useToggle(false);
+  const [showConfirmPassword, toggleShowConfirmPassword] = useToggle(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -23,12 +35,12 @@ export default function SignupClient() {
     setError('');
 
     // Validaciones
-    if (formData.password !== formData.confirmPassword) {
+    if (values.password !== values.confirmPassword) {
       setError('Las contraseñas no coinciden');
       return;
     }
 
-    if (formData.password.length < 6) {
+    if (values.password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
@@ -36,28 +48,18 @@ export default function SignupClient() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/signup-client', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone
-        }),
+      const data = await apiPost<{
+        token: string;
+        user: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      }>('/auth/signup-client', {
+        name: values.name,
+        email: values.email,
+        password: values.password,
+        phone: values.phone
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al registrarse');
-      }
-
-      // Guardar token
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Usar el Context API para login
+      login(data.token, data.user);
 
       // Redirigir al dashboard de cliente o a donde estaba el usuario
       const redirectTo = localStorage.getItem('redirectAfterLogin') || '/dashboard-client';
@@ -104,9 +106,10 @@ export default function SignupClient() {
               <input
                 type="text"
                 id="name"
+                name="name"
                 required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                value={values.name}
+                onChange={handleChangeEvent}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 placeholder="Juan Pérez"
                 disabled={loading}
@@ -121,9 +124,10 @@ export default function SignupClient() {
               <input
                 type="email"
                 id="email"
+                name="email"
                 required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                value={values.email}
+                onChange={handleChangeEvent}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 placeholder="tu@email.com"
                 disabled={loading}
@@ -138,8 +142,9 @@ export default function SignupClient() {
               <input
                 type="tel"
                 id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                name="phone"
+                value={values.phone}
+                onChange={handleChangeEvent}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 placeholder="+34 600 000 000"
                 disabled={loading}
@@ -155,16 +160,17 @@ export default function SignupClient() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
+                name="password"
                   required
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  value={values.password}
+                  onChange={handleChangeEvent}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Mínimo 6 caracteres"
                   disabled={loading}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={toggleShowPassword}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showPassword ? '🙈' : '👁️'}
@@ -181,16 +187,17 @@ export default function SignupClient() {
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   id="confirmPassword"
+                  name="confirmPassword"
                   required
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  value={values.confirmPassword}
+                  onChange={handleChangeEvent}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Repite tu contraseña"
                   disabled={loading}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onClick={toggleShowConfirmPassword}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showConfirmPassword ? '🙈' : '👁️'}

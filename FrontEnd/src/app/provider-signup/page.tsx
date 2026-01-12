@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getEspecialidades } from '../data/especialidades';
+import { Footer } from '@/components/layout';
+import { Input, Button } from '@/components/ui';
+import { colors, typography, spacing } from '@/styles/tokens';
+import { useForm } from '@/hooks';
 
 const servicios = [
   'Plomeros',
@@ -100,46 +104,46 @@ export default function ProviderSignup() {
       .join(' ');
   };
 
-  // Datos personales
-  const [nombre, setNombre] = useState('');
-  const [apellido, setApellido] = useState('');
-  const [email, setEmail] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [profesion, setProfesion] = useState('');
-  const [especialidades, setEspecialidades] = useState<string[]>([]);
-  const [profesionesAdicionales, setProfesionesAdicionales] = useState<Array<{profesion: string, especialidades: string[]}>>([]);
-  const [ubicacion, setUbicacion] = useState('');
-  const [alcanceTrabajo, setAlcanceTrabajo] = useState('');
-  const [descripcion, setDescripcion] = useState('');
+  // Hook de formulario unificado
+  const { values, handleChange, setFieldValue, resetForm } = useForm({
+    initialValues: {
+      // Datos personales
+      nombre: '',
+      apellido: '',
+      email: '',
+      telefono: '',
+      profesion: '',
+      especialidades: [] as string[],
+      profesionesAdicionales: [] as Array<{profesion: string, especialidades: string[]}>,
+      ubicacion: '',
+      alcanceTrabajo: '',
+      descripcion: '',
+      // Redes sociales
+      instagram: '',
+      facebook: '',
+      linkedin: '',
+      // Multimedia
+      fotoPerfil: null as File | null,
+      fotosTrabajos: [] as File[],
+      // Documentación
+      dni: '',
+      fotoDniFrente: null as File | null,
+      fotoDniDorso: null as File | null,
+      certificadosProfesionales: [{ nombre: '', archivo: null }] as Array<{nombre: string, archivo: File | null}>,
+      // Credenciales
+      password: '',
+      confirmarPassword: ''
+    },
+    onSubmit: () => {} // Se maneja por handleSubmit personalizado
+  });
+
+  // UI states separados (no son parte del formulario)
   const [mostrarProfesiones, setMostrarProfesiones] = useState(false);
   const [mostrarUbicaciones, setMostrarUbicaciones] = useState(false);
   const [ubicacionesFiltradas, setUbicacionesFiltradas] = useState<string[]>([]);
   const [profesionAdicionalAbierta, setProfesionAdicionalAbierta] = useState<number | null>(null);
-
-  // Redes sociales
-  const [instagram, setInstagram] = useState('');
-  const [facebook, setFacebook] = useState('');
-  const [linkedin, setLinkedin] = useState('');
-
-  // Multimedia
-  const [fotoPerfil, setFotoPerfil] = useState<File | null>(null);
-  const [fotosTrabajos, setFotosTrabajos] = useState<File[]>([]);
-
-  // Documentación
-  const [dni, setDni] = useState('');
-  const [fotoDniFrente, setFotoDniFrente] = useState<File | null>(null);
-  const [fotoDniDorso, setFotoDniDorso] = useState<File | null>(null);
-  const [certificadosProfesionales, setCertificadosProfesionales] = useState<Array<{nombre: string, archivo: File | null}>>([
-    { nombre: '', archivo: null }
-  ]);
-
-  // Credenciales
-  const [password, setPassword] = useState('');
-  const [confirmarPassword, setConfirmarPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  // UI states
   const [paso, setPaso] = useState(1); // 1: Datos Personales, 2: Datos Profesionales, 3: Documentación, 4: Extras
   const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
 
@@ -150,7 +154,7 @@ export default function ProviderSignup() {
 
   // Función para filtrar ubicaciones mientras escribe
   const handleUbicacionChange = (valor: string) => {
-    setUbicacion(valor);
+    setFieldValue('ubicacion', valor);
     if (valor.length > 0) {
       const filtradas = ciudadesArgentina.filter(ciudad => 
         ciudad.toLowerCase().includes(valor.toLowerCase())
@@ -165,74 +169,74 @@ export default function ProviderSignup() {
 
   // Función para seleccionar una ubicación
   const seleccionarUbicacion = (ciudad: string) => {
-    setUbicacion(ciudad);
+    setFieldValue('ubicacion', ciudad);
     setMostrarUbicaciones(false);
   };
 
   // Función para agregar especialidad
   const toggleEspecialidad = (especialidad: string) => {
-    if (especialidades.includes(especialidad)) {
-      setEspecialidades(especialidades.filter(e => e !== especialidad));
+    if (values.especialidades.includes(especialidad)) {
+      setFieldValue('especialidades', values.especialidades.filter((e: string) => e !== especialidad));
     } else {
-      setEspecialidades([...especialidades, especialidad]);
+      setFieldValue('especialidades', [...values.especialidades, especialidad]);
     }
   };
 
   // Función para agregar otra profesión
   const agregarOtraProfesion = () => {
-    setProfesionesAdicionales([...profesionesAdicionales, { profesion: '', especialidades: [] }]);
+    setFieldValue('profesionesAdicionales', [...values.profesionesAdicionales, { profesion: '', especialidades: [] }]);
   };
 
   // Función para actualizar profesión adicional
   const actualizarProfesionAdicional = (index: number, profesion: string) => {
-    const nuevas = [...profesionesAdicionales];
+    const nuevas = [...values.profesionesAdicionales];
     nuevas[index].profesion = profesion;
     nuevas[index].especialidades = []; // Resetear especialidades cuando cambia la profesión
-    setProfesionesAdicionales(nuevas);
+    setFieldValue('profesionesAdicionales', nuevas);
   };
 
   // Función para toggle especialidad en profesión adicional
   const toggleEspecialidadAdicional = (indexProfesion: number, especialidad: string) => {
-    const nuevas = [...profesionesAdicionales];
+    const nuevas = [...values.profesionesAdicionales];
     const especialidadesActuales = nuevas[indexProfesion].especialidades;
     
     if (especialidadesActuales.includes(especialidad)) {
-      nuevas[indexProfesion].especialidades = especialidadesActuales.filter(e => e !== especialidad);
+      nuevas[indexProfesion].especialidades = especialidadesActuales.filter((e: string) => e !== especialidad);
     } else {
       nuevas[indexProfesion].especialidades = [...especialidadesActuales, especialidad];
     }
     
-    setProfesionesAdicionales(nuevas);
+    setFieldValue('profesionesAdicionales', nuevas);
   };
 
   // Validación para el paso 1
   const validarPaso1 = () => {
     // Verificar que todos los campos estén llenos
-    if (!nombre || !apellido || !email || !telefono || !password || !confirmarPassword) {
+    if (!values.nombre || !values.apellido || !values.email || !values.telefono || !values.password || !values.confirmarPassword) {
       alert('Por favor completa todos los campos');
       return false;
     }
 
     // Verificar que las contraseñas coincidan
-    if (password !== confirmarPassword) {
+    if (values.password !== values.confirmarPassword) {
       alert('Las contraseñas no coinciden');
       return false;
     }
 
     // Verificar longitud mínima
-    if (password.length < 6) {
+    if (values.password.length < 6) {
       alert('La contraseña debe tener al menos 6 caracteres');
       return false;
     }
 
     // Verificar mayúscula
-    if (!/[A-Z]/.test(password)) {
+    if (!/[A-Z]/.test(values.password)) {
       alert('La contraseña debe contener al menos una letra mayúscula');
       return false;
     }
 
     // Verificar número
-    if (!/[0-9]/.test(password)) {
+    if (!/[0-9]/.test(values.password)) {
       alert('La contraseña debe contener al menos un número');
       return false;
     }
@@ -256,17 +260,17 @@ export default function ProviderSignup() {
       try {
         // Guardar en localStorage temporalmente
         const datosBasicos = {
-          nombre,
-          apellido,
-          email,
-          telefono,
-          password
+          nombre: values.nombre,
+          apellido: values.apellido,
+          email: values.email,
+          telefono: values.telefono,
+          password: values.password
         };
         localStorage.setItem('registroTemporal', JSON.stringify(datosBasicos));
 
         // TODO: Enviar email de verificación con el servicio de email de la empresa
-        console.log('Enviando email de verificación a:', email);
-        // await fetch('/api/send-verification-email', { body: JSON.stringify({ email }) });
+        console.log('Enviando email de verificación a:', values.email);
+        // await fetch('/api/send-verification-email', { body: JSON.stringify({ email: values.email }) });
         
         // Mostrar modal
         setMostrarModalEmail(true);
@@ -283,19 +287,19 @@ export default function ProviderSignup() {
   };
 
   const agregarCertificadoProfesional = () => {
-    setCertificadosProfesionales([...certificadosProfesionales, { nombre: '', archivo: null }]);
+    setFieldValue('certificadosProfesionales', [...values.certificadosProfesionales, { nombre: '', archivo: null }]);
   };
 
   const actualizarNombreCertificado = (index: number, nombre: string) => {
-    const nuevos = [...certificadosProfesionales];
+    const nuevos = [...values.certificadosProfesionales];
     nuevos[index].nombre = nombre;
-    setCertificadosProfesionales(nuevos);
+    setFieldValue('certificadosProfesionales', nuevos);
   };
 
   const actualizarArchivoCertificado = (index: number, archivo: File | null) => {
-    const nuevos = [...certificadosProfesionales];
+    const nuevos = [...values.certificadosProfesionales];
     nuevos[index].archivo = archivo;
-    setCertificadosProfesionales(nuevos);
+    setFieldValue('certificadosProfesionales', nuevos);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -310,43 +314,43 @@ export default function ProviderSignup() {
     
     // GUARDAR DATOS EN LOCALSTORAGE PRIMERO (antes de cualquier validación o llamada al backend)
     const registroCompleto = {
-      nombre,
-      apellido,
-      email,
-      telefono,
-      profesion,
-      especialidades,
-      profesionesAdicionales,
-      ubicacion,
-      alcanceTrabajo,
-      descripcion,
-      instagram,
-      facebook,
-      linkedin,
-      dni,
-      certificadosProfesionales: certificadosProfesionales.map(c => c.nombre),
-      fotoPerfil: fotoPerfil ? fotoPerfil.name : '',
-      fotosTrabajos: fotosTrabajos.map(f => f.name)
+      nombre: values.nombre,
+      apellido: values.apellido,
+      email: values.email,
+      telefono: values.telefono,
+      profesion: values.profesion,
+      especialidades: values.especialidades,
+      profesionesAdicionales: values.profesionesAdicionales,
+      ubicacion: values.ubicacion,
+      alcanceTrabajo: values.alcanceTrabajo,
+      descripcion: values.descripcion,
+      instagram: values.instagram,
+      facebook: values.facebook,
+      linkedin: values.linkedin,
+      dni: values.dni,
+      certificadosProfesionales: values.certificadosProfesionales.map(c => c.nombre),
+      fotoPerfil: values.fotoPerfil ? values.fotoPerfil.name : '',
+      fotosTrabajos: values.fotosTrabajos.map(f => f.name)
     };
     localStorage.setItem('registroCompleto', JSON.stringify(registroCompleto));
     console.log('Datos guardados en localStorage:', registroCompleto);
     
     // Validaciones
-    if (password !== confirmarPassword) {
+    if (values.password !== values.confirmarPassword) {
       alert('Las contraseñas no coinciden');
       return;
     }
 
     // Validar que la contraseña tenga al menos una mayúscula y un número
-    const tieneMayuscula = /[A-Z]/.test(password);
-    const tieneNumero = /[0-9]/.test(password);
+    const tieneMayuscula = /[A-Z]/.test(values.password);
+    const tieneNumero = /[0-9]/.test(values.password);
     
     if (!tieneMayuscula || !tieneNumero) {
       alert('La contraseña debe contener al menos una mayúscula y un número');
       return;
     }
 
-    if (especialidades.length === 0) {
+    if (values.especialidades.length === 0) {
       alert('Por favor seleccioná al menos una especialidad');
       return;
     }
@@ -355,44 +359,44 @@ export default function ProviderSignup() {
     const formData = new FormData();
     
     // Datos personales
-    formData.append('nombre', nombre);
-    formData.append('apellido', apellido);
-    formData.append('email', email);
-    formData.append('telefono', telefono);
-    formData.append('password', password);
-    formData.append('profesion', profesion);
-    formData.append('especialidades', JSON.stringify(especialidades));
-    formData.append('profesionesAdicionales', JSON.stringify(profesionesAdicionales));
-    formData.append('ubicacion', ubicacion);
-    formData.append('alcanceTrabajo', alcanceTrabajo);
-    formData.append('descripcion', descripcion);
-    formData.append('dni', dni);
+    formData.append('nombre', values.nombre);
+    formData.append('apellido', values.apellido);
+    formData.append('email', values.email);
+    formData.append('telefono', values.telefono);
+    formData.append('password', values.password);
+    formData.append('profesion', values.profesion);
+    formData.append('especialidades', JSON.stringify(values.especialidades));
+    formData.append('profesionesAdicionales', JSON.stringify(values.profesionesAdicionales));
+    formData.append('ubicacion', values.ubicacion);
+    formData.append('alcanceTrabajo', values.alcanceTrabajo);
+    formData.append('descripcion', values.descripcion);
+    formData.append('dni', values.dni);
     
     // Redes sociales
-    if (instagram) formData.append('instagram', instagram);
-    if (facebook) formData.append('facebook', facebook);
-    if (linkedin) formData.append('linkedin', linkedin);
+    if (values.instagram) formData.append('instagram', values.instagram);
+    if (values.facebook) formData.append('facebook', values.facebook);
+    if (values.linkedin) formData.append('linkedin', values.linkedin);
     
     // Archivos
-    if (fotoPerfil) {
-      formData.append('fotoPerfil', fotoPerfil);
+    if (values.fotoPerfil) {
+      formData.append('fotoPerfil', values.fotoPerfil);
     }
     
-    if (fotoDniFrente) {
-      formData.append('fotoDniFrente', fotoDniFrente);
+    if (values.fotoDniFrente) {
+      formData.append('fotoDniFrente', values.fotoDniFrente);
     }
     
-    if (fotoDniDorso) {
-      formData.append('fotoDniDorso', fotoDniDorso);
+    if (values.fotoDniDorso) {
+      formData.append('fotoDniDorso', values.fotoDniDorso);
     }
     
     // Fotos de trabajos (múltiples)
-    fotosTrabajos.forEach(foto => {
+    values.fotosTrabajos.forEach(foto => {
       formData.append('fotosTrabajos', foto);
     });
     
     // Certificados (múltiples)
-    certificadosProfesionales.forEach(cert => {
+    values.certificadosProfesionales.forEach(cert => {
       if (cert.archivo) {
         formData.append('certificados', cert.archivo);
       }
@@ -450,7 +454,7 @@ export default function ProviderSignup() {
           className="hover:bg-white/20 rounded-full transition-colors p-2"
           style={{ cursor: 'pointer' }}
         >
-          <svg width="32" height="32" fill="none" stroke="#000000" strokeWidth="2.5" viewBox="0 0 24 24">
+          <svg width="32" height="32" fill="none" stroke={colors.neutral.black} strokeWidth="2.5" viewBox="0 0 24 24">
             <path d="M15 18l-6-6 6-6"/>
           </svg>
         </button>
@@ -463,9 +467,9 @@ export default function ProviderSignup() {
           <h2 
             className="text-center text-3xl sm:text-4xl mb-6 sm:mb-8"
             style={{ 
-              fontFamily: 'Maitree', 
-              fontWeight: 400, 
-              color: '#244C87'
+              fontFamily: typography.fontFamily.primary, 
+              fontWeight: typography.fontWeight.normal, 
+              color: colors.primary.main
             }}
           >
             {paso === 1 && 'Datos Personales'}
@@ -480,9 +484,13 @@ export default function ProviderSignup() {
               <div
                 key={num}
                 className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-colors text-base sm:text-xl ${
-                  paso >= num ? 'bg-[#244C87] text-white' : 'bg-gray-300 text-gray-500'
+                  paso >= num ? 'text-white' : 'bg-gray-300 text-gray-500'
                 }`}
-                style={{ fontFamily: 'Maitree, serif', fontWeight: 600 }}
+                style={{ 
+                  fontFamily: typography.fontFamily.primary, 
+                  fontWeight: typography.fontWeight.semibold,
+                  backgroundColor: paso >= num ? colors.primary.main : undefined
+                }}
               >
                 {num}
               </div>
@@ -495,21 +503,21 @@ export default function ProviderSignup() {
               <button
                 type="button"
                 onClick={() => {
-                  setNombre('Juan');
-                  setApellido('Perez');
-                  setEmail('juan.perez' + Date.now() + '@test.com'); // Email único
-                  setTelefono('+54 11 1234 5678');
-                  setPassword('Password123');
-                  setConfirmarPassword('Password123');
-                  setProfesion('Plomeros');
-                  setEspecialidades(['Instalación', 'Reparación']);
-                  setUbicacion('Buenos Aires, Buenos Aires');
-                  setAlcanceTrabajo('25');
-                  setDescripcion('Plomero profesional con 10 años de experiencia');
-                  setDni('12345678');
-                  setInstagram('@juanplomero');
-                  setFacebook('juanplomero');
-                  setLinkedin('juan-perez');
+                  setFieldValue('nombre', 'Juan');
+                  setFieldValue('apellido', 'Perez');
+                  setFieldValue('email', 'juan.perez' + Date.now() + '@test.com'); // Email único
+                  setFieldValue('telefono', '+54 11 1234 5678');
+                  setFieldValue('password', 'Password123');
+                  setFieldValue('confirmarPassword', 'Password123');
+                  setFieldValue('profesion', 'Plomeros');
+                  setFieldValue('especialidades', ['Instalación', 'Reparación']);
+                  setFieldValue('ubicacion', 'Buenos Aires, Buenos Aires');
+                  setFieldValue('alcanceTrabajo', '25');
+                  setFieldValue('descripcion', 'Plomero profesional con 10 años de experiencia');
+                  setFieldValue('dni', '12345678');
+                  setFieldValue('instagram', '@juanplomero');
+                  setFieldValue('facebook', 'juanplomero');
+                  setFieldValue('linkedin', 'juan-perez');
                   alert('✅ Formulario autocompletado! Ahora puedes avanzar los pasos.');
                 }}
                 className="px-4 py-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 text-sm"
@@ -523,67 +531,45 @@ export default function ProviderSignup() {
             {/* PASO 1: Datos Básicos */}
             {paso === 1 && (
               <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
-                    Nombre *
-                  </label>
-                  <input
-                    type="text"
-                    value={nombre}
-                    onChange={(e) => setNombre(capitalizeName(e.target.value))}
-                    required
-                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
-                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
-                    placeholder="JOSE"
-                  />
-                </div>
+                <Input
+                  label="Nombre *"
+                  placeholder="JOSE"
+                  value={values.nombre}
+                  onChange={(value) => setFieldValue('nombre', capitalizeName(value))}
+                  required
+                  className="px-4 py-2.5 sm:py-3 text-sm sm:text-base"
+                />
+
+                <Input
+                  label="Apellido *"
+                  placeholder="PEREZ"
+                  value={values.apellido}
+                  onChange={(value) => setFieldValue('apellido', capitalizeName(value))}
+                  required
+                  className="px-4 py-2.5 sm:py-3 text-sm sm:text-base"
+                />
+
+                <Input
+                  label="Email *"
+                  type="email"
+                  placeholder="algo@algo.com"
+                  value={values.email}
+                  onChange={(value) => setFieldValue('email', value)}
+                  required
+                  className="px-4 py-2.5 sm:py-3 text-sm sm:text-base"
+                />
 
                 <div>
-                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
-                    Apellido *
-                  </label>
-                  <input
-                    type="text"
-                    value={apellido}
-                    onChange={(e) => setApellido(capitalizeName(e.target.value))}
-                    required
-                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
-                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
-                    placeholder="PEREZ"
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
-                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
-                    placeholder="algo@algo.com"
-                  />
-                  {/* TODO: Agregar botón de "Verificar Email" y campo para código de verificación */}
-                  {/* <button onClick={enviarCodigoVerificacion}>Verificar Email</button> */}
-                </div>
-
-                <div>
-                  <label className="block mb-2 text-sm sm:text-base" style={{ fontFamily: 'Maitree, serif', color: '#000000' }}>
-                    Telefono laboral *
-                  </label>
-                  <input
+                  <Input
+                    label="Telefono laboral *"
                     type="tel"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 sm:py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none text-sm sm:text-base"
-                    style={{ fontFamily: 'Maitree, serif', color: '#000000' }}
                     placeholder="+54 1234 34 54"
+                    value={values.telefono}
+                    onChange={(value) => setFieldValue('telefono', value)}
+                    required
+                    className="px-4 py-2.5 sm:py-3 text-sm sm:text-base"
                   />
-                  <p className="mt-2 text-xs sm:text-sm text-gray-600 flex items-start gap-1" style={{ fontFamily: 'Maitree, serif' }}>
+                  <p className="mt-2 text-xs sm:text-sm text-gray-600 flex items-start gap-1" style={{ fontFamily: typography.fontFamily.primary }}>
                     <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
@@ -592,17 +578,17 @@ export default function ProviderSignup() {
                 </div>
 
                 <div className="relative">
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Contraseña *
                   </label>
                   <input
                     type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={values.password}
+                    onChange={(e) => setFieldValue('password', e.target.value)}
                     required
                     minLength={6}
-                    className="w-full px-4 py-3 pr-12 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    className="w-full px-4 py-3 pr-12 rounded-full border-2 border-gray-300 focus:outline-none"
+                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, borderColor: colors.primary.main }}
                     placeholder="••••••"
                   />
                   <button
@@ -622,23 +608,23 @@ export default function ProviderSignup() {
                       </svg>
                     )}
                   </button>
-                  <p className="mt-1 text-xs text-gray-500" style={{ fontFamily: 'Maitree, serif' }}>
+                  <p className="mt-1 text-xs text-gray-500" style={{ fontFamily: typography.fontFamily.primary }}>
                     Mínimo 6 dígitos. Debe contener al menos una mayúscula y un número
                   </p>
                 </div>
 
                 <div className="relative">
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Repetir Contraseña *
                   </label>
                   <input
                     type={showConfirmPassword ? "text" : "password"}
-                    value={confirmarPassword}
-                    onChange={(e) => setConfirmarPassword(e.target.value)}
+                    value={values.confirmarPassword}
+                    onChange={(e) => setFieldValue('confirmarPassword', e.target.value)}
                     required
                     minLength={6}
-                    className="w-full px-4 py-3 pr-12 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    className="w-full px-4 py-3 pr-12 rounded-full border-2 border-gray-300 focus:outline-none"
+                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, borderColor: colors.primary.main }}
                     placeholder="••••••"
                   />
                   <button
@@ -667,18 +653,18 @@ export default function ProviderSignup() {
               <div className="space-y-6">
                 {/* Profesión Principal */}
                 <div className="relative">
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Profesión / Oficio principal *
                   </label>
                   <div className="relative">
                     <input
                       type="text"
-                      value={profesion}
+                      value={values.profesion}
                       onClick={() => setMostrarProfesiones(true)}
                       readOnly
                       required
                       className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none cursor-pointer"
-                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                      style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                       placeholder="Seleccionar profesión"
                     />
                     {mostrarProfesiones && (
@@ -687,12 +673,12 @@ export default function ProviderSignup() {
                           <div
                             key={servicio}
                             onClick={() => {
-                              setProfesion(servicio);
-                              setEspecialidades([]); // Resetear especialidades
+                              setFieldValue('profesion', servicio);
+                              setFieldValue('especialidades', []); // Resetear especialidades
                               setMostrarProfesiones(false);
                             }}
                             className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
-                            style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                            style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                           >
                             {servicio}
                           </div>
@@ -703,23 +689,23 @@ export default function ProviderSignup() {
                 </div>
 
                 {/* Especialidades de la profesión principal */}
-                {profesion && (
+                {values.profesion && (
                   <div>
-                    <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                    <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                       Especialidades *
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {getEspecialidades(profesion).map((esp) => (
+                      {getEspecialidades(values.profesion).map((esp) => (
                         <button
                           key={esp}
                           type="button"
                           onClick={() => toggleEspecialidad(esp)}
                           className={`px-4 py-2 rounded-full border-2 transition-colors ${
-                            especialidades.includes(esp)
+                            values.especialidades.includes(esp)
                               ? 'bg-[#244C87] text-white border-[#244C87]'
                               : 'bg-white text-gray-700 border-gray-300 hover:border-[#244C87]'
                           }`}
-                          style={{ fontFamily: 'Maitree, serif', fontSize: '14px' }}
+                          style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}
                         >
                           {esp}
                         </button>
@@ -729,10 +715,10 @@ export default function ProviderSignup() {
                 )}
 
                 {/* Profesiones adicionales */}
-                {profesionesAdicionales.map((profAdic, index) => (
+                {values.profesionesAdicionales.map((profAdic, index) => (
                   <div key={index} className="space-y-4 pt-4 border-t border-gray-200">
                     <div className="relative">
-                      <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                      <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                         Otra Profesión / Oficio
                       </label>
                       <div className="relative">
@@ -742,7 +728,7 @@ export default function ProviderSignup() {
                           onClick={() => setProfesionAdicionalAbierta(index)}
                           readOnly
                           className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none cursor-pointer"
-                          style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                          style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                           placeholder="Seleccionar profesión"
                         />
                         {profesionAdicionalAbierta === index && (
@@ -750,9 +736,9 @@ export default function ProviderSignup() {
                             {servicios
                               .filter(servicio => {
                                 // Filtrar la profesión principal
-                                if (servicio === profesion) return false;
+                                if (servicio === values.profesion) return false;
                                 // Filtrar las profesiones ya agregadas
-                                return !profesionesAdicionales.some(p => p.profesion === servicio);
+                                return !values.profesionesAdicionales.some(p => p.profesion === servicio);
                               })
                               .map((servicio) => (
                               <div
@@ -762,7 +748,7 @@ export default function ProviderSignup() {
                                   setProfesionAdicionalAbierta(null);
                                 }}
                                 className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
-                                style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                                style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                               >
                                 {servicio}
                               </div>
@@ -774,7 +760,7 @@ export default function ProviderSignup() {
 
                     {profAdic.profesion && (
                       <div>
-                        <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                        <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                           Especialidades
                         </label>
                         <div className="flex flex-wrap gap-2">
@@ -788,7 +774,7 @@ export default function ProviderSignup() {
                                   ? 'bg-[#244C87] text-white border-[#244C87]'
                                   : 'bg-white text-gray-700 border-gray-300 hover:border-[#244C87]'
                               }`}
-                              style={{ fontFamily: 'Maitree, serif', fontSize: '14px' }}
+                              style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}
                             >
                               {esp}
                             </button>
@@ -804,23 +790,23 @@ export default function ProviderSignup() {
                   type="button"
                   onClick={agregarOtraProfesion}
                   className="w-full py-3 rounded-full border-2 border-[#244C87] text-[#244C87] hover:bg-[#244C87] hover:text-white transition-colors"
-                  style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 600 }}
+                  style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, fontWeight: 600 }}
                 >
                   + Agregar otra profesión
                 </button>
 
                 {/* Ubicación con autocompletado */}
                 <div className="relative">
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Ubicación *
                   </label>
                   <input
                     type="text"
-                    value={ubicacion}
+                    value={values.ubicacion}
                     onChange={(e) => handleUbicacionChange(e.target.value)}
                     required
                     className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                     placeholder="Empezá a escribir tu ciudad..."
                   />
                   {mostrarUbicaciones && ubicacionesFiltradas.length > 0 && (
@@ -830,7 +816,7 @@ export default function ProviderSignup() {
                           key={idx}
                           onClick={() => seleccionarUbicacion(ciudad)}
                           className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
-                          style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                          style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                         >
                           {ciudad}
                         </div>
@@ -840,23 +826,16 @@ export default function ProviderSignup() {
                 </div>
 
                 {/* Alcance del trabajo */}
-                <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                    Alcance del trabajo
-                  </label>
-                  <input
-                    type="number"
-                    value={alcanceTrabajo}
-                    onChange={(e) => setAlcanceTrabajo(e.target.value)}
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
-                    placeholder="Ejemplo: 10"
-                    min="0"
-                  />
-                  <p className="mt-2 text-xs text-gray-600" style={{ fontFamily: 'Maitree, serif' }}>
-                    ¿Hasta cuántos km estarías dispuesto/a a moverte para trabajar desde {ubicacion || 'tu ubicación'}?
+                <Input
+                  label="Alcance del trabajo"
+                  type="number"
+                  placeholder="Ejemplo: 10"
+                  value={values.alcanceTrabajo}
+                  onChange={(value) => setFieldValue('alcanceTrabajo', value)}
+                />
+                  <p className="mt-2 text-xs text-gray-600" style={{ fontFamily: typography.fontFamily.primary }}>
+                    ¿Hasta cuántos km estarías dispuesto/a a moverte para trabajar desde {values.ubicacion || 'tu ubicación'}?
                   </p>
-                </div>
               </div>
             )}
 
@@ -864,25 +843,18 @@ export default function ProviderSignup() {
             {paso === 3 && (
               <div className="space-y-6">
                 {/* DNI* */}
-                <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                    DNI*
-                  </label>
-                  <input
-                    type="text"
-                    value={dni}
-                    onChange={(e) => setDni(e.target.value)}
-                    placeholder="DNI"
-                    required
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
-                  />
-                </div>
+                <Input
+                  label="DNI*"
+                  placeholder="DNI"
+                  value={values.dni}
+                  onChange={(value) => setFieldValue('dni', value)}
+                  required
+                />
 
                 {/* Fotos del DNI (frente y dorso) */}
                 <div>
-                  <label className="block mb-4" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                    Fotos del DNI <span style={{ color: '#999999' }}>(frente y dorso)</span>
+                  <label className="block mb-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
+                    Fotos del DNI <span style={{ color: colors.neutral[400] }}>(frente y dorso)</span>
                   </label>
                   <div 
                     className="border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center cursor-pointer hover:border-[#244C87] transition-colors"
@@ -894,12 +866,12 @@ export default function ProviderSignup() {
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                       </svg>
-                      <p className="mt-4" style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999999' }}>
+                      <p className="mt-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[400] }}>
                         Arrastrá tu foto o hacé click para subirlo
                       </p>
-                      {(fotoDniFrente || fotoDniDorso) && (
-                        <p className="mt-2 text-sm text-green-600" style={{ fontFamily: 'Maitree, serif' }}>
-                          {fotoDniFrente?.name} {fotoDniDorso && `y ${fotoDniDorso.name}`}
+                      {(values.fotoDniFrente || values.fotoDniDorso) && (
+                        <p className="mt-2 text-sm text-green-600" style={{ fontFamily: typography.fontFamily.primary }}>
+                          {values.fotoDniFrente?.name} {values.fotoDniDorso && `y ${values.fotoDniDorso.name}`}
                         </p>
                       )}
                     </div>
@@ -911,8 +883,8 @@ export default function ProviderSignup() {
                     onChange={(e) => {
                       const files = e.target.files;
                       if (files) {
-                        setFotoDniFrente(files[0] || null);
-                        setFotoDniDorso(files[1] || null);
+                        setFieldValue('fotoDniFrente', files[0] || null);
+                        setFieldValue('fotoDniDorso', files[1] || null);
                       }
                     }}
                     multiple
@@ -921,18 +893,13 @@ export default function ProviderSignup() {
                 </div>
 
                 {/* Certificado Profesional */}
-                {certificadosProfesionales.map((cert, idx) => (
+                {values.certificadosProfesionales.map((cert, idx) => (
                   <div key={idx} className="space-y-4">
-                    <label className="block" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                      Certificado Profesional
-                    </label>
-                    <input
-                      type="text"
-                      value={cert.nombre}
-                      onChange={(e) => actualizarNombreCertificado(idx, e.target.value)}
+                    <Input
+                      label="Certificado Profesional"
                       placeholder="Nombre del curso/formación"
-                      className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                      value={cert.nombre}
+                      onChange={(value) => actualizarNombreCertificado(idx, value)}
                     />
                     
                     <div 
@@ -945,11 +912,11 @@ export default function ProviderSignup() {
                           <polyline points="7 10 12 15 17 10" />
                           <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
-                        <p className="mt-4" style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999999' }}>
+                        <p className="mt-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[400] }}>
                           Arrastrá tu certificado o hacé click para subirlo
                         </p>
                         {cert.archivo && (
-                          <p className="mt-2 text-sm text-green-600" style={{ fontFamily: 'Maitree, serif' }}>
+                          <p className="mt-2 text-sm text-green-600" style={{ fontFamily: typography.fontFamily.primary }}>
                             {cert.archivo.name}
                           </p>
                         )}
@@ -970,7 +937,7 @@ export default function ProviderSignup() {
                   type="button"
                   onClick={agregarCertificadoProfesional}
                   className="text-[#244C87] underline"
-                  style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 600 }}
+                  style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, fontWeight: 600 }}
                 >
                   Agregar otra Certificado +
                 </button>
@@ -982,7 +949,7 @@ export default function ProviderSignup() {
               <div className="space-y-6">
                 {/* Foto de perfil */}
                 <div>
-                  <label className="block mb-4" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Foto de perfil
                   </label>
                   <div 
@@ -995,12 +962,12 @@ export default function ProviderSignup() {
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                       </svg>
-                      <p className="mt-4" style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999999' }}>
+                      <p className="mt-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[400] }}>
                         Arrastrá tu foto o hacé click para subirlo
                       </p>
-                      {fotoPerfil && (
-                        <p className="mt-2 text-sm text-green-600" style={{ fontFamily: 'Maitree, serif' }}>
-                          {fotoPerfil.name}
+                      {values.fotoPerfil && (
+                        <p className="mt-2 text-sm text-green-600" style={{ fontFamily: typography.fontFamily.primary }}>
+                          {values.fotoPerfil.name}
                         </p>
                       )}
                     </div>
@@ -1009,30 +976,30 @@ export default function ProviderSignup() {
                     id="file-perfil"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setFotoPerfil(e.target.files?.[0] || null)}
+                    onChange={(e) => setFieldValue('fotoPerfil', e.target.files?.[0] || null)}
                     className="hidden"
                   />
                 </div>
 
                 {/* Descripción de tu servicio */}
                 <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Descripción de tu servicio
                   </label>
                   <textarea
-                    value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
+                    value={values.descripcion}
+                    onChange={(e) => setFieldValue('descripcion', e.target.value)}
                     rows={6}
                     className="w-full px-4 py-3 rounded-3xl border-2 border-gray-300 focus:border-[#244C87] focus:outline-none resize-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                     placeholder=""
                   />
                 </div>
 
                 {/* Fotos de tu trabajo */}
                 <div>
-                  <label className="block mb-4" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                    Fotos de tu trabajo <span style={{ color: '#999999' }}>(máximo 5 fotos)</span>
+                  <label className="block mb-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
+                    Fotos de tu trabajo <span style={{ color: colors.neutral[400] }}>(máximo 5 fotos)</span>
                   </label>
                   <div 
                     className="border-2 border-dashed border-gray-300 rounded-3xl p-8 text-center cursor-pointer hover:border-[#244C87] transition-colors"
@@ -1044,22 +1011,22 @@ export default function ProviderSignup() {
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                       </svg>
-                      <p className="mt-4" style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#999999' }}>
+                      <p className="mt-4" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[400] }}>
                         Arrastrá tu foto o hacé click para subirlo
                       </p>
-                      {fotosTrabajos.length > 0 && (
+                      {values.fotosTrabajos.length > 0 && (
                         <div className="mt-2">
-                          <p className="text-sm text-green-600" style={{ fontFamily: 'Maitree, serif' }}>
-                            {fotosTrabajos.length} foto{fotosTrabajos.length > 1 ? 's' : ''} seleccionada{fotosTrabajos.length > 1 ? 's' : ''} (de 5)
+                          <p className="text-sm text-green-600" style={{ fontFamily: typography.fontFamily.primary }}>
+                            {values.fotosTrabajos.length} foto{values.fotosTrabajos.length > 1 ? 's' : ''} seleccionada{values.fotosTrabajos.length > 1 ? 's' : ''} (de 5)
                           </p>
                           <div className="mt-2 space-y-1">
-                            {fotosTrabajos.map((foto, idx) => (
-                              <div key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded" style={{ fontFamily: 'Maitree, serif' }}>
+                            {values.fotosTrabajos.map((foto, idx) => (
+                              <div key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded" style={{ fontFamily: typography.fontFamily.primary }}>
                                 <span className="text-xs text-gray-600 truncate flex-1">• {foto.name}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setFotosTrabajos(fotosTrabajos.filter((_, i) => i !== idx));
+                                    setFieldValue('fotosTrabajos', values.fotosTrabajos.filter((_, i) => i !== idx));
                                   }}
                                   className="ml-2 text-red-500 hover:text-red-700 flex-shrink-0"
                                   style={{ cursor: 'pointer' }}
@@ -1073,8 +1040,8 @@ export default function ProviderSignup() {
                           </div>
                         </div>
                       )}
-                      {fotosTrabajos.length >= 5 && (
-                        <p className="mt-2 text-sm text-orange-600" style={{ fontFamily: 'Maitree, serif' }}>
+                      {values.fotosTrabajos.length >= 5 && (
+                        <p className="mt-2 text-sm text-orange-600" style={{ fontFamily: typography.fontFamily.primary }}>
                           ¡Has alcanzado el límite de 5 fotos!
                         </p>
                       )}
@@ -1087,14 +1054,14 @@ export default function ProviderSignup() {
                     multiple
                     onChange={(e) => {
                       const newFiles = Array.from(e.target.files || []);
-                      const currentTotal = fotosTrabajos.length;
+                      const currentTotal = values.fotosTrabajos.length;
                       const availableSlots = 5 - currentTotal;
                       
                       if (newFiles.length > availableSlots) {
                         alert(`Solo podés agregar ${availableSlots} foto${availableSlots !== 1 ? 's' : ''} más (máximo 5 fotos en total)`);
-                        setFotosTrabajos([...fotosTrabajos, ...newFiles.slice(0, availableSlots)]);
+                        setFieldValue('fotosTrabajos', [...values.fotosTrabajos, ...newFiles.slice(0, availableSlots)]);
                       } else {
-                        setFotosTrabajos([...fotosTrabajos, ...newFiles]);
+                        setFieldValue('fotosTrabajos', [...values.fotosTrabajos, ...newFiles]);
                       }
                       
                       // Resetear el input para permitir seleccionar el mismo archivo nuevamente
@@ -1106,48 +1073,34 @@ export default function ProviderSignup() {
 
                 {/* Instagram */}
                 <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Instagram
                   </label>
                   <input
                     type="text"
-                    value={instagram}
-                    onChange={(e) => setInstagram(e.target.value)}
+                    value={values.instagram}
+                    onChange={(e) => setFieldValue('instagram', e.target.value)}
                     placeholder="insertá nombre de usuario"
                     className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
+                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
                   />
                 </div>
 
                 {/* Facebook */}
-                <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                    Facebook
-                  </label>
-                  <input
-                    type="text"
-                    value={facebook}
-                    onChange={(e) => setFacebook(e.target.value)}
-                    placeholder="insertá nombre de usuario"
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
-                  />
-                </div>
+                <Input
+                  label="Facebook"
+                  placeholder="insertá nombre de usuario"
+                  value={values.facebook}
+                  onChange={(value) => setFieldValue('facebook', value)}
+                />
 
                 {/* LinkedIn */}
-                <div>
-                  <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}>
-                    Linkedin
-                  </label>
-                  <input
-                    type="text"
-                    value={linkedin}
-                    onChange={(e) => setLinkedin(e.target.value)}
-                    placeholder="insertá URL del perfil"
-                    className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
-                  />
-                </div>
+                <Input
+                  label="Linkedin"
+                  placeholder="insertá URL del perfil"
+                  value={values.linkedin}
+                  onChange={(value) => setFieldValue('linkedin', value)}
+                />
               </div>
             )}
 
@@ -1158,7 +1111,7 @@ export default function ProviderSignup() {
                   type="button"
                   onClick={handleSiguiente}
                   className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer text-base sm:text-lg"
-                  style={{ fontFamily: 'Maitree, serif' }}
+                  style={{ fontFamily: typography.fontFamily.primary }}
                 >
                   {paso === 1 ? 'Guardar y seguir' : 'Siguiente'}
                 </button>
@@ -1166,7 +1119,7 @@ export default function ProviderSignup() {
                 <button
                   type="submit"
                   className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer text-base sm:text-lg"
-                  style={{ fontFamily: 'Maitree, serif' }}
+                  style={{ fontFamily: typography.fontFamily.primary }}
                 >
                   Finalizar registro
                 </button>
@@ -1176,117 +1129,19 @@ export default function ProviderSignup() {
         </div>
       </main>
 
-      {/* Footer - Responsive */}
-      <footer className="w-full text-white mt-12 sm:mt-24">
-        {/* Franja azul superior */}
-        <div className="w-full bg-[#244C87] h-12 sm:h-16"></div>
-        
-        {/* Contenedor del logo con fondo blanco */}
-        <div className="w-full bg-white py-6 sm:py-8">
-          <div className="flex justify-center px-4">
-            <Image 
-              src="/Logo.png" 
-              alt="Serco Logo" 
-              width={484} 
-              height={134}
-              className="w-full max-w-[280px] sm:max-w-[350px] md:max-w-[484px] h-auto"
-            />
-          </div>
-        </div>
-
-        {/* Resto del footer con fondo azul */}
-        <div className="w-full bg-[#244C87] py-8 sm:py-12 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto">
-
-          {/* Redes Sociales - Responsive */}
-          <div className="flex justify-center mb-8 sm:mb-12 md:mb-16 gap-6 sm:gap-12 md:gap-16">
-            {/* LinkedIn */}
-            <a href="#" className="hover:opacity-80 transition-opacity">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-              </svg>
-            </a>
-
-            {/* YouTube */}
-            <a href="#" className="hover:opacity-80 transition-opacity">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
-              </svg>
-            </a>
-
-            {/* Facebook */}
-            <a href="#" className="hover:opacity-80 transition-opacity">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
-              </svg>
-            </a>
-
-            {/* Instagram */}
-            <a href="#" className="hover:opacity-80 transition-opacity">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-              </svg>
-            </a>
-          </div>
-
-          {/* Navegación en 3 columnas - Ya es responsive */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 mb-8 sm:mb-12 md:mb-16 text-center">
-            {/* Para Clientes */}
-            <div>
-              <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Para Clientes</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Buscar Servidores</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>¿Cómo Funciona?</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Seguridad y Confianza</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Ayuda</a></li>
-              </ul>
-            </div>
-
-            {/* Para Proveedores */}
-            <div>
-              <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Para Proveedores</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Sumate como proveedor</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Experiencias</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Recursos útiles</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Soporte Proveedores</a></li>
-              </ul>
-            </div>
-
-            {/* Empresa */}
-            <div>
-              <h3 className="mb-6" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '24px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Empresa</h3>
-              <ul className="space-y-3">
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Sobre nosotros</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Trabaja con nosotros</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Contacto</a></li>
-                <li><a href="#" className="hover:opacity-80 transition-opacity" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Prensa</a></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Separador */}
-          <div className="border-t border-white/30 mb-8"></div>
-
-          {/* Texto final */}
-          <div className="text-center">
-            <p style={{ fontFamily: 'Maitree, serif', fontStyle: 'italic', fontSize: '16px', lineHeight: '100%', letterSpacing: '0%', textAlign: 'center' }}>Creado por Bren y Manu</p>
-          </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* Modal de verificación de email */}
       {mostrarModalEmail && paso === 1 && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-3xl p-8 max-w-md mx-4 text-center">
-            <h2 className="text-2xl font-semibold mb-4" style={{ fontFamily: 'Maitree', color: '#244C87' }}>
+            <h2 className="text-2xl font-semibold mb-4" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
               ¡Revisá tu email!
             </h2>
-            <p className="mb-6" style={{ fontFamily: 'Maitree', fontSize: '16px', color: '#000000' }}>
-              Te enviamos un correo a <strong>{email}</strong> con un enlace para verificar tu cuenta y seguir completando tu perfil.
+            <p className="mb-6" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
+              Te enviamos un correo a <strong>{values.email}</strong> con un enlace para verificar tu cuenta y seguir completando tu perfil.
             </p>
-            <p className="mb-6 text-sm text-gray-600" style={{ fontFamily: 'Maitree' }}>
+            <p className="mb-6 text-sm text-gray-600" style={{ fontFamily: typography.fontFamily.primary }}>
               Si no ves el correo, revisá tu carpeta de spam.
             </p>
             <button
@@ -1296,7 +1151,7 @@ export default function ProviderSignup() {
                 setPaso(2);
               }}
               className="px-8 py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors"
-              style={{ fontFamily: 'Maitree', fontSize: '16px' }}
+              style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }}
             >
               Entendido
             </button>

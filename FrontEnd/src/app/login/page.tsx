@@ -3,57 +3,54 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/contexts';
+import { useRedirectIfAuthenticated, useForm, useToggle } from '@/hooks';
+import { apiPost } from '@/utils/api';
 
 export default function Login() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+  const { login } = useAuth();
+  
+  // Redirigir si ya está autenticado
+  useRedirectIfAuthenticated();
+  
+  const { values, handleChangeEvent } = useForm({
+    initialValues: {
+      email: '',
+      password: ''
+    },
+    onSubmit: () => {} // Se maneja con handleSubmit personalizado
   });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, toggleShowPassword] = useToggle(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('🔐 Intentando login con:', formData.email);
+    console.log('🔐 Intentando login con:', values.email);
     setError('');
     setLoading(true);
 
     try {
       console.log('📤 Enviando solicitud de login...');
-      const response = await fetch('http://localhost:8000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const data = await apiPost<{
+        token: string;
+        user: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+      }>('/auth/login', values);
 
-      console.log('📥 Respuesta recibida:', response.status);
-      const data = await response.json();
-      console.log('📦 Datos:', data);
+      console.log('✅ Login exitoso:', data);
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
-      // Guardar token en localStorage
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Usar el Context API para login
+      const providerId = data.user.role === 'PROVIDER' && data.user.providerProfile 
+        ? data.user.providerProfile.id 
+        : undefined;
       
-      // Si es proveedor, guardar también el providerId
-      if (data.user.role === 'PROVIDER' && data.user.providerProfile) {
-        // El ID del providerProfile es lo que necesitamos
-        localStorage.setItem('providerId', data.user.providerProfile.id);
-        console.log('📝 ProviderId guardado:', data.user.providerProfile.id);
-      }
-
+      login(data.token, data.user, providerId);
+      
       console.log('✅ Login exitoso, redirigiendo...');
 
       // Redirigir al dashboard según el rol
-      // Por ahora solo tenemos dashboard de proveedores
-      // El dashboard de clientes se implementará más adelante
       if (data.user.role === 'PROVIDER') {
         router.push('/dashboard-provider');
       } else {
@@ -100,9 +97,10 @@ export default function Login() {
             <input
               type="email"
               id="email"
+              name="email"
               required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              value={values.email}
+              onChange={handleChangeEvent}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               placeholder="juan@example.com"
               disabled={loading}
@@ -119,16 +117,17 @@ export default function Login() {
             <input
               type={showPassword ? "text" : "password"}
               id="password"
+              name="password"
               required
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              value={values.password}
+              onChange={handleChangeEvent}
               className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               placeholder="Tu contraseña"
               disabled={loading}
             />
             <button
               type="button"
-              onClick={() => setShowPassword(!showPassword)}
+              onClick={toggleShowPassword}
               className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
               tabIndex={-1}
             >

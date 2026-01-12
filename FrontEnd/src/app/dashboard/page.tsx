@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/contexts';
 
 interface User {
   id: string;
@@ -36,6 +37,7 @@ const serviceCategoryLabels: { [key: string]: string } = {
 
 export default function Dashboard() {
   const router = useRouter();
+  const { user: authUser, token, isAuthenticated, logout: authLogout, isLoading: authLoading } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,9 +45,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-
-        if (!token) {
+        if (!isAuthenticated || !token) {
           router.push('/login');
           return;
         }
@@ -64,24 +64,22 @@ export default function Dashboard() {
         setUser(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar datos');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        router.push('/login');
+        authLogout();
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserData();
-  }, [router]);
+    if (!authLoading) {
+      fetchUserData();
+    }
+  }, [router, isAuthenticated, token, authLogout, authLoading]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/');
+    authLogout();
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="flex items-center space-x-3">

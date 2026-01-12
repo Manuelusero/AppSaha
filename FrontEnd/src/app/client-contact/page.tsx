@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Input } from '@/components/ui';
 
 interface BookingInfo {
   id: string;
@@ -206,34 +207,24 @@ function ClientContactContent() {
 
           <div className="space-y-6">
             {/* Email */}
-            <div>
-              <label style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000', display: 'block', marginBottom: '8px' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="tu@email.com"
-                className="w-full px-5 py-4 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none bg-white"
-                style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000' }}
-              />
-            </div>
+            <Input
+              label="Email"
+              type="email"
+              placeholder="tu@email.com"
+              value={email}
+              onChange={setEmail}
+              className="px-5 py-4"
+            />
 
             {/* Teléfono */}
-            <div>
-              <label style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000', display: 'block', marginBottom: '8px' }}>
-                Teléfono
-              </label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+54 11 1234-5678"
-                className="w-full px-5 py-4 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none bg-white"
-                style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000' }}
-              />
-            </div>
+            <Input
+              label="Teléfono"
+              type="tel"
+              placeholder="+54 11 1234-5678"
+              value={phone}
+              onChange={setPhone}
+              className="px-5 py-4"
+            />
 
             {/* Método preferido */}
             <div>
