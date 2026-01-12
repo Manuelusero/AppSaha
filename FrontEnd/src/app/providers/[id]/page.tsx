@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Footer } from '@/components/layout';
-import { apiGet, getProfileImageUrl, getPortfolioImageUrl } from '@/utils';
+import { apiGet, getProfileImageUrl, getPortfolioImageUrl, serviceCategoryLabels } from '@/utils';
 
 interface ProviderReference {
   id: string;
@@ -55,21 +55,6 @@ interface Provider {
   createdAt: string;
   providerProfile: ProviderProfile;
 }
-
-const serviceCategoryLabels: { [key: string]: string } = {
-  PLOMERIA: 'Plomero',
-  ELECTRICIDAD: 'Electricista',
-  CARPINTERIA: 'Carpintero',
-  PINTURA: 'Pintor',
-  LIMPIEZA: 'Limpiador',
-  JARDINERIA: 'Jardinero',
-  MECANICA: 'Mecánico',
-  CONSTRUCCION: 'Constructor',
-  REPARACIONES: 'Reparador',
-  MUDANZAS: 'Servicio de mudanzas',
-  TECNOLOGIA: 'Técnico',
-  OTRO: 'Profesional',
-};
 
 export default function ProviderProfile() {
   const params = useParams();

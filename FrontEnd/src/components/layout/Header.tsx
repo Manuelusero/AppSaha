@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts';
 import { colors, gradients, spacing, borderRadius, shadows, withOpacity } from '@/styles/tokens';
+import { apiGet, getProfileImageUrl } from '@/utils';
 
 interface HeaderProps {
   variant?: 'landing' | 'minimal';
@@ -31,25 +32,20 @@ export default function Header({
   useEffect(() => {
     if (providerId) {
       // Cargar datos del proveedor
-      fetch(`http://localhost:8000/api/providers/${providerId}`)
-        .then(res => res.json())
-        .then(data => {
-          const profile = data.providerProfile;
-          let profileImageUrl = '/Frame16.png'; // Imagen por defecto
-          if (profile?.profilePhoto) {
-            if (!profile.profilePhoto.startsWith('http')) {
-              profileImageUrl = `http://localhost:8000/uploads/profile/${profile.profilePhoto}`;
-            } else {
-              profileImageUrl = profile.profilePhoto;
-            }
-          }
+      const fetchProviderData = async () => {
+        try {
+          const data = await apiGet<any>(`/providers/${providerId}`);
           setProviderData({
             id: providerId,
             nombre: data.name || 'Proveedor',
-            profileImage: profileImageUrl
+            profileImage: getProfileImageUrl(data.providerProfile?.profilePhoto)
           });
-        })
-        .catch(err => console.error('Error al cargar proveedor:', err));
+        } catch (error) {
+          console.error('Error loading provider data:', error);
+        }
+      };
+
+      fetchProviderData();
     } else {
       setProviderData(null);
     }

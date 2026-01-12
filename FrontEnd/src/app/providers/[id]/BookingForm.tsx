@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiPost, TOKEN_KEY } from '@/utils';
 
 interface BookingFormProps {
   providerId: string;
@@ -29,7 +30,7 @@ export default function BookingForm({ providerId, providerName, onClose, onSucce
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem(TOKEN_KEY);
 
       if (!token) {
         // Redirigir al login si no está autenticado
@@ -38,23 +39,10 @@ export default function BookingForm({ providerId, providerName, onClose, onSucce
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          providerId
-        }),
+      await apiPost('/bookings', {
+        ...formData,
+        providerId
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al crear solicitud');
-      }
 
       onSuccess();
     } catch (err) {

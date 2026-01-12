@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Input } from '@/components/ui';
+import { apiGet, apiPost } from '@/utils';
 
 interface BookingInfo {
   id: string;
@@ -34,21 +35,20 @@ function ClientContactContent() {
       return;
     }
 
-    // Cargar información del presupuesto
-    fetch(`http://localhost:8000/api/bookings/client-data/${token}`)
-      .then(res => {
-        if (!res.ok) throw new Error('Link inválido o expirado');
-        return res.json();
-      })
-      .then(data => {
+    const fetchBookingInfo = async () => {
+      try {
+        const data = await apiGet<{ booking: BookingInfo }>(`/bookings/client-data/${token}`);
         setBookingInfo(data.booking);
-        setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Error:', err);
-        alert(err.message);
+        alert(err instanceof Error ? err.message : 'Link inválido o expirado');
         router.push('/');
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookingInfo();
   }, [token, router]);
 
   const handleSubmit = async () => {
@@ -67,22 +67,11 @@ function ClientContactContent() {
     setSubmitting(true);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/bookings/client-data/${token}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          clientEmail: email,
-          clientPhone: phone,
-          clientContactMethod: contactMethod
-        })
+      await apiPost(`/bookings/client-data/${token}`, {
+        clientEmail: email,
+        clientPhone: phone,
+        clientContactMethod: contactMethod
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al guardar datos');
-      }
 
       alert('¡Listo! Recibirás el presupuesto en tu ' + (contactMethod === 'EMAIL' ? 'email' : 'WhatsApp') + ' pronto.');
       router.push('/');

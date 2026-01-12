@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts';
+import { serviceCategoryLabels, apiGet } from '@/utils';
 
 interface User {
   id: string;
@@ -24,17 +25,6 @@ interface User {
   };
 }
 
-const serviceCategoryLabels: { [key: string]: string } = {
-  PLOMERIA: 'Plomería',
-  ELECTRICIDAD: 'Electricidad',
-  CARPINTERIA: 'Carpintería',
-  PINTURA: 'Pintura',
-  LIMPIEZA: 'Limpieza',
-  JARDINERIA: 'Jardinería',
-  MECANICA: 'Mecánica',
-  OTRO: 'Otro',
-};
-
 export default function Dashboard() {
   const router = useRouter();
   const { user: authUser, token, isAuthenticated, logout: authLogout, isLoading: authLoading } = useAuth();
@@ -50,17 +40,7 @@ export default function Dashboard() {
           return;
         }
 
-        const response = await fetch('http://localhost:8000/api/auth/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Token inválido');
-        }
-
-        const data = await response.json();
+        const data = await apiGet<User>('/auth/me');
         setUser(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar datos');

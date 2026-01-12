@@ -13,3 +13,6 @@ export * from './constants';
 
 // Image helpers
 export * from './images';
+
+// Categories
+export * from './categories';

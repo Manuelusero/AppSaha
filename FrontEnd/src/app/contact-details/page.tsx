@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Header, Footer } from '@/components/layout';
 import { Input, Button } from '@/components/ui';
+import { apiGet, apiUpload } from '@/utils';
 
 function ContactDetailsContent() {
   const searchParams = useSearchParams();
@@ -27,11 +28,8 @@ function ContactDetailsContent() {
       // Si es solo un profesional, obtener su nombre
       if (professionalIds.length === 1) {
         try {
-          const response = await fetch(`http://localhost:8000/api/providers/${professionalIds[0]}`);
-          if (response.ok) {
-            const data = await response.json();
-            setProviderName(data.name);
-          }
+          const data = await apiGet<{ name: string }>(`/providers/${professionalIds[0]}`);
+          setProviderName(data.name);
         } catch (error) {
           console.error('Error fetching provider:', error);
         }
@@ -81,17 +79,7 @@ function ContactDetailsContent() {
           }
         }
 
-        const response = await fetch('http://localhost:8000/api/bookings/guest', {
-          method: 'POST',
-          body: formData // Enviar FormData en lugar de JSON
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Error al enviar solicitud');
-        }
-
-        return response.json();
+        return await apiUpload('/bookings/guest', formData);
       });
 
       await Promise.all(bookingPromises);
