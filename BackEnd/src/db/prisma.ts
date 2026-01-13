@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma/index.js';
+import { PrismaClient } from '@prisma/client';
 
 // Singleton pattern para evitar múltiples instancias de PrismaClient
 // Esto previene memory leaks en desarrollo con hot-reload
