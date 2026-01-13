@@ -96,29 +96,34 @@ app.use((req, res) => {
   });
 });
 
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🌍 URL: http://localhost:${PORT}`);
-  console.log(`📋 Rutas disponibles:`);
-  console.log(`   AUTH:`);
-  console.log(`   - POST /api/auth/signup - Registro de proveedores`);
-  console.log(`   - POST /api/auth/signup-client - Registro de clientes`);
-  console.log(`   - POST /api/auth/login - Login`);
-  console.log(`   - GET  /api/auth/me - Usuario actual`);
-  console.log(`   PROVIDERS:`);
-  console.log(`   - POST /api/providers/register - Registro de proveedor con archivos`);
-  console.log(`   - GET  /api/providers - Listar proveedores`);
-  console.log(`   - GET  /api/providers/:id - Detalle de proveedor`);
-  console.log(`   FILES:`);
-  console.log(`   - GET  /uploads/:folder/:filename - Servir archivos estáticos`);
-  console.log(`   BOOKINGS:`);
-  console.log(`   - POST /api/bookings - Crear solicitud`);
-  console.log(`   - GET  /api/bookings - Listar solicitudes`);
-  console.log(`   - PATCH /api/bookings/:id/status - Actualizar estado`);
-  console.log(`   REVIEWS:`);
-  console.log(`   - POST /api/reviews - Crear reseña`);
-  console.log(`   - GET  /api/reviews/provider/:providerId - Reseñas de proveedor`);
-  console.log(`   - GET  /api/reviews/booking/:bookingId - Reseña de booking`);
-  console.log(`   - PATCH /api/reviews/:id/response - Responder reseña`);
-});
+// Export app for Vercel
+export default app;
+
+// Solo iniciar servidor si no estamos en Vercel
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+    console.log(`🌍 URL: http://localhost:${PORT}`);
+    console.log(`📋 Rutas disponibles:`);
+    console.log(`   AUTH:`);
+    console.log(`   - POST /api/auth/signup - Registro de proveedores`);
+    console.log(`   - POST /api/auth/signup-client - Registro de clientes`);
+    console.log(`   - POST /api/auth/login - Login`);
+    console.log(`   - GET  /api/auth/me - Usuario actual`);
+    console.log(`   PROVIDERS:`);
+    console.log(`   - POST /api/providers/register - Registro de proveedor con archivos`);
+    console.log(`   - GET  /api/providers - Listar proveedores`);
+    console.log(`   - GET  /api/providers/:id - Detalle de proveedor`);
+    console.log(`   FILES:`);
+    console.log(`   - GET  /uploads/:folder/:filename - Servir archivos estáticos`);
+    console.log(`   BOOKINGS:`);
+    console.log(`   - POST /api/bookings - Crear solicitud`);
+    console.log(`   - GET  /api/bookings - Listar solicitudes`);
+    console.log(`   - PATCH /api/bookings/:id/status - Actualizar estado`);
+    console.log(`   REVIEWS:`);
+    console.log(`   - POST /api/reviews - Crear reseña`);
+    console.log(`   - GET  /api/reviews/provider/:providerId - Reseñas de proveedor`);
+    console.log(`   - GET  /api/reviews/booking/:bookingId - Reseña de booking`);
+    console.log(`   - PATCH /api/reviews/:id/response - Responder reseña`);
+  });
+}
