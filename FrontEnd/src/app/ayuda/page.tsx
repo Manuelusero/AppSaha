@@ -24,7 +24,7 @@ export default function Ayuda() {
 
     try {
       // TODO: Implementar el envío del formulario al backend
-      const response = await fetch('http://localhost:8000/api/support/contact', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/support/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

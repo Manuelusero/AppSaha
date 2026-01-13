@@ -62,7 +62,8 @@ export const useBookingsStore = create<BookingsState>((set, get) => ({
         let problemPhotoUrl = null;
         if (booking.problemPhoto) {
           if (!booking.problemPhoto.startsWith('http') && !booking.problemPhoto.startsWith('data:')) {
-            problemPhotoUrl = `http://localhost:8000/uploads/problems/${booking.problemPhoto}`;
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            problemPhotoUrl = `${apiUrl}/uploads/problems/${booking.problemPhoto}`;
           } else {
             problemPhotoUrl = booking.problemPhoto;
           }

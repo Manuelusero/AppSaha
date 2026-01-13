@@ -405,7 +405,7 @@ export default function ProviderSignup() {
     console.log('Enviando registro al backend...');
     
     try {
-      const response = await fetch('http://localhost:8000/api/providers/register', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/providers/register`, {
         method: 'POST',
         body: formData
         // No establecer Content-Type, el navegador lo hará automáticamente con boundary

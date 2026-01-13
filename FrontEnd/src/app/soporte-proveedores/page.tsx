@@ -33,7 +33,7 @@ export default function SoporteProveedores() {
     setEnviando(true);
     
     try {
-      const response = await fetch('http://localhost:8000/api/support/contact', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/support/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

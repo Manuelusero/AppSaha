@@ -19,7 +19,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/users', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
