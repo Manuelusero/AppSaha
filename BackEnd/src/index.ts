@@ -20,7 +20,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Middlewares CORS - Configuración permisiva para desarrollo
+// Middlewares CORS - Configuración para desarrollo y producción
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
     // Permitir requests sin origin (como desde Postman, curl, etc.)
@@ -31,14 +31,16 @@ const corsOptions = {
       'http://localhost:3001',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
-      process.env.FRONTEND_URL || 'http://localhost:3000'
-    ];
+      process.env.FRONTEND_URL,
+      'https://serco-eosin.vercel.app', // Frontend en producción
+    ].filter(Boolean); // Eliminar valores undefined/null
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log('CORS: Origin no permitido:', origin);
-      callback(null, true); // En desarrollo, permitir todo
+      // En producción, ser más estricto (puedes cambiar a false después)
+      callback(null, true);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
