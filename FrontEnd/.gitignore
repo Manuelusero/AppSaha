@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Personal documentation (not to be shared)
+ERROR_HANDLING_AND_TESTING_GUIDE.md

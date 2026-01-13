@@ -1,13 +1,13 @@
 <<<<<<< HEAD
 
-# AppSaha - MVP Full-Stack
+# AppSerco - MVP Full-Stack
 
 Proyecto MVP desarrollado con TypeScript, separando Frontend y Backend para una arquitectura escalable.
 
 ## 🏗️ Arquitectura
 
 ```
-AppSaha/
+AppSerco/
 ├── FrontEnd/          # Next.js + React + TypeScript
 ├── BackEnd/           # Express + Node.js + TypeScript
 └── .github/           # Configuraciones GitHub
