@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Header, Footer } from '@/components/layout';
-import { Input, Button } from '@/components/ui';
+import { Input, Button, Modal, LoadingSpinner } from '@/components/ui';
 import { apiGet, apiUpload } from '@/utils';
 
 function ContactDetailsContent() {
@@ -164,80 +164,45 @@ function ContactDetailsContent() {
       <Footer />
 
       {/* Modal de confirmación */}
-      {showModal && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={handleCloseModal}
-        >
-          <div 
-            className="relative mx-6"
-            style={{
-              width: '432px',
-              maxWidth: '90%',
-              backgroundColor: '#A0724E',
-              borderRadius: '24px',
-              padding: '48px 32px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        variant="brown"
+        maxWidth="sm"
+      >
+        <div className="text-center">
+          <h2 
+            className="mb-6"
+            style={{ 
+              fontFamily: 'Maitree, serif', 
+              fontSize: '28px', 
+              fontWeight: 400,
+              color: '#FFFFFF',
+              lineHeight: '1.3'
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Botón cerrar */}
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-4 right-4"
-              style={{ cursor: 'pointer', background: 'none', border: 'none', padding: '8px' }}
-            >
-              <svg width="24" height="24" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-
-            {/* Contenido del modal */}
-            <div className="text-center">
-              <h2 
-                className="mb-6"
-                style={{ 
-                  fontFamily: 'Maitree, serif', 
-                  fontSize: '28px', 
-                  fontWeight: 400,
-                  color: '#FFFFFF',
-                  lineHeight: '1.3'
-                }}
-              >
-                {modalMessage}
-              </h2>
-              <p 
-                style={{ 
-                  fontFamily: 'Maitree, serif', 
-                  fontSize: '16px', 
-                  fontWeight: 400,
-                  color: '#FFFFFF',
-                  opacity: 0.9
-                }}
-              >
-                El profesional te contactará en breve
-              </p>
-            </div>
-          </div>
+            {modalMessage}
+          </h2>
+          <p 
+            style={{ 
+              fontFamily: 'Maitree, serif', 
+              fontSize: '16px', 
+              fontWeight: 400,
+              color: '#FFFFFF',
+              opacity: 0.9
+            }}
+          >
+            El profesional te contactará en breve
+          </p>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
 
 export default function ContactDetails() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#244C87] mx-auto mb-4"></div>
-          <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#244C87' }}>
-            Cargando...
-          </p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingSpinner fullScreen message="Cargando..." />}>
       <ContactDetailsContent />
     </Suspense>
   );

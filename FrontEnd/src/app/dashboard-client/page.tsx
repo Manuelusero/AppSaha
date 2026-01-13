@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiGet, apiPost, TOKEN_KEY } from '@/utils';
+import { LoadingSpinner, Modal, StarRating, StatusBadge } from '@/components/ui';
 
 interface Booking {
   id: string;
@@ -109,11 +110,7 @@ export default function ClientDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen />;
   }
 
   return (
@@ -177,9 +174,7 @@ export default function ClientDashboard() {
                       <h3 className="text-xl font-bold text-gray-800">
                         {booking.provider.user.name}
                       </h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusLabels[booking.status].color}`}>
-                        {statusLabels[booking.status].label}
-                      </span>
+                      <StatusBadge status={booking.status as any} />
                     </div>
 
                     <p className="text-gray-700 mb-2">
@@ -215,13 +210,7 @@ export default function ClientDashboard() {
                     {booking.review && (
                       <div className="text-center p-3 bg-green-50 rounded-lg">
                         <p className="text-sm font-medium text-green-900 mb-1">Ya calificaste</p>
-                        <div className="flex items-center justify-center gap-1">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i} className={`text-lg ${i < booking.review!.rating ? 'text-yellow-500' : 'text-gray-300'}`}>
-                              ★
-                            </span>
-                          ))}
-                        </div>
+                        <StarRating rating={booking.review.rating} readonly size="sm" />
                       </div>
                     )}
 
@@ -240,13 +229,14 @@ export default function ClientDashboard() {
       </div>
 
       {/* Modal de Reseña */}
-      {showReviewModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              Calificar Servicio
-            </h3>
-            
+      <Modal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        title="Calificar Servicio"
+        maxWidth="md"
+      >
+        {selectedBooking && (
+          <>
             <p className="text-gray-600 mb-4">
               ¿Cómo fue tu experiencia con <strong>{selectedBooking.provider.user.name}</strong>?
             </p>
@@ -256,27 +246,12 @@ export default function ClientDashboard() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Calificación *
               </label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setReviewData({ ...reviewData, rating: star })}
-                    className="text-4xl transition-transform hover:scale-110"
-                  >
-                    <span className={star <= reviewData.rating ? 'text-yellow-500' : 'text-gray-300'}>
-                      ★
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                {reviewData.rating === 5 && '🎉 ¡Excelente!'}
-                {reviewData.rating === 4 && '👍 Muy bueno'}
-                {reviewData.rating === 3 && '😊 Bueno'}
-                {reviewData.rating === 2 && '😕 Regular'}
-                {reviewData.rating === 1 && '😞 Malo'}
-              </p>
+              <StarRating
+                rating={reviewData.rating}
+                onChange={(rating) => setReviewData({ ...reviewData, rating })}
+                showLabel
+                size="lg"
+              />
             </div>
 
             {/* Comentario */}
@@ -310,9 +285,9 @@ export default function ClientDashboard() {
                 {submittingReview ? 'Enviando...' : 'Enviar Reseña'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

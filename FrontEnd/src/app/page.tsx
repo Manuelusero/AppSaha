@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Header, Footer } from '@/components/layout';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useLocationSearch } from '@/hooks';
+import { Modal } from '@/components/ui';
 
 // Array de profesiones para la animación
 const profesiones = [
@@ -575,111 +576,71 @@ export default function Home() {
       <Footer />
 
       {/* Modal: ¿Ya tienes una cuenta? */}
-      {mostrarModalLogin && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={() => setMostrarModalLogin(false)}
-        >
-          <div 
-            className="relative mx-6"
-            style={{
-              width: '432px',
-              height: '223px',
-              maxWidth: '90%',
-              backgroundColor: colors.accent.brown,
-              borderRadius: '24px',
-              padding: `${spacing[8]} ${spacing[6]}`,
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-              opacity: 1,
-              transform: 'rotate(0deg)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center'
+      <Modal
+        isOpen={mostrarModalLogin}
+        onClose={() => setMostrarModalLogin(false)}
+        variant="brown"
+        maxWidth="sm"
+      >
+        <div className="text-center">
+          <h2 
+            style={{ 
+              fontFamily: typography.fontFamily.primary, 
+              fontSize: typography.fontSize['32'], 
+              fontWeight: typography.fontWeight.normal,
+              color: colors.neutral.white,
+              lineHeight: '100%',
+              textAlign: 'center',
+              marginBottom: spacing[6]
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            {/* Botón cerrar */}
+            ¿Ya tenes una cuenta?
+          </h2>
+          
+          {/* Botones */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center w-full px-2">
             <button
-              onClick={() => setMostrarModalLogin(false)}
-              className="absolute top-4 right-4"
-              style={{ cursor: 'pointer', background: 'none', border: 'none', padding: '8px' }}
+              onClick={() => router.push('/login')}
+              className="px-4 sm:px-6 py-3 rounded-full transition-colors flex-1 sm:flex-initial"
+              style={{ 
+                fontFamily: typography.fontFamily.primary, 
+                fontSize: typography.fontSize.sm,
+                fontWeight: typography.fontWeight.normal,
+                color: colors.neutral.black,
+                backgroundColor: 'rgba(217, 165, 137, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                minWidth: 'auto'
+              }}
             >
-              <svg width="24" height="24" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
+              Si, Iniciar sesión
             </button>
-
-            {/* Contenido del modal */}
-            <div className="text-center">
-              <h2 
-                style={{ 
-                  fontFamily: typography.fontFamily.primary, 
-                  fontSize: typography.fontSize['32'], 
-                  fontWeight: typography.fontWeight.normal,
-                  fontStyle: 'normal',
-                  color: colors.neutral.white,
-                  lineHeight: '100%',
-                  letterSpacing: '0%',
-                  textAlign: 'center',
-                  marginBottom: spacing[6]
-                }}
-              >
-                ¿Ya tenes una cuenta?
-              </h2>
-              
-              {/* Botones */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center w-full px-2">
-                <button
-                  onClick={() => router.push('/login')}
-                  className="px-4 sm:px-6 py-3 rounded-full transition-colors flex-1 sm:flex-initial"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.sm,
-                    fontWeight: typography.fontWeight.normal,
-                    fontStyle: 'normal',
-                    lineHeight: '100%',
-                    letterSpacing: '0%',
-                    color: colors.neutral.black,
-                    backgroundColor: 'rgba(217, 165, 137, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    minWidth: 'auto'
-                  }}
-                >
-                  Si, Iniciar sesión
-                </button>
-                
-                <button
-                  onClick={() => router.push('/provider-signup')}
-                  className="px-4 sm:px-6 py-3 rounded-full transition-colors flex-1 sm:flex-initial"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.sm,
-                    fontWeight: typography.fontWeight.normal,
-                    fontStyle: 'normal',
-                    lineHeight: '100%',
-                    letterSpacing: '0%',
-                    color: colors.neutral.black,
-                    backgroundColor: 'rgba(217, 165, 137, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    WebkitBackdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    minWidth: 'auto'
-                  }}
-                >
-                  No, registrarme
-                </button>
-              </div>
-            </div>
+            
+            <button
+              onClick={() => router.push('/provider-signup')}
+              className="px-4 sm:px-6 py-3 rounded-full transition-colors flex-1 sm:flex-initial"
+              style={{ 
+                fontFamily: typography.fontFamily.primary, 
+                fontSize: typography.fontSize.sm,
+                fontWeight: typography.fontWeight.normal,
+                color: colors.neutral.black,
+                backgroundColor: 'rgba(217, 165, 137, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                minWidth: 'auto'
+              }}
+            >
+              No, registrarme
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
