@@ -98,6 +98,7 @@ function SearchResultsContent() {
         setProfesionales(filtrados);
       } catch (error) {
         console.error('Error al cargar profesionales:', error);
+        // En caso de error, mostrar array vacío en lugar de fallar
         setProfesionales([]);
       } finally {
         setLoading(false);
