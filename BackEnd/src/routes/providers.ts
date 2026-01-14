@@ -41,6 +41,16 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
 
     console.log('📄 Datos recibidos:', { nombre, apellido, email, profesion });
     console.log('📎 Archivos recibidos:', Object.keys(files || {}).map(key => `${key}: ${files[key].length} archivo(s)`));
+    
+    // Debug: Ver qué devuelve Cloudinary
+    if (files.fotoPerfil?.[0]) {
+      console.log('🔍 Debug fotoPerfil:', {
+        filename: files.fotoPerfil[0].filename,
+        path: (files.fotoPerfil[0] as any).path,
+        url: (files.fotoPerfil[0] as any).url,
+        allKeys: Object.keys(files.fotoPerfil[0])
+      });
+    }
 
     // Validar que el email no exista
     const existingUser = await prisma.user.findUnique({
@@ -79,23 +89,23 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
     const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
     
     const fotoPerfil = files.fotoPerfil?.[0] 
-      ? (isProduction ? (files.fotoPerfil[0] as any).path : files.fotoPerfil[0].filename)
+      ? (isProduction ? ((files.fotoPerfil[0] as any).url || (files.fotoPerfil[0] as any).path) : files.fotoPerfil[0].filename)
       : null;
     
     const fotoDniFrente = files.fotoDniFrente?.[0]
-      ? (isProduction ? (files.fotoDniFrente[0] as any).path : files.fotoDniFrente[0].filename)
+      ? (isProduction ? ((files.fotoDniFrente[0] as any).url || (files.fotoDniFrente[0] as any).path) : files.fotoDniFrente[0].filename)
       : null;
     
     const fotoDniDorso = files.fotoDniDorso?.[0]
-      ? (isProduction ? (files.fotoDniDorso[0] as any).path : files.fotoDniDorso[0].filename)
+      ? (isProduction ? ((files.fotoDniDorso[0] as any).url || (files.fotoDniDorso[0] as any).path) : files.fotoDniDorso[0].filename)
       : null;
     
     const certificados = files.certificados?.map(f => 
-      isProduction ? (f as any).path : f.filename
+      isProduction ? ((f as any).url || (f as any).path) : f.filename
     ) || [];
     
     const fotosTrabajos = files.fotosTrabajos?.map(f => 
-      isProduction ? (f as any).path : f.filename
+      isProduction ? ((f as any).url || (f as any).path) : f.filename
     ) || [];
 
     console.log('🖼️ Fotos procesadas:', {
