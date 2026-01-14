@@ -60,8 +60,9 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos desde la carpeta uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Servir archivos estáticos desde la carpeta uploads (no funciona en Vercel serverless)
+// Para producción en Vercel, usar almacenamiento externo como AWS S3, Cloudinary, etc.
+// app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Rutas básicas
 app.get('/', (req, res) => {

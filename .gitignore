@@ -49,6 +49,16 @@ pids
 # Coverage directory used by tools like istanbul
 coverage/
 
+# Archivos de documentación temporal (guías de configuración)
+ACCION_INMEDIATA.md
+CHECKLIST_FINAL.md
+DATOS_VERCEL.md
+ENVIRONMENT_VARIABLES_GUIDE.md
+FIX_BACKEND_PROTECTION.md
+RESUMEN_CAMBIOS.md
+SOLUCION_URGENTE.md
+verificar-config.sh
+
 # TypeScript
 *.tsbuildinfo
 
