@@ -229,38 +229,38 @@ router.get('/', async (req, res) => {
     console.log(`✅ Encontrados ${allUsers.length} usuarios con role PROVIDER`);
 
     // Filtrar usuarios que tienen providerProfile
-    let filteredProviders = allUsers.filter(p => p.providerProfile !== null);
+    let filteredProviders = allUsers.filter((p: any) => p.providerProfile !== null);
     
     console.log(`✅ ${filteredProviders.length} tienen providerProfile`);
 
     // Aplicar filtros manualmente
     if (category) {
-      filteredProviders = filteredProviders.filter(p => 
+      filteredProviders = filteredProviders.filter((p: any) => 
         p.providerProfile?.serviceCategory === category
       );
     }
 
     if (location) {
-      filteredProviders = filteredProviders.filter(p => 
+      filteredProviders = filteredProviders.filter((p: any) => 
         p.providerProfile?.location?.toLowerCase().includes((location as string).toLowerCase())
       );
     }
 
     // Aplicar ordenamiento
     if (sortBy === 'rating') {
-      filteredProviders.sort((a, b) => {
+      filteredProviders.sort((a: any, b: any) => {
         const ratingA = a.providerProfile?.rating || 0;
         const ratingB = b.providerProfile?.rating || 0;
         return order === 'desc' ? ratingB - ratingA : ratingA - ratingB;
       });
     } else if (sortBy === 'price') {
-      filteredProviders.sort((a, b) => {
+      filteredProviders.sort((a: any, b: any) => {
         const priceA = a.providerProfile?.pricePerHour || 0;
         const priceB = b.providerProfile?.pricePerHour || 0;
         return order === 'desc' ? priceB - priceA : priceA - priceB;
       });
     } else if (sortBy === 'experience') {
-      filteredProviders.sort((a, b) => {
+      filteredProviders.sort((a: any, b: any) => {
         const expA = a.providerProfile?.experience || 0;
         const expB = b.providerProfile?.experience || 0;
         return order === 'desc' ? expB - expA : expA - expB;
@@ -268,7 +268,7 @@ router.get('/', async (req, res) => {
     }
 
     // No devolver contraseñas
-    const providersWithoutPassword = filteredProviders.map(provider => {
+    const providersWithoutPassword = filteredProviders.map((provider: any) => {
       const { password, ...userWithoutPassword } = provider;
       return userWithoutPassword;
     });
