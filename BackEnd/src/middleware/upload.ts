@@ -6,48 +6,60 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Asegurar que las carpetas existan
-const uploadsDir = path.join(__dirname, '../../uploads');
-const profileDir = path.join(uploadsDir, 'profile');
-const dniDir = path.join(uploadsDir, 'dni');
-const certificatesDir = path.join(uploadsDir, 'certificates');
-const portfolioDir = path.join(uploadsDir, 'portfolio');
-const problemsDir = path.join(uploadsDir, 'problems'); // Nueva carpeta para fotos de problemas
+// Solo crear carpetas en desarrollo (no en Vercel serverless)
+const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
 
-[uploadsDir, profileDir, dniDir, certificatesDir, portfolioDir, problemsDir].forEach(dir => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-});
+if (!isProduction) {
+  // Asegurar que las carpetas existan solo en desarrollo
+  const uploadsDir = path.join(__dirname, '../../uploads');
+  const profileDir = path.join(uploadsDir, 'profile');
+  const dniDir = path.join(uploadsDir, 'dni');
+  const certificatesDir = path.join(uploadsDir, 'certificates');
+  const portfolioDir = path.join(uploadsDir, 'portfolio');
+  const problemsDir = path.join(uploadsDir, 'problems');
+
+  [uploadsDir, profileDir, dniDir, certificatesDir, portfolioDir, problemsDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
 
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    let uploadPath = uploadsDir;
-    
-    // Determinar la carpeta según el fieldname
-    switch (file.fieldname) {
-      case 'fotoPerfil':
-        uploadPath = profileDir;
-        break;
-      case 'fotoDniFrente':
-      case 'fotoDniDorso':
-        uploadPath = dniDir;
-        break;
-      case 'certificados':
-        uploadPath = certificatesDir;
-        break;
-      case 'fotosTrabajos':
-        uploadPath = portfolioDir;
-        break;
-      case 'problemPhoto':
-        uploadPath = problemsDir;
-        break;
-      default:
-        uploadPath = uploadsDir;
+    if (isProduction) {
+      // En producción, usar /tmp (único directorio escribible en Vercel)
+      cb(null, '/tmp');
+    } else {
+      // En desarrollo, usar la carpeta uploads
+      const uploadsDir = path.join(__dirname, '../../uploads');
+      let uploadPath = uploadsDir;
+      
+      // Determinar la carpeta según el fieldname
+      switch (file.fieldname) {
+        case 'fotoPerfil':
+          uploadPath = path.join(uploadsDir, 'profile');
+          break;
+        case 'fotoDniFrente':
+        case 'fotoDniDorso':
+          uploadPath = path.join(uploadsDir, 'dni');
+          break;
+        case 'certificados':
+          uploadPath = path.join(uploadsDir, 'certificates');
+          break;
+        case 'fotosTrabajos':
+          uploadPath = path.join(uploadsDir, 'portfolio');
+          break;
+        case 'problemPhoto':
+          uploadPath = path.join(uploadsDir, 'problems');
+          break;
+        default:
+          uploadPath = uploadsDir;
+      }
+      
+      cb(null, uploadPath);
     }
-    
-    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
     // Generar nombre único con timestamp
