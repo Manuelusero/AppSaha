@@ -42,8 +42,9 @@ export default function Login() {
       console.log('✅ Login exitoso:', data);
 
       // Usar el Context API para login
-      const providerId = data.user.role === 'PROVIDER' && data.user.providerProfile 
-        ? data.user.providerProfile.id 
+      // IMPORTANTE: providerId debe ser el USER ID, no el ProviderProfile ID
+      const providerId = data.user.role === 'PROVIDER' 
+        ? data.user.id  // User ID, no providerProfile.id
         : undefined;
       
       login(data.token, data.user, providerId);

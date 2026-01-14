@@ -37,11 +37,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = (newToken: string, newUser: User, newProviderId?: string) => {
     store.login(newUser, newToken);
     
-    // Guardar providerId si existe
+    // Guardar providerId (debe ser el USER ID, no el ProviderProfile ID)
     if (newProviderId) {
       localStorage.setItem('providerId', newProviderId);
-    } else if ((newUser as any).providerProfile?.id) {
-      localStorage.setItem('providerId', (newUser as any).providerProfile.id);
+    } else if (newUser.role === 'PROVIDER') {
+      // Usar el ID del usuario, NO el ID del providerProfile
+      localStorage.setItem('providerId', newUser.id);
     }
   };
 
