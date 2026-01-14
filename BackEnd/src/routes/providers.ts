@@ -44,7 +44,8 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
     
     // Debug: Ver qué devuelve Cloudinary
     if (files.fotoPerfil?.[0]) {
-      console.log('🔍 Debug fotoPerfil:', {
+      console.log('🔍 Debug fotoPerfil completo:', files.fotoPerfil[0]);
+      console.log('🔍 Debug fotoPerfil desglosado:', {
         filename: files.fotoPerfil[0].filename,
         path: (files.fotoPerfil[0] as any).path,
         url: (files.fotoPerfil[0] as any).url,
@@ -89,23 +90,23 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
     const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
     
     const fotoPerfil = files.fotoPerfil?.[0] 
-      ? (isProduction ? ((files.fotoPerfil[0] as any).url || (files.fotoPerfil[0] as any).path) : files.fotoPerfil[0].filename)
+      ? (isProduction ? ((files.fotoPerfil[0] as any).path || (files.fotoPerfil[0] as any).url || files.fotoPerfil[0].filename) : files.fotoPerfil[0].filename)
       : null;
     
     const fotoDniFrente = files.fotoDniFrente?.[0]
-      ? (isProduction ? ((files.fotoDniFrente[0] as any).url || (files.fotoDniFrente[0] as any).path) : files.fotoDniFrente[0].filename)
+      ? (isProduction ? ((files.fotoDniFrente[0] as any).path || (files.fotoDniFrente[0] as any).url || files.fotoDniFrente[0].filename) : files.fotoDniFrente[0].filename)
       : null;
     
     const fotoDniDorso = files.fotoDniDorso?.[0]
-      ? (isProduction ? ((files.fotoDniDorso[0] as any).url || (files.fotoDniDorso[0] as any).path) : files.fotoDniDorso[0].filename)
+      ? (isProduction ? ((files.fotoDniDorso[0] as any).path || (files.fotoDniDorso[0] as any).url || files.fotoDniDorso[0].filename) : files.fotoDniDorso[0].filename)
       : null;
     
     const certificados = files.certificados?.map(f => 
-      isProduction ? ((f as any).url || (f as any).path) : f.filename
+      isProduction ? ((f as any).path || (f as any).url || f.filename) : f.filename
     ) || [];
     
     const fotosTrabajos = files.fotosTrabajos?.map(f => 
-      isProduction ? ((f as any).url || (f as any).path) : f.filename
+      isProduction ? ((f as any).path || (f as any).url || f.filename) : f.filename
     ) || [];
 
     console.log('🖼️ Fotos procesadas:', {
@@ -152,11 +153,13 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
             pricePerHour: 0,
             rating: 0,
             totalReviews: 0,
-            profilePhoto: fotoPerfil || '',
+            profilePhoto: fotoPerfil || null,
             workPhotos: JSON.stringify(fotosTrabajos),
             portfolioImages: JSON.stringify(fotosTrabajos),
             dniNumber: dni || '',
-            dniDocument: fotoDniFrente || '',
+            dniDocument: fotoDniFrente || null,
+            dniPhotoFront: fotoDniFrente || null,
+            dniPhotoBack: fotoDniDorso || null,
             certifications: JSON.stringify(certificados),
             serviceRadius: alcanceTrabajo ? parseInt(alcanceTrabajo) : null,
             instagram: instagram || null,
