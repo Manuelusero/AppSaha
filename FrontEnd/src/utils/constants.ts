@@ -7,6 +7,11 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost
 export const API_URL = `${API_BASE_URL}/api`;
 export const UPLOADS_URL = `${API_BASE_URL}/uploads`;
 
+// Log para debugging en desarrollo
+if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  console.log('🔗 API_BASE_URL:', API_BASE_URL);
+}
+
 // Configuración
 export const TOKEN_KEY = 'token';
 export const USER_ID_KEY = 'userId';
