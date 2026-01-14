@@ -118,7 +118,9 @@ model ProviderProfile {
   
   // Documentación oficial
   dniNumber        String?
-  dniDocument      String?          // URL del archivo escaneado del DNI
+  dniDocument      String?          // URL del archivo escaneado del DNI (legacy)
+  dniPhotoFront    String?          // URL de la foto frontal del DNI
+  dniPhotoBack     String?          // URL de la foto trasera del DNI
   criminalRecord   String?          // URL del certificado de antecedentes penales
   
   // Certificados profesionales
