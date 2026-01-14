@@ -75,11 +75,28 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
     }
 
     // Obtener rutas de archivos
-    const fotoPerfil = files.fotoPerfil?.[0]?.filename || null;
-    const fotoDniFrente = files.fotoDniFrente?.[0]?.filename || null;
-    const fotoDniDorso = files.fotoDniDorso?.[0]?.filename || null;
-    const certificados = files.certificados?.map(f => f.filename) || [];
-    const fotosTrabajos = files.fotosTrabajos?.map(f => f.filename) || [];
+    // En producción con Cloudinary, usar la URL completa; en desarrollo, usar filename
+    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+    
+    const fotoPerfil = files.fotoPerfil?.[0] 
+      ? (isProduction ? (files.fotoPerfil[0] as any).path : files.fotoPerfil[0].filename)
+      : null;
+    
+    const fotoDniFrente = files.fotoDniFrente?.[0]
+      ? (isProduction ? (files.fotoDniFrente[0] as any).path : files.fotoDniFrente[0].filename)
+      : null;
+    
+    const fotoDniDorso = files.fotoDniDorso?.[0]
+      ? (isProduction ? (files.fotoDniDorso[0] as any).path : files.fotoDniDorso[0].filename)
+      : null;
+    
+    const certificados = files.certificados?.map(f => 
+      isProduction ? (f as any).path : f.filename
+    ) || [];
+    
+    const fotosTrabajos = files.fotosTrabajos?.map(f => 
+      isProduction ? (f as any).path : f.filename
+    ) || [];
 
     console.log('🖼️ Fotos procesadas:', {
       perfil: fotoPerfil,
