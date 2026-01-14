@@ -149,6 +149,17 @@ export default function DashboardProvider() {
       .catch(err => {
         console.error('Error cargando proveedor desde API:', err);
         
+        // Si es error 404, probablemente el providerId es incorrecto
+        if (err.message?.includes('404') || err.message?.includes('no encontrado')) {
+          console.error('❌ Provider no encontrado (404). Limpiando localStorage y redirigiendo...');
+          // Limpiar todo el localStorage
+          localStorage.clear();
+          // Redirigir al login
+          alert('Tu sesión ha expirado o hay un error con tu cuenta. Por favor, inicia sesión de nuevo.');
+          router.push('/login');
+          return;
+        }
+        
         // Fallback: intentar cargar desde localStorage si falla la API
         const registroCompleto = localStorage.getItem('registroCompleto');
         if (registroCompleto) {
