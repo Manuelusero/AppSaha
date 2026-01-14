@@ -2,12 +2,23 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Solo crear carpetas en desarrollo (no en Vercel serverless)
 const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+
+// Configurar Cloudinary
+if (isProduction && process.env.CLOUDINARY_CLOUD_NAME) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+}
 
 if (!isProduction) {
   // Asegurar que las carpetas existan solo en desarrollo
@@ -25,13 +36,47 @@ if (!isProduction) {
   });
 }
 
-// Configuración de almacenamiento
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (isProduction) {
-      // En producción, usar /tmp (único directorio escribible en Vercel)
-      cb(null, '/tmp');
-    } else {
+// Configuración de almacenamiento según el entorno
+let storage: any;
+
+if (isProduction && process.env.CLOUDINARY_CLOUD_NAME) {
+  // Usar Cloudinary en producción
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+      let folder = 'uploads';
+      
+      // Determinar la carpeta según el fieldname
+      switch (file.fieldname) {
+        case 'fotoPerfil':
+          folder = 'uploads/profile';
+          break;
+        case 'fotoDniFrente':
+        case 'fotoDniDorso':
+          folder = 'uploads/dni';
+          break;
+        case 'certificados':
+          folder = 'uploads/certificates';
+          break;
+        case 'fotosTrabajos':
+          folder = 'uploads/portfolio';
+          break;
+        case 'problemPhoto':
+          folder = 'uploads/problems';
+          break;
+      }
+      
+      return {
+        folder: folder,
+        allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'pdf'],
+        resource_type: 'auto'
+      };
+    }
+  });
+} else {
+  // Usar almacenamiento local en desarrollo
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
       // En desarrollo, usar la carpeta uploads
       const uploadsDir = path.join(__dirname, '../../uploads');
       let uploadPath = uploadsDir;
@@ -59,16 +104,16 @@ const storage = multer.diskStorage({
       }
       
       cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      // Generar nombre único con timestamp
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      const name = file.fieldname + '-' + uniqueSuffix + ext;
+      cb(null, name);
     }
-  },
-  filename: (req, file, cb) => {
-    // Generar nombre único con timestamp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    const name = file.fieldname + '-' + uniqueSuffix + ext;
-    cb(null, name);
-  }
-});
+  });
+}
 
 // Filtro de archivos (solo imágenes y PDFs)
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
