@@ -117,6 +117,18 @@ if (isProduction && process.env.CLOUDINARY_CLOUD_NAME) {
 
 // Filtro de archivos (solo imágenes y PDFs)
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // En producción con Cloudinary, ser más permisivo
+  const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
+    // En producción, permitir todos los archivos que Cloudinary acepta
+    const allowedMimetypes = /image|application\/pdf/;
+    if (allowedMimetypes.test(file.mimetype)) {
+      return cb(null, true);
+    }
+  }
+  
+  // En desarrollo, validar extensión y mimetype
   const allowedTypes = /jpeg|jpg|png|gif|pdf/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
