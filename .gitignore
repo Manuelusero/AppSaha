@@ -72,4 +72,5 @@ verificar-config.sh
 *.tgz
 
 # Yarn Integrity file
-.yarn-integrity
+.yarn-integrityIMAGE_SOLUTION.md
+test-register-with-images.sh
