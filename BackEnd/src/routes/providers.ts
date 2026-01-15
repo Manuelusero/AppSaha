@@ -161,7 +161,7 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
             dniPhotoFront: fotoDniFrente || null,
             dniPhotoBack: fotoDniDorso || null,
             certifications: JSON.stringify(certificados),
-            serviceRadius: alcanceTrabajo ? parseInt(alcanceTrabajo) : null,
+            serviceRadius: alcanceTrabajo && !isNaN(parseInt(alcanceTrabajo)) ? parseInt(alcanceTrabajo) : null,
             instagram: instagram || null,
             facebook: facebook || null,
             linkedin: linkedin || null,
