@@ -31,7 +31,7 @@ router.post('/', authenticateToken, async (req, res) => {
     const userRole = (req as any).user.role;
 
     // Validaciones
-    if (!bookingId || !rating) {
+    if (!bookingId || rating === undefined || rating === null) {
       return res.status(400).json({ 
         error: 'bookingId y rating son requeridos' 
       });

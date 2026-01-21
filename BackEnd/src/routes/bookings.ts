@@ -173,6 +173,15 @@ router.post('/', authenticateToken, async (req: any, res) => {
       });
     }
 
+    // Validar que la fecha sea en el futuro
+    const requestedDate = new Date(serviceDate);
+    const now = new Date();
+    if (requestedDate < now) {
+      return res.status(400).json({
+        error: 'La fecha del servicio debe ser en el futuro'
+      });
+    }
+
     // Verificar que el proveedor existe
     const provider = await prisma.providerProfile.findUnique({
       where: { id: providerId }
@@ -357,21 +366,14 @@ router.get('/:id', authenticateToken, async (req: any, res) => {
 router.patch('/:id/status', authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
-    const { status, providerNotes, totalPrice } = req.body;
+    const { status, providerNotes, totalPrice, cancellationReason } = req.body;
 
     if (!status) {
       return res.status(400).json({ error: 'Estado es requerido' });
     }
 
-    // Verificar que el usuario es el proveedor de esta solicitud
     const userId = req.user.userId;
-    const providerProfile = await prisma.providerProfile.findUnique({
-      where: { userId }
-    });
-
-    if (!providerProfile) {
-      return res.status(403).json({ error: 'Solo los proveedores pueden actualizar solicitudes' });
-    }
+    const userRole = req.user.role;
 
     const booking = await prisma.booking.findUnique({
       where: { id }
@@ -381,8 +383,74 @@ router.patch('/:id/status', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Solicitud no encontrada' });
     }
 
+    // Allow client to cancel their own bookings
+    if (status === 'CANCELLED' && userRole === 'CLIENT' && booking.clientId === userId) {
+      const updatedBooking = await prisma.booking.update({
+        where: { id },
+        data: {
+          status: 'CANCELLED',
+          cancelledAt: new Date(),
+          cancellationReason
+        },
+        include: {
+          client: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true
+            }
+          },
+          provider: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  phone: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      return res.json({
+        message: 'Solicitud cancelada exitosamente',
+        booking: updatedBooking
+      });
+    }
+
+    // For other status changes, verify user is the provider
+    const providerProfile = await prisma.providerProfile.findUnique({
+      where: { userId }
+    });
+
+    if (!providerProfile) {
+      return res.status(403).json({ error: 'Solo los proveedores pueden actualizar solicitudes' });
+    }
+
     if (booking.providerId !== providerProfile.id) {
       return res.status(403).json({ error: 'No tienes permiso para actualizar esta solicitud' });
+    }
+
+    // Validate status transitions
+    const validTransitions: Record<string, string[]> = {
+      'PENDING': ['ACCEPTED', 'REJECTED', 'CANCELLED'],
+      'ACCEPTED': ['CONFIRMED', 'CANCELLED'],
+      'REJECTED': [], // Cannot transition from rejected
+      'CONFIRMED': ['IN_PROGRESS', 'CANCELLED'],
+      'IN_PROGRESS': ['COMPLETED', 'CANCELLED'],
+      'COMPLETED': [], // Cannot transition from completed
+      'CANCELLED': [] // Cannot transition from cancelled
+    };
+
+    const allowedStatuses = validTransitions[booking.status] || [];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        error: `No se puede cambiar de ${booking.status} a ${status}`
+      });
     }
 
     // Actualizar la solicitud
@@ -391,7 +459,11 @@ router.patch('/:id/status', authenticateToken, async (req: any, res) => {
       data: {
         status,
         providerNotes,
-        totalPrice: totalPrice ? parseFloat(totalPrice) : undefined
+        totalPrice: totalPrice ? parseFloat(totalPrice) : undefined,
+        acceptedAt: status === 'ACCEPTED' ? new Date() : undefined,
+        rejectedAt: status === 'REJECTED' ? new Date() : undefined,
+        completedAt: status === 'COMPLETED' ? new Date() : undefined,
+        cancelledAt: status === 'CANCELLED' ? new Date() : undefined,
       },
       include: {
         client: {
@@ -641,6 +713,40 @@ router.post('/client-data/:token', async (req, res) => {
   } catch (error) {
     console.error('❌ Error al guardar datos del cliente:', error);
     res.status(500).json({ error: 'Error al guardar datos' });
+  }
+});
+
+// DELETE /api/bookings/:id - Eliminar una solicitud (solo ADMIN)
+router.delete('/:id', authenticateToken, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userRole = req.user.role;
+
+    // Solo admins pueden eliminar bookings
+    if (userRole !== 'ADMIN') {
+      return res.status(403).json({ 
+        error: 'No tienes permisos para eliminar solicitudes' 
+      });
+    }
+
+    const booking = await prisma.booking.findUnique({
+      where: { id }
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+
+    await prisma.booking.delete({
+      where: { id }
+    });
+
+    res.json({ 
+      message: 'Solicitud eliminada exitosamente' 
+    });
+  } catch (error) {
+    console.error('Error al eliminar solicitud:', error);
+    res.status(500).json({ error: 'Error al eliminar solicitud' });
   }
 });
 

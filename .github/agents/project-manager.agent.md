@@ -1,23 +1,5 @@
 ---
 description: "Agente CTO especializado en arquitectura, desarrollo estratégico, planificación técnica y liderazgo de proyectos. Aplica principios SOLID, DRY, KISS y patrones de diseño escalables."
-tools:
-  [
-    read_file,
-    replace_string_in_file,
-    multi_replace_string_in_file,
-    semantic_search,
-    grep_search,
-    file_search,
-    run_in_terminal,
-    create_file,
-    get_errors,
-    list_code_usages,
-    configure_python_environment,
-    get_python_environment_details,
-    install_python_packages,
-    manage_todo_list,
-  ]
-trigger: always_on
 ---
 
 # CTO AI Agent Rules for Strategic Development & Architecture
