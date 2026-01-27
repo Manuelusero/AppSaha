@@ -272,167 +272,18 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Sección: ¿Cómo funciona? */}
-      <section id="como-funciona" className="w-full bg-white py-12 sm:py-16 px-6" style={{ marginTop: '13px' }}>
-        <div className="max-w-6xl mx-auto">
-          {/* Título */}
-          <h2 className="font-normal text-[64px] text-center mb-16" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontStyle: 'normal', lineHeight: '1.5', fontSize: typography.fontSize['6xl'] }}>
-            ¿Cómo funciona?
-          </h2>
-
-          {/* Flujo de pasos - diseño vertical con línea recta */}
-          <div className="flex flex-col items-center max-w-3xl mx-auto py-8">
-            {/* Paso 1 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Texto a la izquierda */}
-              <div className="flex-1 pr-8 text-right">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Indica el servicio que buscas y tu ubicación
-                </p>
-              </div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.accent.brown
-                }}
-              />
-              
-              {/* Espacio vacío a la derecha */}
-              <div className="flex-1"></div>
-            </div>
-
-            {/* Línea conectora 1 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
-
-            {/* Paso 2 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Espacio vacío a la izquierda */}
-              <div className="flex-1"></div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.accent.brown
-                }}
-              />
-              
-              {/* Texto a la derecha */}
-              <div className="flex-1 pl-8">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Elegí la especialidad que más se adapte a tu necesidad
-                </p>
-              </div>
-            </div>
-
-            {/* Línea conectora 2 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
-
-            {/* Paso 3 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Texto a la izquierda */}
-              <div className="flex-1 pr-8 text-right">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Selecciona uno o varios prestadores para que te envíen un presupuesto.
-                </p>
-              </div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.primary.main
-                }}
-              />
-              
-              {/* Espacio vacío a la derecha */}
-              <div className="flex-1"></div>
-            </div>
-
-            {/* Línea conectora 3 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
-
-            {/* Paso 4 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Espacio vacío a la izquierda */}
-              <div className="flex-1"></div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.primary.main
-                }}
-              />
-              
-              {/* Texto a la derecha */}
-              <div className="flex-1 pl-8">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Detalla tu necesidad incluso podes agregar fotos para ilustrar.
-                </p>
-              </div>
-            </div>
-
-            {/* Línea conectora 4 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
-
-            {/* Paso 5 */}
-            <div className="flex items-center w-full">
-              {/* Texto a la izquierda */}
-              <div className="flex-1 pr-8 text-right">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Indica donde quieres recibir los presupuestos.
-                </p>
-              </div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.primary.main
-                }}
-              />
-              
-              {/* Espacio vacío a la derecha */}
-              <div className="flex-1"></div>
-            </div>
-          </div>
-
-          {/* Texto final */}
-          <div className="text-center mt-12">
-            <p className="font-normal text-[24px] leading-[120%]" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
-              Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir a que profesional deseas contactar.
-            </p>
-          </div>
-
-          {/* Semicírculo decorativo */}
-          <div className="flex justify-center mt-16">
-            <svg width="600" height="150" viewBox="0 0 600 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path 
-                d="M 0 150 Q 300 0 600 150" 
-                fill={colors.primary.main}
-                opacity="0.1"
-              />
-              <path 
-                d="M 0 150 Q 300 0 600 150" 
-                stroke={colors.primary.main}
-                strokeWidth="2"
-                fill="none"
-              />
-            </svg>
-          </div>
+      {/* Sección: ¿Cómo funciona? - Componente de Figma */}
+      <section id="como-funciona" className="w-full bg-white py-8 sm:py-12 md:py-16 px-4 sm:px-6" style={{ marginTop: '13px' }}>
+        <div className="max-w-6xl mx-auto flex justify-center items-center">
+          <Image 
+            src="/StepByStep.svg" 
+            alt="Cómo funciona SAHA - Proceso paso a paso"
+            width={480}
+            height={768}
+            priority
+            className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[480px] h-auto"
+            style={{ margin: '0 auto' }}
+          />
         </div>
       </section>
 
