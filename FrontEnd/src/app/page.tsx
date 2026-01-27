@@ -274,15 +274,14 @@ export default function Home() {
 
       {/* Sección: ¿Cómo funciona? - Componente de Figma */}
       <section id="como-funciona" className="w-full bg-white py-8 sm:py-12 md:py-16 px-4 sm:px-6" style={{ marginTop: '13px' }}>
-        <div className="max-w-6xl mx-auto flex justify-center items-center">
+        <div className="w-full mx-auto flex justify-center items-center">
           <Image 
             src="/StepByStep.svg" 
             alt="Cómo funciona SAHA - Proceso paso a paso"
             width={480}
             height={768}
             priority
-            className="w-full max-w-[320px] sm:max-w-[400px] md:max-w-[480px] h-auto"
-            style={{ margin: '0 auto' }}
+            className="w-full h-auto"
           />
         </div>
       </section>
