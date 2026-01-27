@@ -74,3 +74,4 @@ verificar-config.sh
 # Yarn Integrity file
 .yarn-integrityIMAGE_SOLUTION.md
 test-register-with-images.sh
+figma-fetch.js

@@ -272,166 +272,292 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Sección: ¿Cómo funciona? */}
-      <section id="como-funciona" className="w-full bg-white py-12 sm:py-16 px-6" style={{ marginTop: '13px' }}>
+      {/* Sección: Explora las categorías */}
+      <section className="w-full bg-white py-12 sm:py-16 px-6">
         <div className="max-w-6xl mx-auto">
           {/* Título */}
+          <h2 className="font-normal text-[48px] leading-[100%] text-center mb-6" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
+            Explora las categorías
+          </h2>
+          
+          {/* Párrafo descriptivo */}
+          <p className="font-normal text-[20px] leading-[100%] text-center text-gray-700 mb-12 max-w-3xl mx-auto" style={{ fontFamily: typography.fontFamily.primary }}>
+            Si tienes dudas de qué servicio necesitas podés revisar nuestro listado de categorías con ejemplos y experiencias de usuarios
+          </p>
+
+          {/* Grid de categorías */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
+            {/* Categoría: Pintura */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame8.png" 
+                  alt="Pintura" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Categoría: Carpintería */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame9.png" 
+                  alt="Carpintería" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Categoría: Herreros */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame15.png" 
+                  alt="Herreros" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Categoría: Albañiles */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame19.png" 
+                  alt="Albañiles" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Categoría: Pintura (repetida) */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame8.png" 
+                  alt="Pintura" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Categoría: Carpintería (repetida) */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame9.png" 
+                  alt="Carpintería" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+            {/* Categoría: Herreros (repetida) */}
+            <div className="flex flex-col items-center">
+              <div 
+                className="overflow-hidden bg-white flex items-center justify-center"
+                style={{ 
+                  width: '180px', 
+                  height: '203px', 
+                  borderRadius: '80px',
+                  borderWidth: '1px',
+                  borderStyle: 'solid',
+                  borderColor: colors.neutral[200],
+                  opacity: 1
+                }}
+              >
+                <Image 
+                  src="/Frame15.png" 
+                  alt="Herreros" 
+                  width={180} 
+                  height={203}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sección: ¿Cómo funciona? */}
+      <section id="como-funciona" className="w-full bg-white py-12 sm:py-16 px-6" style={{ marginTop: '13px' }}>
+        <div className="max-w-4xl mx-auto">
+          {/* Título */}
           <h2 className="font-normal text-[64px] text-center mb-16" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontStyle: 'normal', lineHeight: '1.5', fontSize: typography.fontSize['6xl'] }}>
-            ¿Cómo funciona?
+            ¿Cómo<br />funciona?
           </h2>
 
-          {/* Flujo de pasos - diseño vertical con línea recta */}
-          <div className="flex flex-col items-center max-w-3xl mx-auto py-8">
-            {/* Paso 1 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Texto a la izquierda */}
-              <div className="flex-1 pr-8 text-right">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Indica el servicio que buscas y tu ubicación
-                </p>
-              </div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.accent.brown
-                }}
-              />
-              
-              {/* Espacio vacío a la derecha */}
-              <div className="flex-1"></div>
-            </div>
+          {/* Flujo de pasos */}
+          <div className="relative w-full py-8" style={{ paddingLeft: '24px', paddingRight: '24px', top: '30px' }}>
+            {/* Contenedor principal con la imagen Line4 y elementos posicionados */}
+            <div className="relative" style={{ width: '432px', maxWidth: '100%', opacity: 1 }}>
+              {/* Imagen de la línea (Line4.png) */}
+              <div className="relative">
+                <Image 
+                  src="/Line4.png" 
+                  alt="Flow line" 
+                  width={432} 
+                  height={849}
+                  style={{ width: '432px', height: '849px', right: '37px', objectFit: 'contain' }}
+                  priority
+                />
+                
+                {/* Círculo 1 - Naranja/Terracota (superior izquierda) */}
+                <div 
+                  className="absolute rounded-full"
+                  style={{ 
+                    width: '49.23px', 
+                    height: '49px', 
+                    backgroundColor: colors.accent.brown,
+                    left: '-17px',
+                    top: '33px'
+                  }}
+                />
 
-            {/* Línea conectora 1 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
+                {/* Círculo 2 - Naranja/Terracota (derecha) */}
+                <div 
+                  className="absolute rounded-full"
+                  style={{ 
+                    width: '49.23px', 
+                    height: '49px', 
+                    backgroundColor: colors.accent.brown,
+                    right: '25px',
+                    top: '260px'
+                  }}
+                />
 
-            {/* Paso 2 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Espacio vacío a la izquierda */}
-              <div className="flex-1"></div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.accent.brown
-                }}
-              />
-              
-              {/* Texto a la derecha */}
-              <div className="flex-1 pl-8">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Elegí la especialidad que más se adapte a tu necesidad
-                </p>
-              </div>
-            </div>
+                {/* Círculo 3 - Azul (izquierda medio) */}
+                <div 
+                  className="absolute rounded-full"
+                  style={{ 
+                    width: '49.23px', 
+                    height: '49px', 
+                    backgroundColor: colors.primary.main,
+                    left: '103px',
+                    top: '587px'
+                  }}
+                />
 
-            {/* Línea conectora 2 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
+                {/* Círculo 4 - Azul (derecha inferior) */}
+                <div 
+                  className="absolute rounded-full"
+                  style={{ 
+                    width: '49.23px', 
+                    height: '49px', 
+                    backgroundColor: colors.primary.main,
+                    right: '90px',
+                    top: '813px'
+                  }}
+                />
 
-            {/* Paso 3 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Texto a la izquierda */}
-              <div className="flex-1 pr-8 text-right">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Selecciona uno o varios prestadores para que te envíen un presupuesto.
-                </p>
-              </div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.primary.main
-                }}
-              />
-              
-              {/* Espacio vacío a la derecha */}
-              <div className="flex-1"></div>
-            </div>
+                {/* Texto 1 - Paso 1 (a la derecha del círculo 1) - 3 renglones */}
+                <div className="absolute" style={{ left: '62px', top: '15px', maxWidth: '250px' }}>
+                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
+                    Seleccioná el tipo de profesional que necesitas y tu ubicación.
+                  </p>
+                </div>
 
-            {/* Línea conectora 3 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
+                {/* Texto 2 - Paso 2 (a la izquierda del círculo 2) - 4 renglones */}
+                <div className="absolute" style={{ left: '110px', top: '290px', maxWidth: '255px' }}>
+                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
+                    Describe en detalle el trabajo que necesitas hacer y agrega una foto para mayor referencia.
+                  </p>
+                </div>
 
-            {/* Paso 4 */}
-            <div className="flex items-center w-full mb-12">
-              {/* Espacio vacío a la izquierda */}
-              <div className="flex-1"></div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.primary.main
-                }}
-              />
-              
-              {/* Texto a la derecha */}
-              <div className="flex-1 pl-8">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Detalla tu necesidad incluso podes agregar fotos para ilustrar.
-                </p>
+                {/* Texto 3 - Paso 3 (a la derecha del círculo 3) - 4 renglones */}
+                <div className="absolute" style={{ left: '170px', top: '595px', maxWidth: '260px' }}>
+                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
+                    Selecciona un profesional de la lista para enviar tu solicitud y datos de contacto.
+                  </p>
+                </div>
+
+                {/* Texto 4 - Paso 4 (a la izquierda del círculo 4) - 3 renglones */}
+                <div className="absolute" style={{ left: '55px', top: '855px', maxWidth: '290px' }}>
+                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
+                    Listo! El profesional se contactará con vos en un rango de 24 a 48hs
+                  </p>
+                </div>
               </div>
             </div>
-
-            {/* Línea conectora 4 */}
-            <div style={{ width: '2px', height: '80px', backgroundColor: colors.neutral[300] }}></div>
-
-            {/* Paso 5 */}
-            <div className="flex items-center w-full">
-              {/* Texto a la izquierda */}
-              <div className="flex-1 pr-8 text-right">
-                <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                  Indica donde quieres recibir los presupuestos.
-                </p>
-              </div>
-              
-              {/* Círculo */}
-              <div 
-                className="rounded-full flex-shrink-0"
-                style={{ 
-                  width: '49px', 
-                  height: '49px', 
-                  backgroundColor: colors.primary.main
-                }}
-              />
-              
-              {/* Espacio vacío a la derecha */}
-              <div className="flex-1"></div>
-            </div>
-          </div>
-
-          {/* Texto final */}
-          <div className="text-center mt-12">
-            <p className="font-normal text-[24px] leading-[120%]" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
-              Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir a que profesional deseas contactar.
-            </p>
-          </div>
-
-          {/* Semicírculo decorativo */}
-          <div className="flex justify-center mt-16">
-            <svg width="600" height="150" viewBox="0 0 600 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path 
-                d="M 0 150 Q 300 0 600 150" 
-                fill={colors.primary.main}
-                opacity="0.1"
-              />
-              <path 
-                d="M 0 150 Q 300 0 600 150" 
-                stroke={colors.primary.main}
-                strokeWidth="2"
-                fill="none"
-              />
-            </svg>
           </div>
         </div>
       </section>
