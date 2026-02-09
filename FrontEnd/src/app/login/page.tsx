@@ -54,6 +54,29 @@ export default function Login() {
     }
   };
 
+  const handleSocialLogin = (provider: 'google' | 'facebook' | 'apple') => {
+    // TODO: Implementar OAuth flow
+    // Por ahora, mostrar mensaje informativo
+    console.log(`Iniciando login con ${provider}`);
+    
+    // Futura implementación:
+    // 1. Redirigir a la URL de OAuth del proveedor
+    // 2. Manejar el callback con el token
+    // 3. Llamar al endpoint del backend para validar y crear sesión
+    
+    const urls = {
+      google: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_URL || '/api/auth/google',
+      facebook: process.env.NEXT_PUBLIC_FACEBOOK_OAUTH_URL || '/api/auth/facebook',
+      apple: process.env.NEXT_PUBLIC_APPLE_OAUTH_URL || '/api/auth/apple'
+    };
+    
+    // Descomentar cuando estén configurados los endpoints:
+    // window.location.href = urls[provider];
+    
+    // Temporal - remover cuando se implemente OAuth:
+    alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} será implementado próximamente.\n\nEndpoint: ${urls[provider]}`);
+  };
+
   return (
     <div 
       className="min-h-screen flex items-center justify-center p-4"
@@ -145,12 +168,16 @@ export default function Login() {
             </Link>
           </div>
 
-          {/* Botón entrar */}
+          {/* Botón entrar - Glass effect */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-full text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: 'rgba(26, 58, 101, 0.7)' }}
+            className="w-full py-3 rounded-full text-white font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-md border border-white/20 shadow-lg hover:border-white/40 hover:shadow-xl"
+            style={{ 
+              backgroundColor: 'rgba(26, 58, 101, 0.3)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
+            }}
           >
             {loading ? 'Iniciando sesión...' : 'Entrar a mi cuenta'}
           </button>
@@ -164,12 +191,13 @@ export default function Login() {
         </div>
 
         {/* Botones sociales */}
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center" style={{ gap: '76px' }}>
           {/* Facebook */}
           <button
             type="button"
-            className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
-            onClick={() => alert('Login con Facebook - Por implementar')}
+            className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
+            onClick={() => handleSocialLogin('facebook')}
+            aria-label="Iniciar sesión con Facebook"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877F2">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -179,8 +207,9 @@ export default function Login() {
           {/* Google */}
           <button
             type="button"
-            className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
-            onClick={() => alert('Login con Google - Por implementar')}
+            className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
+            onClick={() => handleSocialLogin('google')}
+            aria-label="Iniciar sesión con Google"
           >
             <svg width="24" height="24" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -193,8 +222,9 @@ export default function Login() {
           {/* Apple */}
           <button
             type="button"
-            className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors"
-            onClick={() => alert('Login con Apple - Por implementar')}
+            className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
+            onClick={() => handleSocialLogin('apple')}
+            aria-label="Iniciar sesión con Apple"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="black">
               <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>

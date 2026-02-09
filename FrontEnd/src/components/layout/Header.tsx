@@ -81,7 +81,7 @@ export default function Header({
         height: 'auto'
       }}
     >
-      {/* Logo */}
+      {/* Logo - Espacio reservado para nuevo logo */}
       <div 
         className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
         onClick={() => router.push('/')}
@@ -89,15 +89,12 @@ export default function Header({
         <div style={{ 
           width: '100px', 
           height: '45px',
-          background: 'url(/LOGO.svg) no-repeat center center',
-          backgroundSize: 'contain',
-          mixBlendMode: 'multiply',
-          opacity: 1,
+          opacity: 0,
           borderRadius: borderRadius.xl,
           transform: 'rotate(0deg)'
         }} 
         className="sm:w-[145px] sm:h-[66px]"
-        aria-label="Serco Logo"
+        aria-label="Logo placeholder"
         />
       </div>
       
@@ -271,28 +268,39 @@ export default function Header({
               className="text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 whitespace-nowrap flex-shrink-0"
               style={{ 
                 fontFamily: 'Maitree, serif',
-                fontWeight: 400,
+                fontWeight: 600,
                 fontStyle: 'normal',
+                fontSize: '14px',
                 lineHeight: '100%',
                 letterSpacing: '0%',
                 height: 'auto',
+                padding: '12px 24px',
                 gap: spacing[2],
                 opacity: 1,
-                borderRadius: borderRadius.xl,
-                backgroundColor: withOpacity(colors.primary.pale, 0.2),
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                border: `1px solid ${withOpacity(colors.neutral.white, 0.3)}`,
-                color: colors.neutral.black,
+                borderRadius: '24px',
+                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: `1px solid rgba(255, 255, 255, 0.4)`,
+                color: '#000000',
                 cursor: 'pointer',
                 transform: 'rotate(0deg)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.35)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.25)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.08)';
               }}
             >
-              Espacio del trabajador
+              Ofrezco servicios
             </button>
           )}
         </>

@@ -14,7 +14,7 @@ export default function Welcome() {
   };
 
   const handleBuscarTrabajadores = () => {
-    router.push('/buscar');
+    router.push('/');
   };
 
   const handleIniciarSesion = () => {
@@ -38,6 +38,22 @@ export default function Welcome() {
         background: 'linear-gradient(180deg, #FFFFFF 0%, #3A5FA0 100%)',
       }}
     >
+      {/* Welcome Text */}
+      <div className="w-full pt-4">
+        <h1 
+          className="text-left"
+          style={{
+            fontFamily: typography.fontFamily.primary,
+            fontSize: typography.fontSize['2xl'],
+            fontWeight: typography.fontWeight.normal,
+            color: colors.neutral[500],
+            letterSpacing: '0.05em'
+          }}
+        >
+          Welcome
+        </h1>
+      </div>
+
       {/* Contenido Central */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md space-y-8">
         {/* Logo Placeholder */}
@@ -64,29 +80,26 @@ export default function Welcome() {
         <h2 
           className="text-center"
           style={{
-            fontFamily: 'Maitree, serif',
-            fontSize: '45px',
-            fontWeight: 700,
+            fontFamily: typography.fontFamily.primary,
+            fontSize: typography.fontSize['4xl'],
+            fontWeight: typography.fontWeight.semibold,
             color: colors.primary.main,
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            marginBottom: '53px'
+            lineHeight: '1.2'
           }}
         >
-          <span className="block">Servicios</span>
-          <span className="block mt-2">Confiables</span>
+          Servicios<br />Confiables
         </h2>
 
         {/* Botones */}
         <div className="w-full space-y-4 px-4">
           <button
             onClick={handleAccederTrabajador}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
-              color: '#F9F5ED',
+              color: colors.primary.main,
               backgroundColor: 'rgba(255, 255, 255, 0.3)',
               borderColor: 'rgba(36, 76, 135, 0.3)',
               backdropFilter: 'blur(10px)',
@@ -99,12 +112,12 @@ export default function Welcome() {
 
           <button
             onClick={handleBuscarTrabajadores}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
-              color: '#F9F5ED',
+              color: colors.primary.main,
               backgroundColor: 'rgba(255, 255, 255, 0.3)',
               borderColor: 'rgba(36, 76, 135, 0.3)',
               backdropFilter: 'blur(10px)',
@@ -134,7 +147,7 @@ export default function Welcome() {
           <div 
             className="fixed bottom-0 left-0 right-0 z-50 rounded-t-3xl p-8 pb-12 animate-slide-up"
             style={{
-              backgroundColor: '#244C87',
+              backgroundColor: colors.accent.brown,
               boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.3)',
               animation: 'slideUp 0.3s ease-out'
             }}
@@ -158,13 +171,13 @@ export default function Welcome() {
               <div className="flex flex-col gap-4">
                 <button
                   onClick={handleIniciarSesion}
-                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-70 cursor-pointer"
+                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-40"
                   style={{ 
                     fontFamily: typography.fontFamily.primary, 
                     fontSize: typography.fontSize.base,
                     fontWeight: typography.fontWeight.medium,
-                    color: colors.neutral.white,
-                    backgroundColor: 'rgba(58, 95, 160, 0.5)',
+                    color: colors.neutral.black,
+                    backgroundColor: 'rgba(217, 165, 137, 0.3)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -176,13 +189,13 @@ export default function Welcome() {
                 
                 <button
                   onClick={handleRegistrarse}
-                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-70 cursor-pointer"
+                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-40"
                   style={{ 
                     fontFamily: typography.fontFamily.primary, 
                     fontSize: typography.fontSize.base,
                     fontWeight: typography.fontWeight.medium,
-                    color: colors.neutral.white,
-                    backgroundColor: 'rgba(58, 95, 160, 0.5)',
+                    color: colors.neutral.black,
+                    backgroundColor: 'rgba(217, 165, 137, 0.3)',
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -397,7 +410,7 @@ function LoginContent({ onClose }: { onClose: () => void }) {
         {/* Facebook */}
         <button
           type="button"
-          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg cursor-pointer"
+          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
           onClick={() => handleSocialLogin('facebook')}
           aria-label="Iniciar sesión con Facebook"
         >
@@ -409,7 +422,7 @@ function LoginContent({ onClose }: { onClose: () => void }) {
         {/* Google */}
         <button
           type="button"
-          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg cursor-pointer"
+          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
           onClick={() => handleSocialLogin('google')}
           aria-label="Iniciar sesión con Google"
         >
@@ -424,7 +437,7 @@ function LoginContent({ onClose }: { onClose: () => void }) {
         {/* Apple */}
         <button
           type="button"
-          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg cursor-pointer"
+          className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
           onClick={() => handleSocialLogin('apple')}
           aria-label="Iniciar sesión con Apple"
         >
