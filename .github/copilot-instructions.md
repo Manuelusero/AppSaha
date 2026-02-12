@@ -1,5 +1,31 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
+## 🤖 Custom Agents Available
+
+### @project-manager
+
+CTO especializado en arquitectura, desarrollo estratégico y planificación técnica.
+
+- Ubicación: `.github/agents/project-manager.agent.md`
+- Uso: `@project-manager [tu pregunta]`
+
+### @design-specialist
+
+Especialista en UX/UI, sistemas de diseño, accesibilidad y Figma integration.
+
+- Ubicación: `.github/agents/design-specialist.agent.md`
+- Uso: `@design-specialist [tu pregunta]`
+- Guía completa: `.github/DESIGN_AGENT_GUIDE.md`
+
+## 🔗 MCP Servers Configured
+
+### Figma Server
+
+- Acceso directo a diseños de Figma (File: 641V0jz66WQSmdDqCN8KXV)
+- Uso: Funciona automáticamente con `@design-specialist`
+
+---
+
 - [x] Verify that the copilot-instructions.md file in the .github directory is created.
 
 - [x] Clarify Project Requirements

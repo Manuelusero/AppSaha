@@ -13,10 +13,14 @@ function JobRequestContent() {
   
   const [descripcion, setDescripcion] = useState('');
   const [foto, setFoto] = useState<File | null>(null);
-  const [urgencia, setUrgencia] = useState('');
-  const [mostrarUrgencias, setMostrarUrgencias] = useState(false);
+  const [urgencia, setUrgencia] = useState('50');
 
-  const nivelesUrgencia = ['Alto', 'Medio', 'Bajo'];
+  const getUrgenciaLabel = (value: string) => {
+    const num = parseInt(value);
+    if (num <= 33) return { text: 'Baja', color: '#10B981', position: 'left' };
+    if (num <= 66) return { text: 'Media', color: '#F59E0B', position: 'center' };
+    return { text: 'Alta', color: '#EF4444', position: 'right' };
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -108,32 +112,57 @@ function JobRequestContent() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'linear-gradient(to bottom, #a8c5e8 0%, #f5f5f5 30%, #ffffff 100%)' }}>
-      {/* Header superior */}
-      <div className="w-full px-6 py-4 flex items-center" style={{ position: 'relative' }}>
-        {/* Botón back */}
-        <button 
-          onClick={() => window.history.back()}
-          className="p-2"
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFCF9' }}>
+      {/* Header con degradado */}
+      <header 
+        className="w-full px-6 flex items-center relative"
+        style={{ 
+          background: 'linear-gradient(180deg, #3A5FA0 0%, #FFFCF9 100%)',
+          height: '124px'
+        }}
+      >
+        {/* Flecha de regreso */}
+        <button
+          onClick={() => router.back()}
+          className="absolute left-6 top-6"
           style={{ cursor: 'pointer' }}
         >
-          <svg width="24" height="24" fill="none" stroke="#000" strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M15 18l-6-6 6-6"/>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2">
+            <path d="M19 12H5M5 12l7 7M5 12l7-7" />
           </svg>
         </button>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center px-6" style={{ paddingTop: '40px' }}>
+      <main className="flex-1 flex flex-col items-center px-6" style={{ paddingTop: '24px' }}>
         <div className="w-full max-w-md">
-          {/* Título */}
-          <h1 className="text-center mb-12" style={{ fontFamily: 'Maitree, serif', fontSize: '40px', lineHeight: '100%', color: '#244C87', fontWeight: 400 }}>
-            Explicanos tu problema
-          </h1>
+          {/* Título y subtítulo */}
+          <div className="text-center" style={{ marginBottom: '48px' }}>
+            <h1 style={{ 
+              fontFamily: 'Maitree, serif', 
+              fontSize: '40px', 
+              lineHeight: '100%', 
+              color: '#244C87', 
+              fontWeight: 400,
+              marginBottom: '8px'
+            }}>
+              Detalles del trabajo
+            </h1>
+            <p style={{ 
+              fontFamily: 'Maitree, serif', 
+              fontSize: '16px', 
+              lineHeight: '100%', 
+              color: '#000000', 
+              fontWeight: 400,
+              opacity: 0.6
+            }}>
+              Completá todos los campos para recibir un<br />presupuesto más preciso.
+            </p>
+          </div>
 
           {/* Campo de descripción */}
           <div style={{ marginBottom: '32px' }}>
-            <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000', fontWeight: 400 }}>
+            <label className="block" style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#000000', fontWeight: 400, lineHeight: '100%', letterSpacing: '0%', opacity: 0.6, marginBottom: '8px' }}>
               ¿En qué te podemos ayudar?
             </label>
             <textarea
@@ -147,8 +176,8 @@ function JobRequestContent() {
           </div>
 
           {/* Upload de foto */}
-          <div style={{ marginBottom: '32px' }}>
-            <label className="block mb-2" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000', fontWeight: 400 }}>
+          <div style={{ marginBottom: '48px' }}>
+            <label className="block" style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#000000', fontWeight: 400, lineHeight: '100%', letterSpacing: '0%', opacity: 0.6, marginBottom: '8px' }}>
               Foto para entender mejor
             </label>
             <div 
@@ -176,42 +205,80 @@ function JobRequestContent() {
 
           {/* Nivel de urgencia */}
           <div style={{ marginBottom: '48px' }}>
-            <div className="relative">
-              <Input
-                label="Nivel de urgencia"
-                placeholder="Alto/Medio/Bajo"
+            <label className="block mb-4" style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#000000', fontWeight: 400, lineHeight: '100%', letterSpacing: '0%', opacity: 0.6 }}>
+              Nivel de urgencia
+            </label>
+            <div className="relative flex flex-col items-center" style={{ paddingTop: '8px', paddingBottom: '32px' }}>
+              {/* Slider */}
+              <input
+                type="range"
+                min="0"
+                max="100"
                 value={urgencia}
-                onChange={setUrgencia}
-                className="px-5 py-4 cursor-pointer"
+                onChange={(e) => setUrgencia(e.target.value)}
+                className="appearance-none cursor-pointer urgencia-slider"
+                style={{ 
+                  width: '386px',
+                  maxWidth: '100%',
+                  height: '3px'
+                }}
               />
-              
-              {/* Dropdown de urgencias */}
-              {mostrarUrgencias && (
-                <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg overflow-hidden">
-                  {nivelesUrgencia.map((nivel, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        setUrgencia(nivel);
-                        setMostrarUrgencias(false);
-                      }}
-                      className="px-5 py-3 hover:bg-indigo-50 cursor-pointer transition-colors"
-                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#000000' }}
-                    >
-                      {nivel}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Etiqueta dinámica */}
+              <div 
+                className="absolute -bottom-0"
+                style={{ 
+                  fontFamily: 'Maitree, serif', 
+                  fontSize: '14px', 
+                  color: getUrgenciaLabel(urgencia).color,
+                  fontWeight: 400,
+                  width: '386px',
+                  maxWidth: '100%',
+                  ...(getUrgenciaLabel(urgencia).position === 'left' && { textAlign: 'left' }),
+                  ...(getUrgenciaLabel(urgencia).position === 'center' && { textAlign: 'center' }),
+                  ...(getUrgenciaLabel(urgencia).position === 'right' && { textAlign: 'right' })
+                }}
+              >
+                {getUrgenciaLabel(urgencia).text}
+              </div>
             </div>
           </div>
+
+          <style jsx>{`
+            .urgencia-slider {
+              background: linear-gradient(to right, #10B981 0%, #EF4444 100%);
+              outline: none;
+              border-radius: 8px;
+              opacity: 1;
+            }
+            
+            .urgencia-slider::-webkit-slider-thumb {
+              appearance: none;
+              width: 29px;
+              height: 29px;
+              border-radius: 50%;
+              background: #10B981;
+              cursor: pointer;
+              border: none;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            
+            .urgencia-slider::-moz-range-thumb {
+              width: 29px;
+              height: 29px;
+              border-radius: 50%;
+              background: #10B981;
+              cursor: pointer;
+              border: none;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+          `}</style>
 
           {/* Botón Último paso */}
           <div className="flex justify-end">
             <button
               onClick={handleSubmit}
               className="px-8 py-3 rounded-full transition-colors shadow-md"
-              style={{ fontFamily: 'Maitree, serif', fontSize: '18px', color: '#244C87', fontWeight: 500, backgroundColor: '#E8EAF6' }}
+              style={{ fontFamily: 'Maitree, serif', fontSize: '18px', color: '#244C87', fontWeight: 500, backgroundColor: '#E8EAF6', cursor: 'pointer' }}
             >
               Último paso
             </button>
@@ -220,14 +287,6 @@ function JobRequestContent() {
       </main>
 
       <Footer />
-
-      {/* Click outside handler para cerrar dropdown */}
-      {mostrarUrgencias && (
-        <div 
-          className="fixed inset-0 z-0"
-          onClick={() => setMostrarUrgencias(false)}
-        />
-      )}
     </div>
   );
 }

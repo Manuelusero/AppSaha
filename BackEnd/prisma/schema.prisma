@@ -155,8 +155,8 @@ model ProviderReference {
 // Reservas/Contrataciones
 model Booking {
   id          String          @id @default(cuid())
-  clientId    String
-  client      User            @relation("ClientBookings", fields: [clientId], references: [id])
+  clientId    String?         // Opcional para clientes sin registro
+  client      User?           @relation("ClientBookings", fields: [clientId], references: [id])
   providerId  String
   provider    ProviderProfile @relation(fields: [providerId], references: [id])
   
@@ -167,6 +167,9 @@ model Booking {
   address     String?         // Dirección donde se realizará el servicio
   location    String?         // Ubicación general (ciudad/pueblo)
   problemPhoto String?        // URL de la foto del problema cargada por el cliente
+  
+  // Datos del cliente sin registro
+  clientName      String?     // Nombre del cliente (obligatorio para clientes sin cuenta)
   
   // Estado y precio
   status      BookingStatus   @default(PENDING)

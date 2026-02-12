@@ -152,68 +152,75 @@ function SearchResultsContent() {
     ));
   };
 
+  const servicio = searchParams.get('servicio') || '';
+  const ubicacion = searchParams.get('ubicacion') || '';
+  const [error, setError] = useState('');
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFCF9' }}>
+      {/* Header con degradado y título */}
       <header 
-        className="px-6 py-4 flex items-center justify-between"
+        className="w-full px-6 flex items-center justify-center relative"
         style={{ 
-          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
-          height: '150px'
+          background: 'linear-gradient(180deg, #3A5FA0 0%, #FFFCF9 100%)',
+          height: '124px'
         }}
       >
-        <div className="flex items-center gap-2">
-          <Image 
-            src="/Logo.png" 
-            alt="Serco Logo" 
-            width={120} 
-            height={40}
-            className="h-10 w-auto"
-            priority
-          />
-        </div>
-        <a 
-          href="/provider-signup"
-          className="px-6 py-2 rounded-full border-2 transition-colors"
-          style={{ 
-            fontFamily: 'Maitree, serif',
-            fontSize: '16px',
-            borderColor: '#244C87',
-            color: '#244C87',
-            backgroundColor: 'transparent',
-            cursor: 'pointer'
-          }}
+        {/* Flecha de regreso */}
+        <button
+          onClick={() => router.back()}
+          className="absolute left-6"
+          style={{ cursor: 'pointer' }}
         >
-          Espacio del trabajador
-        </a>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2">
+            <path d="M19 12H5M5 12l7 7M5 12l7-7" />
+          </svg>
+        </button>
+
+        {/* Título dinámico */}
+        <div className="text-center rounded-full" style={{ 
+          border: '1px solid #000000',
+          width: '311px',
+          height: '47px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          opacity: 1,
+          marginTop: '58px',
+          marginBottom: '55px'
+        }}>
+          <h1 style={{ 
+            fontFamily: 'Maitree, serif', 
+            fontSize: '20px', 
+            lineHeight: '100%', 
+            color: '#000000', 
+            fontWeight: 400,
+            letterSpacing: '0%',
+            textAlign: 'center',
+            opacity: 0.6
+          }}>
+            {servicio} en {ubicacion || 'tu zona'}
+          </h1>
+        </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 py-12">
-        <div className="w-full" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
-          {/* Título */}
-          <h1 className="text-center mb-4" style={{ fontFamily: 'Maitree, serif', fontSize: '40px', lineHeight: '100%', color: '#244C87', fontWeight: 400 }}>
-            Elegí tu profesional
-          </h1>
+      <main className="flex-1 py-8">
+        <div className="w-full max-w-4xl mx-auto" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+          {/* Texto de instrucción */}
+          <p className="text-center mb-8" style={{ 
+            fontFamily: 'Maitree, serif',
+            fontSize: '12px',
+            fontWeight: 400,
+            lineHeight: '100%',
+            letterSpacing: '0%',
+            color: '#6B7280'
+          }}>
+            Selecciona uno o más profesionales para recibir sus presupuestos y tiempos de ejecución
+          </p>
 
-          {/* Filtros aplicados */}
-          {(searchParams.get('servicio') || searchParams.get('ubicacion') || searchParams.get('especialidades')) && (
-            <div className="max-w-3xl mx-auto mb-12 p-4 bg-blue-50 rounded-2xl">
-              <p className="text-center" style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#244C87' }}>
-                {searchParams.get('servicio') && <span><strong>Servicio:</strong> {searchParams.get('servicio')}</span>}
-                {searchParams.get('ubicacion') && <span className="mx-3">•</span>}
-                {searchParams.get('ubicacion') && <span><strong>Ubicación:</strong> {searchParams.get('ubicacion')}</span>}
-              </p>
-              {searchParams.get('especialidades') && (
-                <p className="text-center mt-2" style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#244C87' }}>
-                  <strong>Especialidades:</strong> {searchParams.get('especialidades')?.split(',').join(', ')}
-                </p>
-              )}
-              <p className="text-center mt-2" style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#6B7280' }}>
-                {profesionales.length} profesional{profesionales.length !== 1 ? 'es' : ''} encontrado{profesionales.length !== 1 ? 's' : ''}
-              </p>
-            </div>
-          )}
+
 
           {/* Grid de profesionales */}
           <div className="flex flex-col items-center" style={{ gap: '80px'}}>
@@ -227,83 +234,89 @@ function SearchResultsContent() {
               profesionales.map((prof) => (
                 <div 
                   key={prof.id}
-                  className="bg-white rounded-3xl overflow-hidden border-2 hover:shadow-2xl transition-all duration-300 relative"
+                  className="bg-white overflow-hidden transition-all duration-300 relative"
                   style={{ 
                     width: '100%',
-                    maxWidth: '432px',
-                    height: '514px',
-                    borderColor: selectedProviders.includes(prof.id) ? '#244C87' : '#E5E7EB'
+                    maxWidth: '431px',
+                    borderRadius: '24px',
+                    boxShadow: '0px 4px 90px 0px rgba(0, 0, 0, 0.25)'
                   }}
                 >
-                  {/* Checkbox de selección */}
-                  <div className="absolute top-4 right-4 z-10">
-                    <label className="flex items-center justify-center w-8 h-8 rounded-full bg-white border-2 cursor-pointer transition-all"
-                      style={{ 
-                        borderColor: selectedProviders.includes(prof.id) ? '#244C87' : '#D1D5DB',
-                        backgroundColor: selectedProviders.includes(prof.id) ? '#244C87' : '#FFFFFF'
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedProviders.includes(prof.id)}
-                        onChange={() => toggleProviderSelection(prof.id)}
-                        className="hidden"
-                      />
-                      {selectedProviders.includes(prof.id) && (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                      )}
-                    </label>
-                  </div>
-
                   {/* Imagen del profesional */}
-                  <div className="w-full relative" style={{ height: '300px' }}>
+                  <div className="w-full relative" style={{ height: '380px', borderRadius: '24px 24px 0 0' }}>
                     <Image
                       src={prof.foto}
                       alt={prof.nombre}
                       fill
                       className="object-cover"
+                      style={{ borderRadius: '24px 24px 0 0' }}
                     />
                   </div>
 
                   {/* Información del profesional */}
-                  <div className="p-6 flex flex-col justify-between" style={{ height: '214px' }}>
-                    <div>
-                      <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, lineHeight: '100%', letterSpacing: '0%', color: '#000000', marginBottom: '8px', textTransform: 'capitalize' }}>
+                  <div className="p-6" style={{ backgroundColor: '#FFFCF9' }}>
+                    <div className="mb-4">
+                      <h2 style={{ 
+                        fontFamily: 'Maitree, serif', 
+                        fontSize: '32px', 
+                        fontWeight: 400, 
+                        lineHeight: '100%', 
+                        letterSpacing: '0%', 
+                        color: '#000000', 
+                        marginBottom: '8px'
+                      }}>
                         {prof.nombre}
                       </h2>
-                      <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 400, lineHeight: '100%', letterSpacing: '0%', color: '#000000', marginBottom: '12px' }}>
-                        {prof.descripcion}
+                      <p style={{ 
+                        fontFamily: 'Maitree, serif', 
+                        fontSize: '16px', 
+                        fontWeight: 400, 
+                        lineHeight: '100%', 
+                        letterSpacing: '0%', 
+                        color: '#000000', 
+                        marginBottom: '12px' 
+                      }}>
+                        {prof.profesion} - {prof.ubicacion}
                       </p>
                       
                       {/* Rating de estrellas */}
-                      <div className="flex items-center gap-1 mb-4" style={{ color: '#FFC107' }}>
+                      <div className="flex items-center gap-1 mb-6">
                         {renderStars(prof.rating)}
                       </div>
                     </div>
 
-                    {/* Botón contactar */}
-                    <div className="flex justify-end">
+                    {/* Botones */}
+                    <div className="flex gap-4">
                       <button 
-                        className="px-6 py-2 rounded-full border-2 border-gray-300 transition-all duration-300"
+                        className="flex-1 py-3 rounded-full border transition-all duration-300"
                         style={{ 
                           fontFamily: 'Maitree, serif', 
                           fontSize: '16px',
-                          backgroundColor: 'transparent',
-                          color: '#000000'
+                          fontWeight: 500,
+                          backgroundColor: '#FFFCF9',
+                          color: '#244C87',
+                          borderColor: '#244C87'
                         }}
                         onClick={() => router.push(`/providers/${prof.id}`)}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#BFC6EE33';
-                          e.currentTarget.style.borderColor = '#244C87';
+                      >
+                        Ver Perfil
+                      </button>
+                      <button 
+                        className="flex-1 py-3 rounded-full border transition-all duration-300"
+                        style={{ 
+                          fontFamily: 'Maitree, serif', 
+                          fontSize: '16px',
+                          fontWeight: 500,
+                          backgroundColor: selectedProviders.includes(prof.id) ? '#244C87' : '#FFFCF9',
+                          color: selectedProviders.includes(prof.id) ? '#FFFFFF' : '#244C87',
+                          borderColor: '#244C87'
                         }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.borderColor = '#D1D5DB';
+                        onClick={() => {
+                          toggleProviderSelection(prof.id);
+                          setError('');
                         }}
                       >
-                        Ver perfil
+                        Seleccionar
                       </button>
                     </div>
                   </div>
@@ -318,24 +331,39 @@ function SearchResultsContent() {
             )}
           </div>
 
-          {/* Botón de continuar (solo si hay profesionales seleccionados) */}
-          {selectedProviders.length > 0 && (
-            <div className="flex justify-center mt-12">
-              <button
-                onClick={handleContinuar}
-                className="px-12 py-4 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
-                style={{ 
-                  fontFamily: 'Maitree, serif', 
-                  fontSize: '20px',
-                  fontWeight: 500,
-                  backgroundColor: '#244C87',
-                  color: '#FFFFFF'
-                }}
-              >
-                Continuar con {selectedProviders.length} profesional{selectedProviders.length > 1 ? 'es' : ''}
-              </button>
-            </div>
-          )}
+          {/* Botón de continuar y mensaje de error */}
+          <div className="flex flex-col items-center mt-12 gap-4">
+            <button
+              onClick={() => {
+                if (selectedProviders.length === 0) {
+                  setError('*Seleccioná al menos un profesional para avanzar');
+                  return;
+                }
+                handleContinuar();
+              }}
+              className="px-12 py-3 rounded-full transition-all duration-300"
+              style={{ 
+                fontFamily: 'Maitree, serif', 
+                fontSize: '18px',
+                fontWeight: 500,
+                backgroundColor: '#E8EAF6',
+                color: '#244C87',
+                border: 'none'
+              }}
+            >
+              Solicitar Presupuesto
+            </button>
+            {error && (
+              <p style={{
+                fontFamily: 'Maitree, serif',
+                fontSize: '14px',
+                color: '#DC2626',
+                textAlign: 'center'
+              }}>
+                {error}
+              </p>
+            )}
+          </div>
         </div>
       </main>
 

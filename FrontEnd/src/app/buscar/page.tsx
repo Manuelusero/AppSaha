@@ -86,19 +86,90 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden" style={{ scrollBehavior: 'smooth' }}>
-      <Header onLoginClick={() => setMostrarModalLogin(true)} />
+    <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ scrollBehavior: 'smooth', backgroundColor: '#FFFCF9' }}>
+      {/* Header personalizado para esta página */}
+      <header className="w-full px-6 py-4 flex items-center justify-between" style={{
+        background: 'linear-gradient(180deg, #3A5FA0 0%, #FFFCF9 100%)',
+        paddingTop: '20px',
+        paddingBottom: '20px'
+      }}>
+        {/* Logo placeholder */}
+        <div className="text-gray-400 text-sm font-medium" style={{ fontFamily: typography.fontFamily.primary }}>
+          LOGO
+        </div>
+        
+        {/* Botón Ofrezco servicios - Glass effect */}
+        <button
+          onClick={() => router.push('/provider-signup')}
+          className="rounded-full backdrop-blur-md border shadow-lg transition-all hover:shadow-xl"
+          style={{
+            width: '139px',
+            height: '39px',
+            gap: '10px',
+            opacity: 1,
+            fontFamily: typography.fontFamily.primary,
+            fontSize: '14px',
+            color: '#FFFFFF',
+            fontWeight: 500,
+            backgroundColor: 'rgba(191, 198, 238, 0.3)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderColor: 'rgba(255, 255, 255, 0.3)',
+          }}
+        >
+          Ofrezco servicios
+        </button>
+      </header>
 
       {/* Hero Section */}
-      <main id="buscar-servicios" className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-12">
+      <main id="buscar-servicios" className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-12" style={{ paddingTop: '60px' }}>
+        {/* Label SERVICIOS CONFIABLES con línea punteada */}
+        <div className="mb-8 flex flex-col items-center">
+          <p className="text-center" style={{
+            fontFamily: 'Avenir, sans-serif',
+            fontSize: '15px',
+            fontWeight: 800,
+            color: '#5E83AE',
+            lineHeight: '100%',
+            letterSpacing: '0%',
+            textTransform: 'uppercase',
+            textAlign: 'center',
+            marginBottom: '0px'
+          }}>
+            SERVICIOS CONFIABLES
+          </p>
+          <div style={{ 
+            width: '402px',
+            maxWidth: '100%',
+            height: '36px',
+            opacity: 1,
+            paddingTop: '8px',
+            paddingRight: '16px',
+            paddingBottom: '8px',
+            paddingLeft: '16px',
+            gap: '10px',
+            marginTop: '-20px',
+            borderBottom: '0.5px dashed',
+            borderColor: colors.primary.main,
+            borderImageSlice: 1,
+            borderImageWidth: 1,
+            borderImageOutset: 0,
+          }}></div>
+        </div>
+
         {/* Título principal con palabra animada */}
-        <div className="text-center mb-6 sm:mb-10 w-full max-w-lg">
-          <h1 className="font-normal text-[32px] sm:text-[48px] leading-tight text-center mb-4 sm:mb-6" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
-            Encontrá
-          </h1>
+        <div className="text-center mb-6 sm:mb-10 w-full max-w-lg px-4">
+          <h1 className="text-[45px] text-center" style={{ 
+            fontFamily: typography.fontFamily.primary, 
+            color: colors.primary.main,
+            fontWeight: 500,
+            letterSpacing: '0%',
+            lineHeight: '190%'  /* Cambia este valor para ajustar el espacio entre líneas: 120%, 130%, 140%, 150%, etc. */
+          }}>
+            Encontrá<br />
           
           {/* Carrusel horizontal de profesiones */}
-          <div className="relative h-12 sm:h-20 mb-3 sm:mb-4 flex items-center justify-center w-full overflow-hidden">
+          <div className="relative flex items-center justify-center w-full overflow-hidden" style={{ marginBottom: '0', height: '85px', lineHeight: '85px' }}>
             <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2">
               {/* Mostrar 3 palabras: anterior, actual (centro), siguiente */}
               {[-1, 0, 1].map((offset) => {
@@ -119,10 +190,12 @@ export default function Home() {
                     }}
                   >
                     <span 
-                      className="block text-center transition-all duration-700 whitespace-nowrap text-[32px] sm:text-[48px] font-bold"
+                      className="block text-center transition-all duration-700 whitespace-nowrap text-[45px]"
                       style={{ 
                         fontFamily: typography.fontFamily.primary,
-                        color: colors.primary.main
+                        color: colors.primary.main,
+                        fontWeight: 700,
+                        lineHeight: '85px'
                       }}
                     >
                       {profesion}
@@ -132,9 +205,7 @@ export default function Home() {
               })}
             </div>
           </div>
-          
-          <h1 className="font-normal text-[32px] sm:text-[48px] leading-tight text-center" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
-            confiables en tu zona
+          confiables en tu<br />zona
           </h1>
         </div>
 
@@ -147,14 +218,11 @@ export default function Home() {
               value={servicioSeleccionado}
               onChange={(e) => {
                 setServicioSeleccionado(e.target.value);
-                // Mostrar dropdown solo si hay al menos 2 caracteres
-                setMostrarServicios(e.target.value.length >= 2);
+                setMostrarServicios(true);
               }}
               onFocus={() => {
-                // Solo mostrar si ya hay texto escrito
-                if (servicioSeleccionado.length >= 2) {
-                  setMostrarServicios(true);
-                }
+                // Mostrar dropdown siempre al hacer foco
+                setMostrarServicios(true);
               }}
               onBlur={() => {
                 // Delay para permitir hacer click en una opción
@@ -164,11 +232,11 @@ export default function Home() {
               className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
             />
             
-            {/* Dropdown de servicios - solo se muestra si hay al menos 2 caracteres */}
-            {mostrarServicios && servicioSeleccionado.length >= 2 && (
+            {/* Dropdown de servicios */}
+            {mostrarServicios && (
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                 {servicios
-                  .filter(s => s.toLowerCase().includes(servicioSeleccionado.toLowerCase()))
+                  .filter(s => servicioSeleccionado === '' || s.toLowerCase().includes(servicioSeleccionado.toLowerCase()))
                   .map((servicio, idx) => (
                     <div
                       key={idx}
@@ -181,7 +249,7 @@ export default function Home() {
                       {servicio}
                     </div>
                   ))}
-                {servicios.filter(s => s.toLowerCase().includes(servicioSeleccionado.toLowerCase())).length === 0 && (
+                {servicios.filter(s => servicioSeleccionado === '' || s.toLowerCase().includes(servicioSeleccionado.toLowerCase())).length === 0 && (
                   <div className="px-4 sm:px-5 py-2 sm:py-3 text-gray-500 text-sm sm:text-base text-center">
                     No se encontraron servicios
                   </div>
@@ -262,203 +330,37 @@ export default function Home() {
           {/* Botón de búsqueda */}
           <button
             onClick={handleBuscar}
-            className="w-14 h-14 sm:w-16 sm:h-16 mx-auto flex items-center justify-center bg-white border-2 border-gray-200 rounded-full hover:bg-indigo-50 hover:border-indigo-500 transition-all shadow-sm hover:shadow-md"
+            className="w-full mx-auto flex items-center justify-center gap-2 rounded-full backdrop-blur-md border shadow-lg transition-all hover:shadow-xl"
+            style={{
+              width: '396px',
+              maxWidth: '100%',
+              height: '46px',
+              borderRadius: '24px',
+              paddingTop: '10px',
+              paddingRight: '12px',
+              paddingBottom: '10px',
+              paddingLeft: '12px',
+              gap: '10px',
+              backgroundColor: 'rgba(191, 198, 238, 0.2)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              fontFamily: typography.fontFamily.primary,
+              fontSize: '16px',
+              fontWeight: 500,
+              color: colors.primary.main
+            }}
           >
-            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <span>Buscar</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
         </div>
       </main>
 
-      {/* Sección: Explora las categorías */}
-      <section className="w-full bg-white py-12 sm:py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Título */}
-          <h2 className="font-normal text-[48px] leading-[100%] text-center mb-6" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main }}>
-            Explora las categorías
-          </h2>
-          
-          {/* Párrafo descriptivo */}
-          <p className="font-normal text-[20px] leading-[100%] text-center text-gray-700 mb-12 max-w-3xl mx-auto" style={{ fontFamily: typography.fontFamily.primary }}>
-            Si tienes dudas de qué servicio necesitas podés revisar nuestro listado de categorías con ejemplos y experiencias de usuarios
-          </p>
-
-          {/* Grid de categorías */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
-            {/* Categoría: Pintura */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame8.png" 
-                  alt="Pintura" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Categoría: Carpintería */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame9.png" 
-                  alt="Carpintería" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Categoría: Herreros */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame15.png" 
-                  alt="Herreros" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Categoría: Albañiles */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame19.png" 
-                  alt="Albañiles" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Categoría: Pintura (repetida) */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame8.png" 
-                  alt="Pintura" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Categoría: Carpintería (repetida) */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame9.png" 
-                  alt="Carpintería" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-
-            {/* Categoría: Herreros (repetida) */}
-            <div className="flex flex-col items-center">
-              <div 
-                className="overflow-hidden bg-white flex items-center justify-center"
-                style={{ 
-                  width: '180px', 
-                  height: '203px', 
-                  borderRadius: '80px',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderColor: colors.neutral[200],
-                  opacity: 1
-                }}
-              >
-                <Image 
-                  src="/Frame15.png" 
-                  alt="Herreros" 
-                  width={180} 
-                  height={203}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Sección: ¿Cómo funciona? */}
-      <section id="como-funciona" className="w-full bg-white py-12 sm:py-16 px-6" style={{ marginTop: '13px' }}>
+      <section id="como-funciona" className="w-full py-12 sm:py-16 px-6" style={{ marginTop: '13px', backgroundColor: '#FFFCF9' }}>
         <div className="max-w-4xl mx-auto">
           {/* Título */}
           <h2 className="font-normal text-[64px] text-center mb-16" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontStyle: 'normal', lineHeight: '1.5', fontSize: typography.fontSize['6xl'] }}>
