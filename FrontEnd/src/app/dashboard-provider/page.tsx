@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { colors, typography, spacing } from '@/styles/tokens';
-import { useFetch } from '@/hooks';
-import { apiGet, apiPost, getProfileImageUrl, getPortfolioImageUrl, getProblemPhotoUrl, PROVIDER_ID_KEY } from '@/utils';
+import { colors, typography } from '@/styles/tokens';
+import { apiGet, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY } from '@/utils';
+import { getEspecialidades } from '../data/especialidades';
 
 interface ProviderData {
   id: number;
@@ -18,58 +18,26 @@ interface ProviderData {
   specialties: string[];
   descripcion: string;
   experiencia: number;
-  precioHora?: number;
+  alcanceTrabajo: string;
   profileImage?: string;
   portfolioImages?: string[];
-}
-
-interface JobRequest {
-  id: string; // Cambiar de number a string para que coincida con los IDs de Prisma
-  clientName: string;
-  service: string;
-  location: string;
-  description: string;
-  urgency: string;
-  contactEmail: string;
-  contactPhone: string;
-  problemPhoto?: string | null; // Foto del problema cargada por el cliente
-  createdAt: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  instagram?: string;
+  facebook?: string;
+  linkedin?: string;
+  referenciaNombre?: string;
+  referenciaEmail?: string;
+  referenciaTelefono?: string;
 }
 
 export default function DashboardProvider() {
   const router = useRouter();
   const [providerData, setProviderData] = useState<ProviderData | null>(null);
-  const [jobRequests, setJobRequests] = useState<JobRequest[]>([]);
+  const [showMenu, setShowMenu] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<JobRequest | null>(null);
-  const [showBudgetModal, setShowBudgetModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'perfil' | 'solicitudes'>('perfil');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-
-  // Datos adicionales del registro
-  const [datosAdicionales, setDatosAdicionales] = useState({
-    profesionesAdicionales: [] as Array<{profesion: string, especialidades: string[]}>,
-    alcanceTrabajo: '',
-    dni: '',
-    instagram: '',
-    facebook: '',
-    linkedin: '',
-    certificadosProfesionales: [] as string[]
-  });
-
-  // Formulario de presupuesto
-  const [budgetForm, setBudgetForm] = useState({
-    price: '',
-    workDetails: '',
-    materials: '',
-    estimatedTime: ''
-  });
+  const [editedData, setEditedData] = useState<ProviderData | null>(null);
 
   // Cargar datos del proveedor
   useEffect(() => {
-    // TODO: Obtener el ID del proveedor desde el localStorage o contexto de auth
     const providerId = localStorage.getItem(PROVIDER_ID_KEY);
     
     if (!providerId) {
@@ -78,19 +46,15 @@ export default function DashboardProvider() {
     }
 
     // Cargar datos del proveedor desde la API
-    console.log('Cargando datos del proveedor desde API:', providerId);
     apiGet<any>(`/providers/${providerId}`)
       .then(data => {
-        console.log('Datos del proveedor recibidos:', data);
-        
-        // El backend devuelve el usuario con providerProfile
         const profile = data.providerProfile;
         if (!profile) {
           console.error('No se encontró providerProfile');
           return;
         }
 
-        // Parsear especialidades (viene como JSON string)
+        // Parsear especialidades
         let specialties = [];
         try {
           specialties = typeof profile.specialties === 'string' 
@@ -110,8 +74,13 @@ export default function DashboardProvider() {
           portfolioImages = [];
         }
 
-        // Construir URLs completas para las imágenes
         const profileImageUrl = getProfileImageUrl(profile.profilePhoto);
+
+        // Limpiar especialidades obsoletas (nombres cortos sin contexto)
+        const especialidadesDisponibles = getEspecialidades(profile.serviceCategory || '');
+        const especialidadesValidas = specialties.filter((s: string) => 
+          especialidadesDisponibles.includes(s)
+        );
 
         setProviderData({
           id: parseInt(providerId),
@@ -121,51 +90,30 @@ export default function DashboardProvider() {
           telefono: data.phone || '',
           ubicacion: profile.location || '',
           serviceCategory: profile.serviceCategory || '',
-          specialties: specialties,
+          specialties: especialidadesValidas,
           descripcion: profile.bio || profile.serviceDescription || '',
           experiencia: profile.experience || 0,
-          precioHora: profile.pricePerHour || 0,
+          alcanceTrabajo: profile.serviceRadius?.toString() || '',
           profileImage: profileImageUrl,
           portfolioImages: portfolioImages.map((img: string) => 
             getPortfolioImageUrl(img)
-          )
-        });
-
-        // Cargar datos adicionales del perfil
-        setDatosAdicionales({
-          profesionesAdicionales: [], // TODO: agregar al schema si se necesita
-          alcanceTrabajo: profile.serviceRadius?.toString() || '',
-          dni: profile.dniNumber || '',
+          ),
           instagram: profile.instagram || '',
           facebook: profile.facebook || '',
           linkedin: profile.linkedin || '',
-          certificadosProfesionales: profile.certifications 
-            ? (typeof profile.certifications === 'string' ? JSON.parse(profile.certifications) : profile.certifications)
-            : []
+          referenciaNombre: '', // TODO: Agregar al schema si es necesario
+          referenciaEmail: '',
+          referenciaTelefono: ''
         });
-        
-        console.log('Provider data establecido correctamente');
       })
       .catch(err => {
-        console.error('Error cargando proveedor desde API:', err);
+        console.error('Error cargando proveedor:', err);
         
-        // Si es error 404, probablemente el providerId es incorrecto
-        if (err.message?.includes('404') || err.message?.includes('no encontrado')) {
-          console.error('❌ Provider no encontrado (404). Limpiando localStorage y redirigiendo...');
-          // Limpiar todo el localStorage
-          localStorage.clear();
-          // Redirigir al login
-          alert('Tu sesión ha expirado o hay un error con tu cuenta. Por favor, inicia sesión de nuevo.');
-          router.push('/login');
-          return;
-        }
-        
-        // Fallback: intentar cargar desde localStorage si falla la API
+        // Fallback a localStorage
         const registroCompleto = localStorage.getItem('registroCompleto');
         if (registroCompleto) {
           try {
             const datosRegistro = JSON.parse(registroCompleto);
-            console.log('Usando datos de localStorage como fallback');
             
             setProviderData({
               id: parseInt(providerId),
@@ -177,163 +125,23 @@ export default function DashboardProvider() {
               serviceCategory: datosRegistro.profesion || '',
               specialties: datosRegistro.especialidades || [],
               descripcion: datosRegistro.descripcion || '',
-              experiencia: 0,
-              precioHora: 0,
-              profileImage: '',
-              portfolioImages: []
-            });
-            
-            setDatosAdicionales({
-              profesionesAdicionales: datosRegistro.profesionesAdicionales || [],
+              experiencia: datosRegistro.experiencia || 0,
               alcanceTrabajo: datosRegistro.alcanceTrabajo || '',
-              dni: datosRegistro.dni || '',
+              profileImage: '',
+              portfolioImages: [],
               instagram: datosRegistro.instagram || '',
               facebook: datosRegistro.facebook || '',
               linkedin: datosRegistro.linkedin || '',
-              certificadosProfesionales: datosRegistro.certificadosProfesionales || []
+              referenciaNombre: datosRegistro.referenciaNombre || '',
+              referenciaEmail: datosRegistro.referenciaEmail || '',
+              referenciaTelefono: datosRegistro.referenciaTelefono || ''
             });
           } catch (error) {
             console.error('Error parseando datos del registro:', error);
           }
         }
       });
-
-    // Cargar solicitudes de trabajo reales desde el backend
-    const loadBookings = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-
-      try {
-        const bookings = await apiGet<Array<{
-          id: string;
-          client: { name: string; email: string; phone?: string };
-          location?: string;
-          address?: string;
-          description: string;
-          clientNotes?: string;
-          problemPhoto?: string;
-          createdAt: string;
-          status: string;
-        }>>('/bookings');
-        
-        console.log('📦 Bookings recibidos del backend:', bookings);
-        
-        // Transformar los datos del backend al formato del frontend
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const transformedBookings = bookings.map((booking: any) => {
-          console.log('🔍 Procesando booking:', booking.id, 'problemPhoto:', booking.problemPhoto);
-          
-          // Construir URL de la foto del problema si existe
-          let problemPhotoUrl = null;
-          if (booking.problemPhoto) {
-            problemPhotoUrl = getProblemPhotoUrl(booking.problemPhoto);
-          }
-          
-          return {
-            id: booking.id, // Usar el ID real de la booking
-            clientName: booking.client.name,
-            service: 'Servicio solicitado', // Puedes agregar esto al schema si es necesario
-            location: booking.location || booking.address || 'Ubicación no especificada',
-            description: booking.description,
-            urgency: booking.clientNotes?.includes('Urgencia:') 
-              ? booking.clientNotes.split('Urgencia:')[1].split('.')[0].trim() 
-              : 'No especificada',
-            contactEmail: booking.client.email,
-            contactPhone: booking.client.phone || 'No especificado',
-            problemPhoto: problemPhotoUrl, // URL construida de la foto
-            createdAt: new Date(booking.createdAt).toLocaleDateString('es-AR'),
-            status: booking.status.toLowerCase() as 'pending' | 'accepted' | 'rejected'
-          };
-        });
-
-        console.log('✅ Bookings transformados:', transformedBookings);
-        setJobRequests(transformedBookings);
-      } catch (error) {
-        console.error('Error al cargar solicitudes:', error);
-      }
-    };
-
-    loadBookings();
   }, [router]);
-
-  // Cerrar menú al hacer clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showProfileMenu) {
-        const target = event.target as HTMLElement;
-        if (!target.closest('.profile-menu-container')) {
-          setShowProfileMenu(false);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showProfileMenu]);
-
-  const handleAcceptRequest = (request: JobRequest) => {
-    setSelectedRequest(request);
-    setShowBudgetModal(true);
-  };
-
-  const handleSubmitBudget = async () => {
-    if (!selectedRequest) return;
-
-    // Validaciones
-    if (!budgetForm.price || !budgetForm.workDetails) {
-      alert('El precio y los detalles del trabajo son requeridos');
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('Necesitás iniciar sesión');
-        router.push('/login');
-        return;
-      }
-
-      const data = await apiPost<{ clientDataUrl: string }>(
-        `/bookings/${selectedRequest.id}/send-budget`,
-        {
-          budgetPrice: budgetForm.price,
-          budgetDetails: budgetForm.workDetails,
-          budgetMaterials: budgetForm.materials,
-          budgetTime: budgetForm.estimatedTime
-        }
-      );
-      
-      console.log('✅ Presupuesto enviado. Link para cliente:', data.clientDataUrl);
-      
-      alert(`Presupuesto enviado exitosamente!\n\nPor ahora, compartí este link con el cliente:\n${data.clientDataUrl}`);
-      
-      setShowBudgetModal(false);
-      setBudgetForm({ price: '', workDetails: '', materials: '', estimatedTime: '' });
-      
-      // Actualizar estado de la solicitud
-      setJobRequests(prev => 
-        prev.map(req => 
-          req.id === selectedRequest?.id 
-            ? { ...req, status: 'accepted' as const }
-            : req
-        )
-      );
-    } catch (error) {
-      console.error('Error al enviar presupuesto:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      alert(`Error al enviar presupuesto: ${errorMessage}`);
-    }
-  };
-
-  const handleRejectRequest = (requestId: string) => {
-    setJobRequests(prev => 
-      prev.map(req => 
-        req.id === requestId 
-          ? { ...req, status: 'rejected' as const }
-          : req
-      )
-    );
-  };
 
   if (!providerData) {
     return (
@@ -343,1155 +151,669 @@ export default function DashboardProvider() {
     );
   }
 
+  const handleEditClick = () => {
+    console.log('=== ENTRANDO EN MODO EDICIÓN ===');
+    console.log('providerData:', providerData);
+    
+    // Limpiar especialidades que no coincidan con las disponibles
+    const especialidadesDisponibles = getEspecialidades(providerData.serviceCategory);
+    const especialidadesValidas = providerData.specialties?.filter(s => 
+      especialidadesDisponibles.includes(s)
+    ) || [];
+    
+    setEditMode(true);
+    setEditedData({ 
+      ...providerData,
+      specialties: especialidadesValidas
+    });
+    console.log('editMode activado');
+    console.log('Especialidades limpiadas:', especialidadesValidas);
+  };
+
+  const handleCancelEdit = () => {
+    setEditMode(false);
+    setEditedData(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editedData) return;
+    
+    try {
+      // TODO: Llamar a la API para guardar los cambios
+      // await apiPut(`/providers/${editedData.id}`, editedData);
+      
+      setProviderData(editedData);
+      setEditMode(false);
+      setEditedData(null);
+      alert('Perfil actualizado exitosamente');
+    } catch (error) {
+      console.error('Error al guardar:', error);
+      alert('Error al guardar los cambios');
+    }
+  };
+
+  const handleFieldChange = (field: keyof ProviderData, value: any) => {
+    if (editedData) {
+      setEditedData({ ...editedData, [field]: value });
+    }
+  };
+
+  const currentData = editMode ? editedData : providerData;
+  if (!currentData) return null;
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
+      {/* Header Fixed */}
       <header 
-        className="px-6 py-4 flex items-center justify-between"
+        className="fixed top-0 left-0 right-0 w-full px-4 sm:px-6 py-6 sm:py-8 flex items-center justify-between z-50"
         style={{ 
           background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
-          height: '150px'
         }}
       >
-        <div className="flex items-center gap-2">
-          <div style={{ 
-            width: '145px', 
-            height: '66px',
-            background: 'url(/LOGO.svg) no-repeat center center',
-            mixBlendMode: 'multiply',
-            opacity: 1,
-            borderRadius: '25px',
-            transform: 'rotate(0deg)',
-            cursor: 'pointer'
-          }} 
-          onClick={() => router.push('/')}
-          aria-label="Serco Logo"
-          />
-        </div>
-        <div className="relative profile-menu-container">
-          <div 
-            className="flex items-center gap-3 cursor-pointer"
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            style={{
-              padding: '8px 12px',
-              backgroundColor: 'rgba(191, 198, 238, 0.2)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)',
-              borderRadius: '24px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-            }}
-          >
-            {/* Foto de perfil */}
-            <div 
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveTab('perfil');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              style={{
-                width: '48px',
-                height: '48px',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                border: '2px solid colors.primary.main',
-                cursor: 'pointer',
-                flexShrink: 0
-              }}
-            >
-              {providerData.profileImage && (providerData.profileImage.startsWith('http') || providerData.profileImage.startsWith('/')) ? (
-                <Image
-                  src={providerData.profileImage}
-                  alt="Foto de perfil"
-                  width={48}
-                  height={48}
-                  style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                />
-              ) : (
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'colors.primary.main',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: '20px',
-                  fontWeight: 'bold'
-                }}>
-                  {providerData.nombre ? providerData.nombre.charAt(0).toUpperCase() : 'P'}
-                </div>
-              )}
-            </div>
-            
-            {/* Nombre */}
-            <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, whiteSpace: 'nowrap' }}>
-              Hola, {providerData.nombre}
-            </span>
-            
-            {/* Flecha hacia abajo */}
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="colors.primary.main" 
-              strokeWidth="2"
-              style={{
-                transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease',
-                flexShrink: 0
-              }}
-            >
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
-          </div>
+        {/* Flecha atrás */}
+        <button
+          onClick={() => router.back()}
+          className="hover:bg-white/20 rounded-full transition-colors p-2"
+          style={{ cursor: 'pointer' }}
+        >
+          <svg width="32" height="32" fill="none" stroke={colors.neutral.black} strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
 
-          {/* Menú desplegable */}
-          {showProfileMenu && (
-            <div
-              style={{
-                position: 'absolute',
-                top: '70px',
-                right: '0',
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                overflow: 'hidden',
-                minWidth: '220px',
-                zIndex: 1000
-              }}
-            >
-              <button
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  setActiveTab('perfil');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px 20px',
-                  textAlign: 'left',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: colors.primary.main,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'colors.neutral[100]'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-                Mi Perfil
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  setActiveTab('solicitudes');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px 20px',
-                  textAlign: 'left',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: colors.primary.main,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'colors.neutral[100]'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Ver Solicitudes
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowProfileMenu(false);
-                  router.push('/');
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px 20px',
-                  textAlign: 'left',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: colors.primary.main,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'colors.neutral[100]'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-                Volver al Inicio
-              </button>
-
-              <div style={{ height: '1px', backgroundColor: '#E5E7EB', margin: '8px 0' }}></div>
-
-              <button
-                onClick={() => {
-                  localStorage.removeItem('providerId');
-                  setShowProfileMenu(false);
-                  router.push('/');
-                }}
-                style={{
-                  width: '100%',
-                  padding: '12px 20px',
-                  textAlign: 'left',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: '#DC2626',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FEE2E2'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
-                  <polyline points="16 17 21 12 16 7"/>
-                  <line x1="21" y1="12" x2="9" y2="12"/>
-                </svg>
-                Cerrar Sesión
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Menú hamburguesa */}
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="hover:bg-white/20 rounded-full transition-colors p-2"
+          style={{ cursor: 'pointer' }}
+        >
+          <svg width="32" height="32" fill="none" stroke={colors.neutral.black} strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
       </header>
 
-      {/* Navegación de tabs */}
-      <div className="flex justify-center gap-8 py-6 border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab('perfil')}
-          style={{
-            fontFamily: typography.fontFamily.primary,
-            fontSize: typography.fontSize.lg,
-            fontWeight: activeTab === 'perfil' ? 700 : 400,
-            color: activeTab === 'perfil' ? 'colors.primary.main' : '#666',
-            paddingBottom: '8px',
-            cursor: 'pointer',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'perfil' ? '3px solid colors.primary.main' : 'none'
-          }}
-        >
-          Mi Perfil
-        </button>
-        <button
-          onClick={() => setActiveTab('solicitudes')}
-          style={{
-            fontFamily: typography.fontFamily.primary,
-            fontSize: typography.fontSize.lg,
-            fontWeight: activeTab === 'solicitudes' ? 700 : 400,
-            color: activeTab === 'solicitudes' ? 'colors.primary.main' : '#666',
-            paddingBottom: '8px',
-            cursor: 'pointer',
-            background: 'none',
-            border: 'none',
-            borderBottom: activeTab === 'solicitudes' ? '3px solid colors.primary.main' : 'none'
-          }}
-        >
-          Solicitudes de Trabajo
-          {jobRequests.filter(r => r.status === 'pending').length > 0 && (
-            <span style={{
-              marginLeft: '8px',
-              backgroundColor: 'colors.primary.main',
-              color: 'white',
-              borderRadius: '50%',
-              padding: '2px 8px',
-              fontSize: '14px'
-            }}>
-              {jobRequests.filter(r => r.status === 'pending').length}
-            </span>
-          )}
-        </button>
-      </div>
-
-      {/* Contenido principal */}
-      <main className="max-w-6xl mx-auto px-6 py-8">
-        {activeTab === 'perfil' && (
-          <div>
-            {/* Sección de perfil */}
-            <div className="flex justify-between items-center mb-6">
-              <h1 style={{ fontFamily: typography.fontFamily.primary, fontSize: '32px', fontWeight: 700, color: colors.primary.main }}>
-                Mi Perfil
-              </h1>
+      {/* Menú lateral desplegable */}
+      {showMenu && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-40"
+            onClick={() => setShowMenu(false)}
+          />
+          <div 
+            className="fixed top-0 left-0 h-full bg-white shadow-lg z-50"
+            style={{ width: '280px' }}
+          >
+            <div className="p-6">
               <button
-                onClick={() => setEditMode(!editMode)}
+                onClick={() => setShowMenu(false)}
+                className="mb-6"
+                style={{ cursor: 'pointer' }}
+              >
+                <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+              
+              <nav className="space-y-4">
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    router.push('/');
+                  }}
+                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.base,
+                    color: colors.neutral.black,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Inicio
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    router.push('/solicitudes-trabajo');
+                  }}
+                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.base,
+                    color: colors.neutral.black,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Solicitudes de trabajo
+                </button>
+                
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    router.push('/login');
+                  }}
+                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.base,
+                    color: colors.neutral.black,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cerrar Sesión
+                </button>
+              </nav>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Contenido principal - con padding-top para compensar header fixed */}
+      <main style={{ paddingTop: 'calc(6rem + 48px)', paddingLeft: '24px', paddingRight: '24px' }}>
+        <div className="max-w-2xl mx-auto">
+          {/* Botón Editar Perfil - Solo mostrar cuando NO está en modo edición */}
+          {!editMode && (
+            <div className="flex justify-center mb-6">
+              <button
+                onClick={handleEditClick}
+                className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors"
                 style={{
                   fontFamily: typography.fontFamily.primary,
                   fontSize: typography.fontSize.base,
-                  padding: '10px 20px',
-                  backgroundColor: editMode ? '#A0724E' : 'colors.primary.main',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '24px',
+                  color: colors.neutral.black,
+                  border: '2px solid #000000',
                   cursor: 'pointer'
                 }}
               >
-                {editMode ? 'Cancelar' : 'Editar Perfil'}
+                Editar Perfil
               </button>
             </div>
+          )}
 
-            <div className="bg-gray-50 rounded-lg p-6 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Datos personales */}
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Nombre
-                  </label>
-                  <input
-                    type="text"
-                    value={providerData.nombre}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Apellido
-                  </label>
-                  <input
-                    type="text"
-                    value={providerData.apellido}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={providerData.email}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    value={providerData.telefono}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Ubicación
-                  </label>
-                  <input
-                    type="text"
-                    value={providerData.ubicacion}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Categoría de Servicio
-                  </label>
-                  <input
-                    type="text"
-                    value={providerData.serviceCategory}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Especialidades
-                  </label>
-                  <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {providerData.specialties && providerData.specialties.map((specialty, index) => (
-                      <span
-                        key={index}
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: '14px',
-                          padding: '6px 12px',
-                          backgroundColor: 'colors.primary.main',
-                          color: 'white',
-                          borderRadius: '16px'
-                        }}
-                      >
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Descripción
-                  </label>
-                  <textarea
-                    value={providerData.descripcion}
-                    disabled={!editMode}
-                    rows={4}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      resize: 'vertical',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                    Años de Experiencia
-                  </label>
-                  <input
-                    type="number"
-                    value={providerData.experiencia}
-                    disabled={!editMode}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      width: '100%',
-                      padding: '10px',
-                      marginTop: '4px',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      backgroundColor: editMode ? 'white' : '#f9f9f9',
-                      color: '#000000'
-                    }}
-                  />
-                </div>
-
-                {/* Campos adicionales que solo se muestran en modo edición */}
-                {editMode && (
-                  <>
-                    <div className="md:col-span-2">
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        Profesiones Adicionales
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.profesionesAdicionales.map(p => p.profesion).join(', ')}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, profesionesAdicionales: e.target.value.split(',').map(p => ({profesion: p.trim(), especialidades: []}))})}
-                        placeholder="Ej: Electricista, Carpintero"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        Alcance de Trabajo (km)
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.alcanceTrabajo}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, alcanceTrabajo: e.target.value})}
-                        placeholder="Ej: 10"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        DNI
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.dni}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, dni: e.target.value})}
-                        placeholder="Número de DNI"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        Instagram
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.instagram}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, instagram: e.target.value})}
-                        placeholder="@usuario"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        Facebook
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.facebook}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, facebook: e.target.value})}
-                        placeholder="@usuario"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-
-                    <div>
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        LinkedIn
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.linkedin}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, linkedin: e.target.value})}
-                        placeholder="URL del perfil"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                        Certificados Profesionales
-                      </label>
-                      <input
-                        type="text"
-                        value={datosAdicionales.certificadosProfesionales.join(', ')}
-                        onChange={(e) => setDatosAdicionales({...datosAdicionales, certificadosProfesionales: e.target.value.split(',').map(c => c.trim())})}
-                        placeholder="Ej: Electricista Matriculado, Curso de Seguridad"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.base,
-                          width: '100%',
-                          padding: '10px',
-                          marginTop: '4px',
-                          border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          backgroundColor: 'white',
-                          color: '#000000'
-                        }}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
+          {/* Card de perfil con imagen */}
+          <div 
+            className="rounded-3xl overflow-hidden mb-6"
+            style={{ 
+              backgroundColor: '#FFFFFF',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            {/* Imagen de fondo/header */}
+            <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
+              {currentData.profileImage ? (
+                <Image
+                  src={currentData.profileImage}
+                  alt="Foto de perfil"
+                  fill
+                  style={{ objectFit: 'cover' }}
+                />
+              ) : (
+                <div style={{ width: '100%', height: '100%', backgroundColor: '#E5E7EB' }} />
+              )}
               {editMode && (
-                <div className="mt-6 flex justify-end gap-4">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
                   <button
-                    onClick={() => setEditMode(false)}
+                    onClick={() => alert('TODO: Implementar cambio de foto')}
+                    className="px-4 py-2 rounded-full bg-white hover:bg-gray-100 transition-colors"
                     style={{
                       fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      padding: '10px 24px',
-                      backgroundColor: 'white',
-                      color: '#666',
-                      border: '1px solid #ccc',
-                      borderRadius: '24px',
+                      fontSize: typography.fontSize.sm,
                       cursor: 'pointer'
                     }}
                   >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={() => {
-                      // TODO: Guardar cambios en el backend
-                      console.log('Guardando cambios...');
-                      setEditMode(false);
-                    }}
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base,
-                      padding: '10px 24px',
-                      backgroundColor: 'colors.primary.main',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '24px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Guardar Cambios
+                    Cambiar foto
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Sección de fotos (placeholder) */}
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h2 style={{ fontFamily: typography.fontFamily.primary, fontSize: '24px', fontWeight: 700, color: colors.primary.main, marginBottom: '16px' }}>
-                Fotos de Trabajos
-              </h2>
-              <div style={{ 
-                border: '2px dashed #ccc', 
-                borderRadius: '8px', 
-                padding: '40px', 
-                textAlign: 'center',
-                cursor: 'pointer'
-              }}>
-                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#666' }}>
-                  Haz click para subir fotos de tus trabajos
-                </p>
-                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', color: '#999', marginTop: '8px' }}>
-                  JPG, PNG o GIF (max. 5MB)
-                </p>
-              </div>
+            {/* Información del perfil */}
+            <div className="p-6 text-center">
+              {editMode ? (
+                <div className="space-y-4">
+                  {/* Nombre completo no editable (se valida con DNI) */}
+                  <h1 style={{
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '32px',
+                    fontWeight: 600,
+                    color: '#244C87',
+                    marginBottom: '8px'
+                  }}>
+                    {currentData.nombre} {currentData.apellido}
+                  </h1>
+                  
+                  <input
+                    type="text"
+                    value={currentData.serviceCategory}
+                    onChange={(e) => handleFieldChange('serviceCategory', e.target.value)}
+                    placeholder="Profesión"
+                    className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
+                    style={{
+                      fontFamily: 'Maitree, serif',
+                      fontSize: '16px',
+                      color: colors.neutral.black
+                    }}
+                  />
+
+                  <input
+                    type="text"
+                    value={currentData.ubicacion}
+                    onChange={(e) => handleFieldChange('ubicacion', e.target.value)}
+                    placeholder="Ubicación"
+                    className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
+                    style={{
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.sm,
+                      color: colors.neutral[600]
+                    }}
+                  />
+                </div>
+              ) : (
+                <>
+                  <h1 style={{
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '32px',
+                    fontWeight: 600,
+                    color: '#244C87',
+                    marginBottom: '8px'
+                  }}>
+                    {currentData.nombre} {currentData.apellido}
+                  </h1>
+                  
+                  <p style={{
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '18px',
+                    fontWeight: 400,
+                    color: colors.neutral.black,
+                    marginBottom: '4px'
+                  }}>
+                    {currentData.serviceCategory}
+                  </p>
+
+                  <div className="flex items-center justify-center gap-2 text-gray-600">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3" fill="white"/>
+                    </svg>
+                    <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>
+                      {currentData.ubicacion}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        )}
 
-        {activeTab === 'solicitudes' && (
-          <div>
-            <h1 style={{ fontFamily: typography.fontFamily.primary, fontSize: '32px', fontWeight: 700, color: colors.primary.main, marginBottom: '24px' }}>
-              Solicitudes de Trabajo
-            </h1>
-
-            {jobRequests.length === 0 ? (
-              <div className="text-center py-12">
-                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.lg, color: '#666' }}>
-                  No tienes solicitudes de trabajo todavía
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {jobRequests.map((request) => (
-                  <div 
-                    key={request.id}
-                    className="bg-gray-50 rounded-lg p-6 border-l-4"
+          {/* Experiencia profesional */}
+          {(currentData.experiencia > 0 || editMode) && (
+            <div className="mb-6">
+              {editMode ? (
+                <div className="flex items-center gap-4">
+                  <label style={{
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '18px',
+                    fontWeight: 600,
+                    color: colors.neutral.black
+                  }}>
+                    Años de experiencia:
+                  </label>
+                  <input
+                    type="number"
+                    value={currentData.experiencia}
+                    onChange={(e) => handleFieldChange('experiencia', parseInt(e.target.value) || 0)}
+                    className="w-32 px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
                     style={{
-                      borderLeftColor: 
-                        request.status === 'pending' ? 'colors.primary.main' :
-                        request.status === 'accepted' ? '#4CAF50' : '#F44336'
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base
+                    }}
+                  />
+                </div>
+              ) : (
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '18px',
+                  fontWeight: 600,
+                  color: colors.neutral.black
+                }}>
+                  Experiencia profesional: {currentData.experiencia} años
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Servicios ofrecidos */}
+          <div className="mb-6">
+            <h2 style={{
+              fontFamily: 'Maitree, serif',
+              fontSize: '20px',
+              fontWeight: 600,
+              color: colors.neutral.black,
+              marginBottom: '12px'
+            }}>
+              Servicios ofrecidos:
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {(() => {
+                console.log('=== RENDERIZANDO SERVICIOS ===');
+                console.log('editMode:', editMode);
+                console.log('currentData:', currentData);
+                
+                if (editMode) {
+                  // Modo edición: mostrar especialidades según la profesión
+                  const especialidadesDisponibles = getEspecialidades(currentData.serviceCategory);
+                  console.log('Especialidades disponibles:', especialidadesDisponibles);
+                  console.log('Especialidades seleccionadas:', currentData.specialties);
+                  
+                  if (especialidadesDisponibles.length === 0) {
+                    return (
+                      <p style={{
+                        fontFamily: typography.fontFamily.primary,
+                        fontSize: typography.fontSize.sm,
+                        color: colors.neutral[400]
+                      }}>
+                        No hay especialidades disponibles para esta profesión
+                      </p>
+                    );
+                  }
+                  return especialidadesDisponibles.map((specialty) => {
+                    const isSelected = currentData.specialties?.includes(specialty);
+                    console.log(`${specialty}: ${isSelected ? 'SELECCIONADO' : 'NO seleccionado'}`);
+                    return (
+                      <button
+                        key={specialty}
+                        type="button"
+                        onClick={() => {
+                          const current = currentData.specialties || [];
+                          if (isSelected) {
+                            handleFieldChange('specialties', current.filter(s => s !== specialty));
+                          } else {
+                            handleFieldChange('specialties', [...current, specialty]);
+                          }
+                        }}
+                        className="px-4 py-2 rounded-full border-2 transition-colors"
+                        style={{
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.sm,
+                          color: isSelected ? '#FFFFFF' : colors.neutral.black,
+                          borderColor: isSelected ? '#244C87' : '#000000',
+                          backgroundColor: isSelected ? '#244C87' : '#FFFFFF',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {specialty}
+                      </button>
+                    );
+                  });
+                } else {
+                  // Modo vista: mostrar solo los seleccionados
+                  if (currentData.specialties && currentData.specialties.length > 0) {
+                    return currentData.specialties.map((specialty, idx) => (
+                      <div
+                        key={idx}
+                        className="px-4 py-2 rounded-full border-2"
+                        style={{
+                          fontFamily: typography.fontFamily.primary,
+                          fontSize: typography.fontSize.sm,
+                          color: colors.neutral.black,
+                          borderColor: '#000000',
+                          backgroundColor: '#FFFFFF'
+                        }}
+                      >
+                        {specialty}
+                      </div>
+                    ));
+                  } else {
+                    return (
+                      <p style={{
+                        fontFamily: typography.fontFamily.primary,
+                        fontSize: typography.fontSize.sm,
+                        color: colors.neutral[400]
+                      }}>
+                        No hay servicios seleccionados
+                      </p>
+                    );
+                  }
+                }
+              })()}
+            </div>
+          </div>
+
+          {/* Zona de Trabajo */}
+          <div className="mb-6">
+            <h2 style={{
+              fontFamily: 'Maitree, serif',
+              fontSize: '20px',
+              fontWeight: 600,
+              color: colors.neutral.black,
+              marginBottom: '12px'
+            }}>
+              Zona de Trabajo:
+            </h2>
+            
+            <div 
+              className="w-full rounded-3xl border-2 border-gray-300 bg-gray-50 flex items-center justify-center relative overflow-hidden"
+              style={{ height: '240px' }}
+            >
+              {currentData.ubicacion ? (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  {/* Círculo que representa el radio de alcance */}
+                  <div 
+                    className="border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center"
+                    style={{ 
+                      width: `${Math.min(currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) * 6 : 100, 200)}px`,
+                      height: `${Math.min(currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) * 6 : 100, 200)}px`,
+                      transition: 'all 0.3s ease'
                     }}
                   >
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 style={{ fontFamily: typography.fontFamily.primary, fontSize: '20px', fontWeight: 700, color: colors.primary.main }}>
-                          {request.service}
-                        </h3>
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#666', marginTop: '4px' }}>
-                          Cliente: {request.clientName}
-                        </p>
-                      </div>
-                      <span style={{
-                        fontFamily: typography.fontFamily.primary,
-                        fontSize: '14px',
-                        padding: '6px 12px',
-                        backgroundColor: 
-                          request.status === 'pending' ? '#FFF3CD' :
-                          request.status === 'accepted' ? '#D4EDDA' : '#F8D7DA',
-                        color: 
-                          request.status === 'pending' ? '#856404' :
-                          request.status === 'accepted' ? '#155724' : '#721C24',
-                        borderRadius: '16px'
-                      }}>
-                        {request.status === 'pending' ? 'Pendiente' :
-                         request.status === 'accepted' ? 'Aceptado' : 'Rechazado'}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                          Ubicación
-                        </p>
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#333' }}>
-                          {request.location}
-                        </p>
-                      </div>
-                      <div>
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                          Urgencia
-                        </p>
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#333' }}>
-                          {request.urgency}
-                        </p>
-                      </div>
-                      <div className="md:col-span-2">
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main }}>
-                          Descripción del trabajo
-                        </p>
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#333' }}>
-                          {request.description}
-                        </p>
-                      </div>
-                      
-                      {/* Foto del problema */}
-                      <div className="md:col-span-2">
-                        <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: colors.primary.main, marginBottom: '8px' }}>
-                          Foto del Problema
-                        </p>
-                        {request.problemPhoto ? (
-                          <div 
-                            onClick={() => setSelectedImage(request.problemPhoto!)}
-                            style={{
-                              width: '100%',
-                              maxWidth: '400px',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              border: '1px solid #ccc',
-                              cursor: 'pointer',
-                              transition: 'transform 0.2s, box-shadow 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'scale(1.02)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'scale(1)';
-                              e.currentTarget.style.boxShadow = 'none';
-                            }}
-                          >
-                            {/* Usar img normal para base64 en lugar de Next Image */}
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={request.problemPhoto}
-                              alt="Foto del problema"
-                              style={{ objectFit: 'cover', width: '100%', height: 'auto', display: 'block' }}
-                            />
-                          </div>
-                        ) : (
-                          <p style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', color: '#999', fontStyle: 'italic' }}>
-                            El cliente no subió una foto del problema
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {request.status === 'pending' && (
-                      <div className="flex gap-4 mt-6">
-                        <button
-                          onClick={() => handleAcceptRequest(request)}
-                          style={{
-                            fontFamily: typography.fontFamily.primary,
-                            fontSize: typography.fontSize.base,
-                            padding: '10px 24px',
-                            backgroundColor: 'colors.primary.main',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '24px',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          Aceptar y Enviar Presupuesto
-                        </button>
-                        <button
-                          onClick={() => handleRejectRequest(request.id)}
-                          style={{
-                            fontFamily: typography.fontFamily.primary,
-                            fontSize: typography.fontSize.base,
-                            padding: '10px 24px',
-                            backgroundColor: 'white',
-                            color: '#F44336',
-                            border: '1px solid #F44336',
-                            borderRadius: '24px',
-                            cursor: 'pointer',
-                            flex: 1
-                          }}
-                        >
-                          Rechazar
-                        </button>
-                      </div>
-                    )}
+                    {/* Ícono de ubicación */}
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="#244C87" stroke="#244C87" strokeWidth="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3" fill="white"/>
+                    </svg>
                   </div>
-                ))}
+                  
+                  {/* Etiqueta con el radio actual */}
+                  <div 
+                    className="absolute bottom-4 bg-white px-4 py-2 rounded-full shadow-md border border-gray-200"
+                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral.black }}
+                  >
+                    Radio: {currentData.alcanceTrabajo || '0'} km
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: '#999999' }}>
+                  No especificado
+                </p>
+              )}
+            </div>
+            
+            {/* Slider para ajustar el radio en modo edición */}
+            {editMode && currentData.ubicacion && (
+              <div className="mt-4">
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={currentData.alcanceTrabajo || 0}
+                  onChange={(e) => handleFieldChange('alcanceTrabajo', e.target.value)}
+                  className="w-full"
+                  style={{
+                    accentColor: '#244C87'
+                  }}
+                />
+                <p className="mt-2 text-xs text-gray-600 text-center" style={{ fontFamily: typography.fontFamily.primary }}>
+                  ¿Hasta dónde estarías dispuesto/a a moverte para trabajar desde {currentData.ubicacion}?
+                </p>
               </div>
             )}
           </div>
-        )}
-      </main>
 
-      {/* Modal de presupuesto */}
-      {showBudgetModal && selectedRequest && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-          onClick={() => setShowBudgetModal(false)}
-        >
-          <div 
-            className="relative mx-6 max-h-[90vh] overflow-y-auto"
-            style={{
-              width: '600px',
-              maxWidth: '90%',
-              backgroundColor: '#B45B39',
-              borderRadius: '24px',
-              padding: '32px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Botón cerrar */}
-            <button
-              onClick={() => setShowBudgetModal(false)}
-              className="absolute top-4 right-4"
-              style={{ cursor: 'pointer', background: 'none', border: 'none', padding: '8px' }}
-            >
-              <svg width="24" height="24" fill="none" stroke="#FFFFFF" strokeWidth="2" viewBox="0 0 24 24">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            </button>
-
-            <h2 style={{ fontFamily: typography.fontFamily.primary, fontSize: '28px', fontWeight: 700, color: '#FFFFFF', marginBottom: '24px' }}>
-              Enviar Presupuesto
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
-                  Precio del presupuesto ($)
-                </label>
-                <input
-                  type="number"
-                  value={budgetForm.price}
-                  onChange={(e) => setBudgetForm({ ...budgetForm, price: e.target.value })}
-                  placeholder="Ej: 50000"
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#000000',
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)'
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
-                  Detalles del trabajo
-                </label>
-                <textarea
-                  value={budgetForm.workDetails}
-                  onChange={(e) => setBudgetForm({ ...budgetForm, workDetails: e.target.value })}
-                  placeholder="Describe el trabajo a realizar..."
-                  rows={4}
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#000000',
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    resize: 'vertical'
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
-                  Materiales necesarios
-                </label>
-                <textarea
-                  value={budgetForm.materials}
-                  onChange={(e) => setBudgetForm({ ...budgetForm, materials: e.target.value })}
-                  placeholder="Lista de materiales..."
-                  rows={3}
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#000000',
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    resize: 'vertical'
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: '14px', fontWeight: 700, color: '#FFFFFF', display: 'block', marginBottom: '8px' }}>
-                  Tiempo estimado
-                </label>
-                <input
-                  type="text"
-                  value={budgetForm.estimatedTime}
-                  onChange={(e) => setBudgetForm({ ...budgetForm, estimatedTime: e.target.value })}
-                  placeholder="Ej: 2 días, 1 semana..."
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#000000',
-                    width: '100%',
-                    padding: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)'
-                  }}
-                />
+          {/* Galería */}
+          {((currentData.portfolioImages && currentData.portfolioImages.length > 0) || editMode) && (
+            <div className="mb-6">
+              <h2 style={{
+                fontFamily: 'Maitree, serif',
+                fontSize: '20px',
+                fontWeight: 600,
+                color: colors.neutral.black,
+                marginBottom: '12px'
+              }}>
+                Galeria
+              </h2>
+              
+              <div 
+                className="flex gap-4 overflow-x-auto pb-4"
+                style={{ 
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#244C87 #E5E7EB'
+                }}
+              >
+                {currentData.portfolioImages && currentData.portfolioImages.length > 0 ? (
+                  currentData.portfolioImages.map((img, idx) => (
+                    <div 
+                      key={idx}
+                      className="flex-shrink-0 rounded-2xl overflow-hidden"
+                      style={{ width: '300px', height: '200px', position: 'relative' }}
+                    >
+                      <Image
+                        src={img}
+                        alt={`Trabajo ${idx + 1}`}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                      />
+                      {editMode && (
+                        <button
+                          onClick={() => {
+                            const newImages = currentData.portfolioImages?.filter((_, i) => i !== idx) || [];
+                            handleFieldChange('portfolioImages', newImages);
+                          }}
+                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors"
+                          style={{
+                            fontSize: '20px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  editMode && (
+                    <p style={{
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.sm,
+                      color: colors.neutral[400]
+                    }}>
+                      No hay fotos en la galería
+                    </p>
+                  )
+                )}
+                
+                {/* Botón agregar foto en modo edición */}
+                {editMode && (
+                  <div 
+                    className="flex-shrink-0 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#244C87] transition-colors cursor-pointer flex items-center justify-center"
+                    style={{ width: '300px', height: '200px' }}
+                    onClick={() => alert('TODO: Implementar subida de fotos')}
+                  >
+                    <div className="text-center">
+                      <span style={{
+                        fontSize: '48px',
+                        color: '#244C87'
+                      }}>+</span>
+                      <p style={{
+                        fontFamily: typography.fontFamily.primary,
+                        fontSize: typography.fontSize.sm,
+                        color: colors.neutral[600],
+                        marginTop: '8px'
+                      }}>
+                        Agregar foto
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
+          )}
 
-            <div className="flex gap-4 mt-6">
+          {/* Descripción */}
+          {(currentData.descripcion || editMode) && (
+            <div className="mb-6">
+              <h2 style={{
+                fontFamily: 'Maitree, serif',
+                fontSize: '20px',
+                fontWeight: 600,
+                color: colors.neutral.black,
+                marginBottom: '12px'
+              }}>
+                Descripción:
+              </h2>
+              {editMode ? (
+                <textarea
+                  value={currentData.descripcion}
+                  onChange={(e) => handleFieldChange('descripcion', e.target.value)}
+                  placeholder="Describe tu experiencia y servicios..."
+                  rows={6}
+                  className="w-full px-4 py-3 rounded-3xl border-2 border-gray-300 focus:border-[#244C87] focus:outline-none resize-none"
+                  style={{
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
+                    color: colors.neutral.black,
+                    lineHeight: '1.6'
+                  }}
+                />
+              ) : (
+                <p style={{
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.base,
+                  color: colors.neutral.black,
+                  lineHeight: '1.6'
+                }}>
+                  {currentData.descripcion}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Referencias eliminadas por petición del usuario */}
+
+          {/* Botones Cancelar/Guardar Cambios - Mostrar al final en modo edición */}
+          {editMode && (
+            <div className="flex justify-center gap-4 mt-8 mb-8">
               <button
-                onClick={() => setShowBudgetModal(false)}
+                onClick={handleCancelEdit}
+                className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors"
                 style={{
                   fontFamily: typography.fontFamily.primary,
                   fontSize: typography.fontSize.base,
-                  padding: '12px 24px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  backdropFilter: 'blur(10px)',
-                  color: '#FFFFFF',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '24px',
-                  cursor: 'pointer',
-                  flex: 1
+                  color: colors.neutral.black,
+                  border: '2px solid #000000',
+                  cursor: 'pointer'
                 }}
               >
                 Cancelar
               </button>
               <button
-                onClick={handleSubmitBudget}
+                onClick={handleSaveEdit}
+                className="px-6 py-2 rounded-full hover:opacity-90 transition-opacity"
                 style={{
                   fontFamily: typography.fontFamily.primary,
                   fontSize: typography.fontSize.base,
-                  padding: '12px 24px',
-                  backgroundColor: 'rgba(217, 165, 137, 0.9)',
-                  color: '#000000',
+                  color: '#FFFFFF',
+                  backgroundColor: '#244C87',
                   border: 'none',
-                  borderRadius: '24px',
-                  cursor: 'pointer',
-                  flex: 1
+                  cursor: 'pointer'
                 }}
               >
-                Enviar Presupuesto
+                Guardar Cambios
               </button>
             </div>
-          </div>
+          )}
         </div>
-      )}
-
-      {/* Modal de imagen ampliada */}
-      {selectedImage && (
-        <div
-          onClick={() => setSelectedImage(null)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '20px',
-            cursor: 'pointer'
-          }}
-        >
-          {/* Botón de cerrar */}
-          <button
-            onClick={() => setSelectedImage(null)}
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              color: colors.neutral.black,
-              zIndex: 10000,
-              boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-            }}
-          >
-            ×
-          </button>
-
-          {/* Imagen ampliada */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              position: 'relative'
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={selectedImage}
-              alt="Foto del problema ampliada"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '90vh',
-                width: 'auto',
-                height: 'auto',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                boxShadow: '0 4px 30px rgba(0,0,0,0.5)'
-              }}
-            />
-          </div>
-        </div>
-      )}
+      </main>
     </div>
   );
 }

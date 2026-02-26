@@ -2,6 +2,13 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../db/prisma.js';
 import { uploadProblemPhoto } from '../middleware/upload.js';
+import {
+  sendClientConfirmationEmail,
+  sendClientConfirmationWhatsApp,
+  sendBudgetToClientEmail,
+  sendBudgetToClientWhatsApp,
+  sendProviderNewBookingNotification
+} from '../utils/notifications.js';
 
 const router = express.Router();
 
@@ -30,6 +37,9 @@ router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
     const {
       providerId,
       clientName,
+      clientEmail,
+      clientPhone,
+      contactMethod,
       serviceDate,
       description,
       urgency,
@@ -42,16 +52,25 @@ router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
     console.log('📥 Solicitud de cliente invitado recibida:', {
       providerId,
       clientName,
+      contactMethod,
       urgency,
       location,
       problemPhoto: problemPhotoFilename
     });
 
-    // Validaciones - Solo nombre y descripción requeridos
-    if (!providerId || !clientName || !description) {
+    // Validaciones
+    if (!providerId || !clientName || !description || !contactMethod) {
       return res.status(400).json({
-        error: 'Proveedor, nombre y descripción son requeridos'
+        error: 'Proveedor, nombre, descripción y método de contacto son requeridos'
       });
+    }
+
+    // Validar que tenga el dato de contacto correcto
+    if (contactMethod === 'Mail' && !clientEmail) {
+      return res.status(400).json({ error: 'Email es requerido' });
+    }
+    if ((contactMethod === 'Whatsapp' || contactMethod === 'Mensaje de texto') && !clientPhone) {
+      return res.status(400).json({ error: 'Teléfono es requerido' });
     }
 
     // Verificar que el proveedor existe
@@ -77,46 +96,25 @@ router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
       return res.status(404).json({ error: 'Proveedor no encontrado' });
     }
 
-    // Crear un email temporal único para este cliente
-    const tempEmail = `client_${Date.now()}@temp.saha.com`;
-
-    // Crear usuario cliente temporal
-    const client = await prisma.user.create({
-      data: {
-        email: tempEmail,
-        name: clientName,
-        phone: '', // Vacío por ahora
-        password: '', // Sin password
-        role: 'CLIENT',
-        isActive: true
-      }
-    });
-    
-    console.log('✅ Cliente temporal creado:', client.id);
-
-    // Crear la solicitud usando el ID del ProviderProfile (no el User ID)
+    // Crear la solicitud SIN usuario (guest booking)
     const booking = await prisma.booking.create({
       data: {
-        clientId: client.id,
-        providerId: provider.id, // Usar el ID del ProviderProfile, no el User ID
+        clientId: null, // Sin usuario registrado
+        clientName: clientName,
+        clientEmail: clientEmail || null,
+        clientPhone: clientPhone || null,
+        clientContactMethod: contactMethod,
+        providerId: provider.id,
         serviceDate: new Date(serviceDate || new Date()),
         serviceTime: '',
         description,
         address: '',
-        location: location || 'No especificada', // Guardar ubicación
-        problemPhoto: problemPhotoFilename, // Guardar nombre del archivo
+        location: location || 'No especificada',
+        problemPhoto: problemPhotoFilename,
         clientNotes: `Urgencia: ${urgency || 'Media'}`,
         status: 'PENDING'
       },
       include: {
-        client: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true
-          }
-        },
         provider: {
           include: {
             user: {
@@ -134,8 +132,35 @@ router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
 
     console.log('✅ Solicitud creada exitosamente:', booking.id);
 
-    // TODO: Enviar email al proveedor notificando la nueva solicitud
-    console.log(`📧 TODO: Enviar email a ${provider.user.email} notificando nueva solicitud`);
+    // ENVIAR NOTIFICACIÓN INMEDIATA AL CLIENTE
+    try {
+      if (contactMethod === 'Mail' && clientEmail) {
+        await sendClientConfirmationEmail(clientEmail, clientName, booking.id);
+      } else if ((contactMethod === 'Whatsapp' || contactMethod === 'Mensaje de texto') && clientPhone) {
+        await sendClientConfirmationWhatsApp(clientPhone, clientName, booking.id);
+      }
+    } catch (notifError) {
+      console.error('⚠️ Error al enviar notificación al cliente:', notifError);
+      // No fallar la request por error de notificación
+    }
+
+    // NOTIFICAR AL PROFESIONAL
+    try {
+      await sendProviderNewBookingNotification(
+        provider.user.email,
+        provider.user.name,
+        {
+          id: booking.id,
+          clientName,
+          description,
+          location: location || 'No especificada',
+          urgency
+        }
+      );
+    } catch (notifError) {
+      console.error('⚠️ Error al enviar notificación al profesional:', notifError);
+      // No fallar la request por error de notificación
+    }
 
     res.status(201).json({
       success: true,
@@ -577,9 +602,36 @@ router.post('/:id/send-budget', authenticateToken, async (req: any, res) => {
 
     console.log('✅ Presupuesto guardado. Token generado:', clientDataToken);
 
-    // TODO: Enviar email al cliente con el link para ingresar sus datos
-    const clientDataUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/client-contact?token=${clientDataToken}`;
-    console.log(`📧 TODO: Enviar email al cliente ${booking.client.name} con el link: ${clientDataUrl}`);
+    // ENVIAR PRESUPUESTO AL CLIENTE por el método que eligió
+    try {
+      const budgetData = {
+        price: priceValue,
+        details: budgetDetails,
+        materials: budgetMaterials,
+        estimatedTime: budgetTime || 'A confirmar'
+      };
+
+      if (booking.clientEmail) {
+        await sendBudgetToClientEmail(
+          booking.clientEmail,
+          booking.clientName || 'Cliente',
+          booking.provider.user.name,
+          budgetData,
+          booking.id
+        );
+      } else if (booking.clientPhone) {
+        await sendBudgetToClientWhatsApp(
+          booking.clientPhone,
+          booking.clientName || 'Cliente',
+          booking.provider.user.name,
+          budgetData,
+          booking.id
+        );
+      }
+    } catch (notifError) {
+      console.error('⚠️ Error al enviar presupuesto al cliente:', notifError);
+      // No fallar la request por error de notificación
+    }
 
     res.json({
       success: true,

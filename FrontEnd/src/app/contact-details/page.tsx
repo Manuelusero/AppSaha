@@ -114,13 +114,7 @@ function ContactDetailsContent() {
       localStorage.removeItem('jobRequestPhoto');
       localStorage.removeItem('jobRequestPhotoName');
 
-      // Determinar el mensaje según la cantidad de profesionales
-      if (professionalIds.length === 1 && providerName) {
-        setModalMessage(`Listo! ${providerName} recibió tu mensaje`);
-      } else {
-        setModalMessage('Listo! Tus mensajes fueron enviados');
-      }
-
+      // Siempre mostrar el mismo mensaje de éxito
       setShowModal(true);
     } catch (error) {
       console.error('Error al enviar solicitud:', error);
@@ -377,38 +371,71 @@ function ContactDetailsContent() {
       <Footer />
 
       {/* Modal de confirmación */}
-      <Modal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        variant="brown"
-        maxWidth="sm"
-      >
-        <div className="text-center">
-          <h2 
-            className="mb-6"
+      {showModal && (
+        <>
+          {/* Overlay con opacidad */}
+          <div 
+            className="fixed inset-0 z-40"
             style={{ 
-              fontFamily: 'Maitree, serif', 
-              fontSize: '28px', 
-              fontWeight: 400,
-              color: '#FFFFFF',
-              lineHeight: '1.3'
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(2px)'
             }}
+            onClick={handleCloseModal}
+          />
+          
+          {/* Modal centrado */}
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center px-6"
+            onClick={handleCloseModal}
           >
-            {modalMessage}
-          </h2>
-          <p 
-            style={{ 
-              fontFamily: 'Maitree, serif', 
-              fontSize: '16px', 
-              fontWeight: 400,
-              color: '#FFFFFF',
-              opacity: 0.9
-            }}
-          >
-            El profesional te contactará en breve
-          </p>
-        </div>
-      </Modal>
+            <div 
+              className="relative rounded-3xl p-8 max-w-md w-full"
+              style={{ 
+                backgroundColor: '#B45B39',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Botón cerrar */}
+              <button
+                onClick={handleCloseModal}
+                className="absolute top-4 right-4 text-white hover:opacity-80 transition-opacity"
+                style={{ cursor: 'pointer' }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
+              </button>
+
+              <div className="text-center">
+                <h2 
+                  className="mb-4"
+                  style={{ 
+                    fontFamily: 'Maitree, serif', 
+                    fontSize: '32px', 
+                    fontWeight: 400,
+                    color: '#FFFFFF',
+                    lineHeight: '120%'
+                  }}
+                >
+                  Presupuesto pedido!
+                </h2>
+                <p 
+                  style={{ 
+                    fontFamily: 'Maitree, serif', 
+                    fontSize: '16px', 
+                    fontWeight: 400,
+                    color: '#FFFFFF',
+                    lineHeight: '140%'
+                  }}
+                >
+                  En las próximas 48hs recibirás<br />un correo/mensaje con el<br />presupuesto detallado.
+                </p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

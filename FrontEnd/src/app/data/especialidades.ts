@@ -123,7 +123,36 @@ export const especialidadesPorServicio: Record<string, string[]> = {
   ]
 };
 
+// Mapeo de nombres de servicios de la base de datos a claves del objeto
+const servicioMapping: Record<string, string> = {
+  'PLOMERIA': 'Plomeros',
+  'ELECTRICIDAD': 'Electricistas',
+  'PINTURA': 'Pintores',
+  'ALBANILERIA': 'Albañiles',
+  'CARPINTERIA': 'Carpinteros',
+  'HERRERIA': 'Herreros',
+  'LIMPIEZA': 'Limpiadores',
+  'JARDINERIA': 'Jardineros',
+  'MASAJES': 'Masajistas',
+  'CLASES': 'Profesores',
+  'COSTURA': 'Modistas',
+  // También aceptar las claves directamente
+  'Plomeros': 'Plomeros',
+  'Electricistas': 'Electricistas',
+  'Pintores': 'Pintores',
+  'Albañiles': 'Albañiles',
+  'Carpinteros': 'Carpinteros',
+  'Herreros': 'Herreros',
+  'Limpiadores': 'Limpiadores',
+  'Jardineros': 'Jardineros',
+  'Masajistas': 'Masajistas',
+  'Profesores': 'Profesores',
+  'Modistas': 'Modistas'
+};
+
 // Función helper para obtener especialidades
 export const getEspecialidades = (servicio: string): string[] => {
-  return especialidadesPorServicio[servicio] || [];
+  // Normalizar el nombre del servicio
+  const servicioNormalizado = servicioMapping[servicio] || servicio;
+  return especialidadesPorServicio[servicioNormalizado] || [];
 };

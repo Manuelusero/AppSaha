@@ -167,45 +167,49 @@ export default function ProviderProfile() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header 
-        className="px-6 py-4 flex items-center justify-between"
+        className="w-full flex items-center justify-center relative"
         style={{ 
-          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
-          height: '150px'
+          background: 'linear-gradient(180deg, #3A5FA0 0%, #FFFCF9 100%)',
+          height: '124px',
+          paddingLeft: '48px',
+          paddingRight: '48px'
         }}
       >
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => router.back()}
-            className="p-2"
-            style={{ cursor: 'pointer' }}
-          >
-            <svg width="24" height="24" fill="none" stroke="#000" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M15 18l-6-6 6-6"/>
-            </svg>
-          </button>
-          <Image 
-            src="/Logo.png" 
-            alt="Serco Logo" 
-            width={120} 
-            height={40}
-            className="h-10 w-auto"
-            priority
-          />
-        </div>
-        <a 
-          href="/provider-signup"
-          className="px-6 py-2 rounded-full border-2 transition-colors"
-          style={{ 
-            fontFamily: 'Maitree, serif',
-            fontSize: '16px',
-            borderColor: '#244C87',
-            color: '#244C87',
-            backgroundColor: 'transparent',
-            cursor: 'pointer'
-          }}
+        {/* Flecha de regreso */}
+        <button
+          onClick={() => router.back()}
+          className="absolute left-6"
+          style={{ cursor: 'pointer' }}
         >
-          Espacio del trabajador
-        </a>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2">
+            <path d="M19 12H5M5 12l7 7M5 12l7-7" />
+          </svg>
+        </button>
+
+        {/* Título Perfil Profesional */}
+        <div className="rounded-full" style={{ 
+          border: '1px solid #000000',
+          width: '311px',
+          maxWidth: '100%',
+          height: '47px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: 1
+        }}>
+          <h1 style={{ 
+            fontFamily: 'Maitree, serif', 
+            fontSize: '20px', 
+            lineHeight: '100%', 
+            color: '#000000', 
+            fontWeight: 400,
+            letterSpacing: '0%',
+            textAlign: 'center',
+            opacity: 0.6
+          }}>
+            Perfil Profesional
+          </h1>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -290,9 +294,9 @@ export default function ProviderProfile() {
                     fontFamily: 'Maitree, serif', 
                     fontSize: '14px',
                     fontWeight: 400,
-                    backgroundColor: '#FFFFFF',
-                    color: '#000000',
-                    border: '1px solid #D1D5DB',
+                    backgroundColor: '#244C87',
+                    color: '#FFFFFF',
+                    border: 'none',
                     width: 'auto',
                     minWidth: '160px',
                     height: '46px',
@@ -672,7 +676,7 @@ export default function ProviderProfile() {
                 </h2>
                 {reviews.length > 0 ? (
                   <div 
-                    className="flex gap-4 overflow-x-auto pb-4"
+                    className="flex gap-2 overflow-x-auto pb-4"
                     style={{ 
                       scrollbarWidth: 'thin',
                       scrollbarColor: '#244C87 #E5E7EB'
@@ -681,69 +685,88 @@ export default function ProviderProfile() {
                     {reviews.map((review) => (
                       <div 
                         key={review.id}
-                        className="flex-shrink-0 bg-gray-50 rounded-2xl p-6 border border-gray-200"
+                        className="flex-shrink-0 rounded-lg"
                         style={{ 
-                          width: '350px',
-                          minHeight: '200px'
+                          width: '194px',
+                          height: '135px',
+                          backgroundColor: '#D1D5DB',
+                          borderRadius: '8px',
+                          padding: '8px',
+                          gap: '8px',
+                          opacity: 1,
+                          display: 'flex',
+                          flexDirection: 'column'
                         }}
                       >
-                        {/* Header del comentario */}
-                        <div className="flex items-start gap-3 mb-4">
-                          <div className="flex-shrink-0">
+                        {/* Header: Avatar, Nombre y Rating */}
+                        <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
+                          <div className="flex items-center gap-2">
+                            {/* Avatar */}
                             {review.client.avatar ? (
                               <Image
                                 src={review.client.avatar}
                                 alt={review.client.name}
-                                width={48}
-                                height={48}
+                                width={26}
+                                height={26}
                                 className="rounded-full object-cover"
                               />
                             ) : (
-                              <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                <span className="text-blue-600 font-semibold text-lg">
+                              <div className="rounded-full bg-white flex items-center justify-center" style={{ width: '26px', height: '26px' }}>
+                                <span style={{ 
+                                  fontFamily: 'Maitree, serif',
+                                  fontSize: '12px',
+                                  fontWeight: 600,
+                                  color: '#244C87'
+                                }}>
                                   {review.client.name.charAt(0).toUpperCase()}
                                 </span>
                               </div>
                             )}
-                          </div>
-                          <div className="flex-1">
+                            
+                            {/* Nombre */}
                             <p style={{ 
-                              fontFamily: 'Maitree, serif', 
-                              fontSize: '16px', 
-                              fontWeight: 600,
+                              fontFamily: 'Maitree, serif',
+                              fontSize: '14px',
+                              fontWeight: 400,
                               lineHeight: '100%',
                               color: '#000000',
-                              marginBottom: '4px'
+                              width: '41px',
+                              height: '26px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
                             }}>
                               {review.client.name}
                             </p>
-                            <p style={{ 
-                              fontFamily: 'Maitree, serif', 
-                              fontSize: '12px', 
-                              fontWeight: 400,
-                              lineHeight: '100%',
-                              color: '#666666'
-                            }}>
-                              {new Date(review.createdAt).toLocaleDateString('es-ES', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </p>
                           </div>
-                        </div>
 
-                        {/* Estrellas */}
-                        <div className="flex items-center gap-1 mb-3">
-                          {[...Array(5)].map((_, i) => (
-                            <span 
-                              key={i} 
-                              className="text-lg"
-                              style={{ color: i < review.rating ? '#FFC107' : '#D1D5DB' }}
-                            >
-                              ★
+                          {/* Card de rating */}
+                          <div 
+                            className="flex items-center gap-1"
+                            style={{ 
+                              width: '56px',
+                              height: '26px',
+                              backgroundColor: '#6B7280',
+                              borderRadius: '8px',
+                              paddingTop: '4px',
+                              paddingRight: '8px',
+                              paddingBottom: '4px',
+                              paddingLeft: '8px',
+                              opacity: 1
+                            }}
+                          >
+                            <span style={{ color: '#DC5F00', fontSize: '16px' }}>★</span>
+                            <span style={{ 
+                              fontFamily: 'Maitree, serif',
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: '#FFFFFF'
+                            }}>
+                              {review.rating}
                             </span>
-                          ))}
+                          </div>
                         </div>
 
                         {/* Comentario */}
@@ -752,8 +775,14 @@ export default function ProviderProfile() {
                             fontFamily: 'Maitree, serif', 
                             fontSize: '14px', 
                             fontWeight: 400,
-                            lineHeight: '140%',
-                            color: '#333333'
+                            lineHeight: '100%',
+                            letterSpacing: '0%',
+                            color: '#000000',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 4,
+                            WebkitBoxOrient: 'vertical'
                           }}>
                             {review.comment}
                           </p>

@@ -122,6 +122,10 @@ export default function ProviderSignup() {
       instagram: '',
       facebook: '',
       linkedin: '',
+      // Referencias
+      referenciaNombre: '',
+      referenciaEmail: '',
+      referenciaTelefono: '',
       // Multimedia
       fotoPerfil: null as File | null,
       fotosTrabajos: [] as File[],
@@ -146,6 +150,7 @@ export default function ProviderSignup() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [paso, setPaso] = useState(1); // 1: Datos Personales, 2: Datos Profesionales, 3: Documentación, 4: Extras
   const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
+  const [mostrarModalExito, setMostrarModalExito] = useState(false);
 
   // Scroll al inicio cuando cambia el paso
   useEffect(() => {
@@ -424,9 +429,8 @@ export default function ProviderSignup() {
         localStorage.setItem('providerId', data.provider.id);
       }
       
-      // Redirigir al dashboard
-      alert('¡Registro completado exitosamente!');
-      window.location.href = '/dashboard-provider';
+      // Mostrar modal de éxito
+      setMostrarModalExito(true);
       
     } catch (error) {
       console.error('❌ Error al registrar:', error);
@@ -435,10 +439,10 @@ export default function ProviderSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header con degradado - Responsive */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header con degradado - Responsive y Fixed */}
       <header 
-        className="w-full px-4 sm:px-6 py-6 sm:py-8 flex items-center"
+        className="fixed top-0 left-0 right-0 w-full px-4 sm:px-6 py-6 sm:py-8 flex items-center z-50"
         style={{ 
           background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
         }}
@@ -460,8 +464,8 @@ export default function ProviderSignup() {
         </button>
       </header>
 
-      {/* Main Content - Responsive */}
-      <main className="flex-1 px-4 sm:px-6 py-6 sm:py-8">
+      {/* Main Content - Responsive con padding-top para compensar el header fixed */}
+      <main className="py-6 sm:py-8" style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: 'calc(6rem + 48px)' }}>
         <div className="max-w-2xl mx-auto">
           {/* Título del paso actual - Responsive */}
           <h2 
@@ -703,9 +707,13 @@ export default function ProviderSignup() {
                           className={`px-4 py-2 rounded-full border-2 transition-colors ${
                             values.especialidades.includes(esp)
                               ? 'bg-[#244C87] text-white border-[#244C87]'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-[#244C87]'
+                              : 'bg-white border-black hover:border-[#244C87]'
                           }`}
-                          style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}
+                          style={{ 
+                            fontFamily: typography.fontFamily.primary, 
+                            fontSize: typography.fontSize.sm,
+                            color: values.especialidades.includes(esp) ? '#FFFFFF' : '#000000'
+                          }}
                         >
                           {esp}
                         </button>
@@ -772,9 +780,13 @@ export default function ProviderSignup() {
                               className={`px-4 py-2 rounded-full border-2 transition-colors ${
                                 profAdic.especialidades.includes(esp)
                                   ? 'bg-[#244C87] text-white border-[#244C87]'
-                                  : 'bg-white text-gray-700 border-gray-300 hover:border-[#244C87]'
+                                  : 'bg-white border-black hover:border-[#244C87]'
                               }`}
-                              style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}
+                              style={{ 
+                                fontFamily: typography.fontFamily.primary, 
+                                fontSize: typography.fontSize.sm,
+                                color: profAdic.especialidades.includes(esp) ? '#FFFFFF' : '#000000'
+                              }}
                             >
                               {esp}
                             </button>
@@ -789,10 +801,18 @@ export default function ProviderSignup() {
                 <button
                   type="button"
                   onClick={agregarOtraProfesion}
-                  className="w-full py-3 rounded-full border-2 border-[#244C87] text-[#244C87] hover:bg-[#244C87] hover:text-white transition-colors"
-                  style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, fontWeight: 600 }}
+                  className="text-left hover:opacity-70 transition-opacity"
+                  style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.base, 
+                    color: colors.neutral.black,
+                    borderBottom: '2px solid #000000',
+                    paddingBottom: '4px',
+                    display: 'inline-block',
+                    cursor: 'pointer'
+                  }}
                 >
-                  + Agregar otra profesión
+                  Agregar otra Profesión +
                 </button>
 
                 {/* Ubicación con autocompletado */}
@@ -800,6 +820,7 @@ export default function ProviderSignup() {
                   <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                     Ubicación *
                   </label>
+                  {/* TODO: Integrar Google Maps API o similar para autocompletado de direcciones */}
                   <input
                     type="text"
                     value={values.ubicacion}
@@ -807,7 +828,7 @@ export default function ProviderSignup() {
                     required
                     className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
                     style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
-                    placeholder="Empezá a escribir tu ciudad..."
+                    placeholder="autocompleta"
                   />
                   {mostrarUbicaciones && ubicacionesFiltradas.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
@@ -825,17 +846,71 @@ export default function ProviderSignup() {
                   )}
                 </div>
 
-                {/* Alcance del trabajo */}
-                <Input
-                  label="Alcance del trabajo"
-                  type="number"
-                  placeholder="Ejemplo: 10"
-                  value={values.alcanceTrabajo}
-                  onChange={(value) => setFieldValue('alcanceTrabajo', value)}
-                />
-                  <p className="mt-2 text-xs text-gray-600" style={{ fontFamily: typography.fontFamily.primary }}>
-                    ¿Hasta cuántos km estarías dispuesto/a a moverte para trabajar desde {values.ubicacion || 'tu ubicación'}?
-                  </p>
+                {/* Alcance del trabajo con mapa interactivo */}
+                <div>
+                  <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
+                    Alcance del trabajo
+                  </label>
+                  
+                  {/* Contenedor del mapa */}
+                  <div 
+                    className="w-full rounded-3xl border-2 border-gray-300 bg-gray-50 flex items-center justify-center relative overflow-hidden"
+                    style={{ height: '240px' }}
+                  >
+                    {/* TODO: Integrar Google Maps API para mostrar mapa real con círculo de radio ajustable */}
+                    {values.ubicacion ? (
+                      <div className="relative w-full h-full flex items-center justify-center">
+                        {/* Círculo que representa el radio de alcance */}
+                        <div 
+                          className="border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center"
+                          style={{ 
+                            width: `${Math.min(values.alcanceTrabajo ? parseInt(values.alcanceTrabajo) * 6 : 100, 200)}px`,
+                            height: `${Math.min(values.alcanceTrabajo ? parseInt(values.alcanceTrabajo) * 6 : 100, 200)}px`,
+                            transition: 'all 0.3s ease'
+                          }}
+                        >
+                          {/* Ícono de ubicación */}
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="#244C87" stroke="#244C87" strokeWidth="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3" fill="white"/>
+                          </svg>
+                        </div>
+                        
+                        {/* Etiqueta con el radio actual */}
+                        <div 
+                          className="absolute bottom-4 bg-white px-4 py-2 rounded-full shadow-md border border-gray-200"
+                          style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral.black }}
+                        >
+                          Radio: {values.alcanceTrabajo || '0'} km
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[400] }}>
+                        Seleccioná una ubicación primero
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Slider para ajustar el radio */}
+                  {values.ubicacion && (
+                    <div className="mt-4">
+                      <input
+                        type="range"
+                        min="0"
+                        max="50"
+                        value={values.alcanceTrabajo || 0}
+                        onChange={(e) => setFieldValue('alcanceTrabajo', e.target.value)}
+                        className="w-full"
+                        style={{
+                          accentColor: '#244C87'
+                        }}
+                      />
+                      <p className="mt-2 text-xs text-gray-600 text-center" style={{ fontFamily: typography.fontFamily.primary }}>
+                        ¿Hasta dónde estarías dispuesto/a a moverte para trabajar desde {values.ubicacion}?
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -936,8 +1011,16 @@ export default function ProviderSignup() {
                 <button
                   type="button"
                   onClick={agregarCertificadoProfesional}
-                  className="text-[#244C87] underline"
-                  style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, fontWeight: 600 }}
+                  className="text-left hover:opacity-70 transition-opacity"
+                  style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.base, 
+                    color: colors.neutral.black,
+                    borderBottom: '2px solid #000000',
+                    paddingBottom: '4px',
+                    display: 'inline-block',
+                    cursor: 'pointer'
+                  }}
                 >
                   Agregar otra Certificado +
                 </button>
@@ -1101,6 +1184,50 @@ export default function ProviderSignup() {
                   value={values.linkedin}
                   onChange={(value) => setFieldValue('linkedin', value)}
                 />
+
+                {/* Referencias */}
+                <div className="pt-6">
+                  <h3 style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.lg,
+                    fontWeight: typography.fontWeight.semibold,
+                    color: colors.neutral.black,
+                    marginBottom: '8px'
+                  }}>
+                    Referencias
+                  </h3>
+                  <p style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.sm,
+                    color: colors.neutral[600],
+                    marginBottom: '16px'
+                  }}>
+                    Datos de antiguos empleadores o personas que puedan recomendarte
+                  </p>
+
+                  <div className="space-y-4">
+                    <Input
+                      label="Nombre"
+                      placeholder=""
+                      value={values.referenciaNombre}
+                      onChange={(value) => setFieldValue('referenciaNombre', value)}
+                    />
+
+                    <Input
+                      label="Email"
+                      placeholder="algo@algo.com"
+                      value={values.referenciaEmail}
+                      onChange={(value) => setFieldValue('referenciaEmail', value)}
+                    />
+
+                    <Input
+                      label="Telefono"
+                      placeholder="+54 1234 34 54"
+                      value={values.referenciaTelefono}
+                      onChange={(value) => setFieldValue('referenciaTelefono', value)}
+                    />
+                  </div>
+                </div>
               </div>
             )}
 
@@ -1155,6 +1282,66 @@ export default function ProviderSignup() {
             >
               Entendido
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de éxito - Registro completado */}
+      {mostrarModalExito && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div 
+            className="rounded-3xl relative flex flex-col items-center justify-center"
+            style={{ 
+              background: '#B45B39',
+              width: '432px',
+              height: '293px',
+              opacity: 1
+            }}
+          >
+            {/* Botón cerrar */}
+            <button
+              onClick={() => {
+                setMostrarModalExito(false);
+                window.location.href = '/dashboard-provider';
+              }}
+              className="absolute top-4 right-4 hover:opacity-70 transition-opacity"
+              style={{ cursor: 'pointer' }}
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2.5">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            {/* Contenido del modal */}
+            <h2 
+              className="text-center mb-4"
+              style={{ 
+                fontFamily: 'Maitree, serif', 
+                fontSize: '32px',
+                fontWeight: 400,
+                color: '#FFFFFF',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textAlign: 'center'
+              }}
+            >
+              ¡Felicitaciones!
+            </h2>
+            <p 
+              className="text-center"
+              style={{ 
+                fontFamily: 'Maitree, serif', 
+                fontSize: '20px',
+                fontWeight: 400,
+                color: '#FFFFFF',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textAlign: 'center'
+              }}
+            >
+              Ya te pueden empezar a contactar clientes.
+            </p>
           </div>
         </div>
       )}
