@@ -2,6 +2,7 @@
 
 import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { colors, typography } from '@/styles/tokens';
 
@@ -263,7 +264,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
               Para Clientes
             </p>
             <div className="space-y-2">
-              <a href="/buscar" style={{
+              <Link href="/buscar" style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.sm,
                 color: '#FFFFFF',
@@ -271,8 +272,8 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
                 cursor: 'pointer'
               }}>
                 Buscar Trabajadores
-              </a>
-              <a href="/como-funciona" style={{
+              </Link>
+              <Link href="/como-funciona" style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.sm,
                 color: '#FFFFFF',
@@ -280,7 +281,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
                 cursor: 'pointer'
               }}>
                 ¿Cómo Funciona?
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -295,7 +296,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
               Para Trabajadores
             </p>
             <div className="space-y-2">
-              <a href="/provider-signup" style={{
+              <Link href="/provider-signup" style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.sm,
                 color: '#FFFFFF',
@@ -303,8 +304,8 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
                 cursor: 'pointer'
               }}>
                 Sumate como Trabajador
-              </a>
-              <a href="/soporte" style={{
+              </Link>
+              <Link href="/soporte" style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.sm,
                 color: '#FFFFFF',
@@ -312,7 +313,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
                 cursor: 'pointer'
               }}>
                 Soporte Proveedores
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -327,7 +328,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
               SERCO
             </p>
             <div className="space-y-2">
-              <a href="/sobre-nosotros" style={{
+              <Link href="/sobre-nosotros" style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.sm,
                 color: '#FFFFFF',
@@ -335,8 +336,8 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
                 cursor: 'pointer'
               }}>
                 Sobre nosotros
-              </a>
-              <a href="/contacto" style={{
+              </Link>
+              <Link href="/contacto" style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.sm,
                 color: '#FFFFFF',
@@ -344,7 +345,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
                 cursor: 'pointer'
               }}>
                 Contacto
-              </a>
+              </Link>
             </div>
           </div>
 

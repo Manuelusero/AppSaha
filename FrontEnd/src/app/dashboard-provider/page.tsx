@@ -805,9 +805,9 @@ export default function DashboardProvider() {
                 } else {
                   // Modo vista: mostrar solo los seleccionados
                   if (currentData.specialties && currentData.specialties.length > 0) {
-                    return currentData.specialties.map((specialty, idx) => (
+                    return currentData.specialties.map((specialty) => (
                       <div
-                        key={idx}
+                        key={specialty}
                         className="px-4 py-2 rounded-full border-2"
                         style={{
                           fontFamily: typography.fontFamily.primary,
@@ -860,7 +860,7 @@ export default function DashboardProvider() {
                     style={{ 
                       width: `${Math.min(currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) * 6 : 100, 200)}px`,
                       height: `${Math.min(currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) * 6 : 100, 200)}px`,
-                      transition: 'all 0.3s ease'
+                      transition: 'width 0.3s ease, height 0.3s ease'
                     }}
                   >
                     {/* Ícono de ubicación */}
@@ -927,22 +927,22 @@ export default function DashboardProvider() {
                 }}
               >
                 {currentData.portfolioImages && currentData.portfolioImages.length > 0 ? (
-                  currentData.portfolioImages.map((img, idx) => (
+                  currentData.portfolioImages.map((img) => (
                     <div 
-                      key={idx}
+                      key={img}
                       className="flex-shrink-0 rounded-2xl overflow-hidden"
                       style={{ width: '300px', height: '200px', position: 'relative' }}
                     >
                       <Image
                         src={img}
-                        alt={`Trabajo ${idx + 1}`}
+                        alt={`Trabajo ${currentData.portfolioImages?.indexOf(img)! + 1}`}
                         fill
                         style={{ objectFit: 'cover' }}
                       />
                       {editMode && (
                         <button
                           onClick={() => {
-                            const newImages = currentData.portfolioImages?.filter((_, i) => i !== idx) || [];
+                            const newImages = currentData.portfolioImages?.filter((url) => url !== img) || [];
                             handleFieldChange('portfolioImages', newImages);
                           }}
                           className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors"

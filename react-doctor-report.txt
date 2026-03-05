@@ -1,0 +1,130 @@
+react-doctor v0.0.29
+
+✔ Select projects to scan › frontend
+Scanning /Users/manuelusero/Desktop/Proyectos/Proyect SAHA/FrontEnd...
+
+- Detecting framework. Found Next.js.
+[32m✔[39m Detecting framework. Found Next.js.
+- Detecting React version. Found React 19.1.0.
+[32m✔[39m Detecting React version. Found React 19.1.0.
+- Detecting language. Found TypeScript.
+[32m✔[39m Detecting language. Found TypeScript.
+- Detecting React Compiler. Not found.
+[32m✔[39m Detecting React Compiler. Not found.
+- Found 68 source files.
+[32m✔[39m Found 68 source files.
+
+- Running lint checks...
+- Running lint checks.
+[32m✔[39m Running lint checks.
+- Detecting dead code...
+[32m✔[39m Detecting dead code.
+  ✗ Possible hardcoded secret in "password" — use environment variables instead
+    Move to server-side `process.env.SECRET_NAME`. Only `NEXT_PUBLIC_*` vars are safe for the client (and should not contain secrets)
+
+  ⚠ Client-side redirect in useEffect — use redirect() in a server component or middleware instead (12)
+    Use `redirect('/path')` from 'next/navigation' in a Server Component, or handle in middleware
+
+  ⚠ Page without metadata or generateMetadata export — hurts SEO (22)
+    Add `export const metadata = { title: '...', description: '...' }` or `export async function generateMetadata()`
+
+  ⚠ Component "SobreNosotros" is 394 lines — consider breaking it into smaller focused components (14)
+    Extract logical sections into focused components: `<UserHeader />`, `<UserActions />`, etc.
+
+  ⚠ Array index "idx" used as key — causes bugs when list is reordered or filtered (23)
+    Use a stable unique identifier: `key={item.id}` or `key={item.slug}` — index keys break on reorder/filter
+
+  ⚠ Component "SignUp" has 8 useState calls — consider useReducer for related state (11)
+    Group related state: `const [state, dispatch] = useReducer(reducer, { field1, field2, ... })`
+
+  ⚠ A form label must be associated with a control. (61)
+    Either give the label a `htmlFor` attribute with the id of the associated control, or wrap the label around the control.
+
+  ⚠ Use next/link instead of <a> for internal links — enables client-side navigation and prefetching (8)
+    `import Link from 'next/link'` — enables client-side navigation, prefetching, and preserves scroll position
+
+  ⚠ 3 setState calls in a single useEffect — consider using useReducer or deriving state (4)
+    Combine into useReducer: `const [state, dispatch] = useReducer(reducer, initialState)`
+
+  ⚠ useSearchParams() requires a <Suspense> boundary — without one, the entire page bails out to client-side rendering (5)
+    Wrap the component using useSearchParams: `<Suspense fallback={<Skeleton />}><SearchComponent /></Suspense>`
+
+  ⚠ next/image with fill but no sizes — the browser downloads the largest image. Add a sizes attribute for responsive behavior (6)
+    Add sizes for responsive behavior: `sizes="(max-width: 768px) 100vw, 50vw"` matching your layout breakpoints
+
+  ⚠ Inline render function "renderStars()" — extract to a separate component for proper reconciliation
+    Extract to a named component: `const ListItem = ({ item }) => <div>{item.name}</div>`
+
+  ⚠ Enforce a clickable non-interactive element has at least one keyboard event listener. (52)
+    Visible, non-interactive elements with click handlers must have one of `keyup`, `keydown`, or `keypress` listener.
+
+  ⚠ Static HTML elements with event handlers require a role. (53)
+    Add a role attribute to this element, or use a semantic HTML element instead.
+
+  ⚠ setPaso(paso + ...) — use functional update to avoid stale closures (4)
+    Use the callback form: `setState(prev => prev + 1)` to always read the latest value
+
+  ⚠ transition: "all" animates every property including layout — list only the properties you animate (5)
+    List specific properties: `transition: "opacity 200ms, transform 200ms"` — or in Tailwind use `transition-colors`, `transition-opacity`, or `transition-transform`
+
+  ⚠ Unknown property found (3)
+    Remove unknown property
+
+  ⚠ Use next/image instead of <img> — provides automatic optimization, lazy loading, and responsive srcset (6)
+    `import Image from 'next/image'` — provides automatic WebP/AVIF, lazy loading, and responsive srcset
+
+  ⚠ blur(12px) is expensive — cost escalates with radius and layer size, can exceed GPU memory on mobile (6)
+    Keep blur radius under 10px, or apply blur to a smaller element. Large blurs multiply GPU memory usage with layer size
+
+  ⚠ useEffect simulating an event handler — move logic to an actual event handler instead
+    Move the conditional logic into onClick, onChange, or onSubmit handlers directly
+
+  ⚠ Use of incorrect `href` for the 'a' element. (4)
+    Provide a correct `href` for the `a` element.
+
+  ⚠ Unused file (8)
+    This file is not imported by any other file in the project.
+
+  ⚠ Unused export: transitions (34)
+
+  ⚠ Unused type: User (4)
+
+  ┌─────────────────────────────────────────────────────────┐
+  │ ┌─────┐                                                 │
+  │ │ ◠ ◠ │                                                 │
+  │ │  ▽  │                                                 │
+  │ └─────┘                                                 │
+  │ React Doctor (www.react.doctor)                         │
+  │                                                         │
+  │ 81 / 100  Great                                         │
+  │                                                         │
+  │ █████████████████████████████████████████░░░░░░░░░      │
+  │                                                         │
+  │ ✗ 1 error  ⚠ 347 warnings  across 52/68 files  in 307ms │
+  └─────────────────────────────────────────────────────────┘
+
+  Full diagnostics written to /var/folders/xf/wzk5_g9x4898hkv5lgrk7xyc0000gn/T/react-doctor-5e51e941-f30d-4850-bed9-7285dd9fddf2
+
+  Share your results: https://www.react.doctor/share?p=frontend&s=81&e=1&w=347&f=52
+
+
+[?25l[36m?[39m [1mFix issues?[22m [90m›[39m [90m- Use arrow-keys. Return to submit.[39m
+[36m❯[39m   [36m[4mUse Ami (recommended)[39m[24m[90m - Optimized coding agent for React Doctor[39m
+    Skip[90m[39m
+[2K[1G  ┌──────────────────────────────────────────────────────┐
+  │ Score: 81 → ~96                                      │
+  │                                                      │
+  │ Ami is a coding agent built for React. It reads      │
+  │ your react-doctor report, understands your codebase, │
+  │ and fixes 348 issues one by one — then re-runs the   │
+  │ scan to verify the score improved.                   │
+  │                                                      │
+  │ Free to use. https://ami.dev                         │
+  └──────────────────────────────────────────────────────┘
+
+[36m?[39m [1mFix issues?[22m [90m›[39m [90m- Use arrow-keys. Return to submit.[39m
+[36m❯[39m   [36m[4mUse Ami (recommended)[39m[24m[90m - Optimized coding agent for React Doctor[39m
+    Skip[90m[39m
+[2K[1G[32m✔[39m [1mFix issues?[22m [90m›[39m Use Ami (recommended)
+[?25hOpening Ami...
+Ami opened. Fixing your issues now.

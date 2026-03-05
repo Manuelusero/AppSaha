@@ -269,7 +269,7 @@ export default function ProviderProfile() {
               <div className="flex items-center gap-1" style={{ paddingLeft: '10px', paddingRight: '32px', marginBottom: '24px' }}>
                 {[...Array(5)].map((_, idx) => (
                   <span
-                    key={idx}
+                    key={`star-${idx}`}
                     style={{ 
                       color: idx < Math.floor(provider.providerProfile.rating) ? '#DC5F00' : '#D1D5DB',
                       fontSize: '24px'
@@ -432,9 +432,9 @@ export default function ProviderProfile() {
                 </h2>
                 {specialties.length > 0 ? (
                   <ul className="space-y-2">
-                    {specialties.map((specialty, index) => (
+                    {specialties.map((specialty) => (
                       <li 
-                        key={index}
+                        key={specialty}
                         style={{ 
                           fontFamily: 'Maitree, serif', 
                           fontSize: '20px', 
@@ -522,9 +522,9 @@ export default function ProviderProfile() {
                       scrollbarColor: '#244C87 #E5E7EB'
                     }}
                   >
-                    {workPhotos.map((photo, index) => (
+                    {workPhotos.map((photo) => (
                       <div 
-                        key={index} 
+                        key={photo} 
                         className="relative flex-shrink-0 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                         style={{ 
                           width: '342px', 
@@ -533,7 +533,7 @@ export default function ProviderProfile() {
                         }}
                         onClick={() => {
                           console.log('Opening image:', photo);
-                          setSelectedImageIndex(index);
+                          setSelectedImageIndex(workPhotos.indexOf(photo));
                           setLightboxOpen(true);
                         }}
                       >

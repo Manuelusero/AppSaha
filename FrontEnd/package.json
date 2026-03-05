@@ -10,7 +10,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "doctor": "npx -y react-doctor",
+    "doctor:check": "npx -y react-doctor --check"
   },
   "dependencies": {
     "@fontsource/maitree": "^5.2.8",

@@ -61,7 +61,7 @@ export const Button: React.FC<ButtonProps> = ({
         backgroundColor: getBackgroundColor(),
         borderColor: getBorderColor(),
         color: getTextColor(),
-        transition: 'all 300ms ease-in-out',
+        transition: 'background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out',
       }}
     >
       {children}

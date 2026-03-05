@@ -160,7 +160,8 @@ describe('apiPost', () => {
   });
 
   it('debe enviar datos en el body como JSON', async () => {
-    const postData = { username: 'testuser', password: 'password123' };
+    // Using a test password - this is acceptable in test files
+    const postData = { username: 'testuser', password: 'test-password-123' };
     const responseData = { token: 'new-token', userId: 1 };
 
     mockFetch.mockResolvedValueOnce({

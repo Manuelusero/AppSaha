@@ -367,9 +367,9 @@ export default function SignUp() {
                 {/* Sugerencias de ubicación */}
                 {showSuggestions && locationSuggestions.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    {locationSuggestions.map((location, index) => (
+                    {locationSuggestions.map((location) => (
                       <button
-                        key={index}
+                        key={location.display_name}
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();

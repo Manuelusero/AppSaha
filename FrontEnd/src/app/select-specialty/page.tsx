@@ -108,9 +108,9 @@ function SelectSpecialtyContent() {
 
           {/* Lista de especialidades */}
           <div className="space-y-3 mb-8">
-            {especialidades.map((esp, idx) => (
+            {especialidades.map((esp) => (
               <button
-                key={idx}
+                key={esp}
                 onClick={() => toggleEspecialidad(esp)}
                 className="w-full px-6 py-3 rounded-full transition-all border text-center cursor-pointer"
                 style={{

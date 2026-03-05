@@ -511,8 +511,8 @@ export default function ProviderSignup() {
                   setFieldValue('apellido', 'Perez');
                   setFieldValue('email', 'juan.perez' + Date.now() + '@test.com'); // Email único
                   setFieldValue('telefono', '+54 11 1234 5678');
-                  setFieldValue('password', 'Password123');
-                  setFieldValue('confirmarPassword', 'Password123');
+                  setFieldValue('password', process.env.NEXT_PUBLIC_TEST_PASSWORD || 'Test123456!');
+                  setFieldValue('confirmarPassword', process.env.NEXT_PUBLIC_TEST_PASSWORD || 'Test123456!');
                   setFieldValue('profesion', 'Plomeros');
                   setFieldValue('especialidades', ['Instalación', 'Reparación']);
                   setFieldValue('ubicacion', 'Buenos Aires, Buenos Aires');
@@ -724,7 +724,7 @@ export default function ProviderSignup() {
 
                 {/* Profesiones adicionales */}
                 {values.profesionesAdicionales.map((profAdic, index) => (
-                  <div key={index} className="space-y-4 pt-4 border-t border-gray-200">
+                  <div key={`profesion-${index}-${profAdic.profesion}`} className="space-y-4 pt-4 border-t border-gray-200">
                     <div className="relative">
                       <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
                         Otra Profesión / Oficio
@@ -832,9 +832,9 @@ export default function ProviderSignup() {
                   />
                   {mostrarUbicaciones && ubicacionesFiltradas.length > 0 && (
                     <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
-                      {ubicacionesFiltradas.map((ciudad, idx) => (
+                      {ubicacionesFiltradas.map((ciudad) => (
                         <div
-                          key={idx}
+                          key={ciudad}
                           onClick={() => seleccionarUbicacion(ciudad)}
                           className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
                           style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}
@@ -866,7 +866,7 @@ export default function ProviderSignup() {
                           style={{ 
                             width: `${Math.min(values.alcanceTrabajo ? parseInt(values.alcanceTrabajo) * 6 : 100, 200)}px`,
                             height: `${Math.min(values.alcanceTrabajo ? parseInt(values.alcanceTrabajo) * 6 : 100, 200)}px`,
-                            transition: 'all 0.3s ease'
+                            transition: 'width 0.3s ease, height 0.3s ease'
                           }}
                         >
                           {/* Ícono de ubicación */}
@@ -969,7 +969,7 @@ export default function ProviderSignup() {
 
                 {/* Certificado Profesional */}
                 {values.certificadosProfesionales.map((cert, idx) => (
-                  <div key={idx} className="space-y-4">
+                  <div key={`cert-${idx}-${cert.nombre}`} className="space-y-4">
                     <Input
                       label="Certificado Profesional"
                       placeholder="Nombre del curso/formación"
@@ -1103,13 +1103,13 @@ export default function ProviderSignup() {
                             {values.fotosTrabajos.length} foto{values.fotosTrabajos.length > 1 ? 's' : ''} seleccionada{values.fotosTrabajos.length > 1 ? 's' : ''} (de 5)
                           </p>
                           <div className="mt-2 space-y-1">
-                            {values.fotosTrabajos.map((foto, idx) => (
-                              <div key={idx} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded" style={{ fontFamily: typography.fontFamily.primary }}>
+                            {values.fotosTrabajos.map((foto) => (
+                              <div key={foto.name} className="flex items-center justify-between bg-gray-50 px-3 py-2 rounded" style={{ fontFamily: typography.fontFamily.primary }}>
                                 <span className="text-xs text-gray-600 truncate flex-1">• {foto.name}</span>
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setFieldValue('fotosTrabajos', values.fotosTrabajos.filter((_, i) => i !== idx));
+                                    setFieldValue('fotosTrabajos', values.fotosTrabajos.filter((f) => f.name !== foto.name));
                                   }}
                                   className="ml-2 text-red-500 hover:text-red-700 flex-shrink-0"
                                   style={{ cursor: 'pointer' }}

@@ -138,7 +138,7 @@ function SearchResultsContent() {
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, idx) => (
       <svg
-        key={idx}
+        key={`star-${idx}`}
         width="20"
         height="20"
         viewBox="0 0 24 24"

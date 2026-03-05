@@ -216,9 +216,9 @@ export default function SobreNosotros() {
                 title: 'Innovación',
                 description: 'Mejoramos constantemente nuestra plataforma para ofrecer la mejor experiencia posible.'
               }
-            ].map((valor, idx) => (
+            ].map((valor) => (
               <div 
-                key={idx}
+                key={valor.title}
                 className="bg-white rounded-2xl p-8 border-2 border-gray-200 hover:shadow-lg transition-shadow"
               >
                 <div 
@@ -284,9 +284,9 @@ export default function SobreNosotros() {
                 role: 'Co-fundador',
                 description: 'Dedicado a construir tecnología que conecte y empodere comunidades.'
               }
-            ].map((member, idx) => (
+            ].map((member) => (
               <div 
-                key={idx}
+                key={member.name}
                 className="bg-blue-50 rounded-3xl p-8 text-center"
               >
                 <div 

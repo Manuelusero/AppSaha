@@ -414,9 +414,9 @@ export default function SoporteProveedores() {
                 pregunta: '¿Hay comisiones por usar la plataforma?',
                 respuesta: 'SERCO cobra una comisión del 10% sobre cada servicio completado. Esta comisión cubre el procesamiento de pagos, seguros y soporte.'
               }
-            ].map((faq, idx) => (
+            ].map((faq) => (
               <details 
-                key={idx}
+                key={faq.pregunta}
                 className="bg-blue-50 rounded-2xl p-6 cursor-pointer hover:shadow-md transition-shadow"
               >
                 <summary 

@@ -304,9 +304,9 @@ export default function SolicitudesTrabajo() {
 
                         {/* Fila inferior: especialidades */}
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-                          {solicitud.especialidades.map((esp, idx) => (
+                          {solicitud.especialidades.map((esp) => (
                             <div
-                              key={idx}
+                              key={`${solicitud.id}-${esp}`}
                               style={{
                                 padding: '6px 16px',
                                 border: `1px solid ${colors.neutral[300]}`,

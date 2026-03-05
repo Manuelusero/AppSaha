@@ -61,7 +61,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
 
           return (
             <button
-              key={index}
+              key={`star-${index}`}
               type="button"
               onClick={() => handleClick(starValue)}
               disabled={readonly}

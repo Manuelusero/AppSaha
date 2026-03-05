@@ -237,9 +237,9 @@ export default function Home() {
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                 {servicios
                   .filter(s => servicioSeleccionado === '' || s.toLowerCase().includes(servicioSeleccionado.toLowerCase()))
-                  .map((servicio, idx) => (
+                  .map((servicio) => (
                     <div
-                      key={idx}
+                      key={servicio}
                       onClick={() => {
                         setServicioSeleccionado(servicio);
                         setMostrarServicios(false);
@@ -301,9 +301,9 @@ export default function Home() {
                     Buscando ubicaciones...
                   </div>
                 ) : ubicacionesSugeridas.length > 0 ? (
-                  ubicacionesSugeridas.map((sugerencia, idx) => (
+                  ubicacionesSugeridas.map((sugerencia) => (
                     <div
-                      key={idx}
+                      key={sugerencia.display_name}
                       onMouseDown={(e) => {
                         e.preventDefault(); // Prevenir que el input pierda el foco
                         seleccionarUbicacion(sugerencia.name);
