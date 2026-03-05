@@ -57,24 +57,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
   }
 
   return (
-    <footer className="w-full text-white" style={{ marginTop: spacing[36] }}>
-      {/* Franja azul superior */}
-      <div className="w-full" style={{ backgroundColor: colors.primary.main, height: '60px' }}></div>
-      
-      {/* Contenedor del logo con fondo blanco */}
-      <div className="w-full py-6 sm:py-8 px-4" style={{ backgroundColor: colors.neutral.white }}>
-        <div className="flex justify-center">
-          <Image 
-            src="/Logo.png" 
-            alt="Serco Logo" 
-            width={484} 
-            height={134}
-            className="w-full sm:w-auto max-w-[300px] sm:max-w-[484px]"
-            style={{ height: 'auto' }}
-          />
-        </div>
-      </div>
-
+    <footer className="w-full text-white">
       {/* Resto del footer con fondo azul */}
       <div className="w-full py-8 sm:py-12 px-4 sm:px-6" style={{ backgroundColor: colors.primary.main }}>
         <div className="max-w-6xl mx-auto">
@@ -140,7 +123,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                       textAlign: 'center' 
                     }}
                   >
-                    Buscar Servidores
+                    Buscar Trabajadores
                   </a>
                 </li>
                 <li>
@@ -159,42 +142,10 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                     ¿Cómo Funciona?
                   </a>
                 </li>
-                <li>
-                  <a 
-                    href="/seguridad-confianza" 
-                    className="hover:opacity-80 transition-opacity" 
-                    style={{ 
-                      fontFamily: 'Maitree, serif', 
-                      fontWeight: 400, 
-                      fontSize: '16px', 
-                      lineHeight: '100%', 
-                      letterSpacing: '0%', 
-                      textAlign: 'center' 
-                    }}
-                  >
-                    Seguridad y Confianza
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="/ayuda" 
-                    className="hover:opacity-80 transition-opacity" 
-                    style={{ 
-                      fontFamily: 'Maitree, serif', 
-                      fontWeight: 400, 
-                      fontSize: '16px', 
-                      lineHeight: '100%', 
-                      letterSpacing: '0%', 
-                      textAlign: 'center' 
-                    }}
-                  >
-                    Ayuda
-                  </a>
-                </li>
               </ul>
             </div>
 
-            {/* Para Proveedores */}
+            {/* Para Trabajadores */}
             <div>
               <h3 
                 className="mb-6" 
@@ -207,7 +158,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                   textAlign: 'center' 
                 }}
               >
-                Para Proveedores
+                Para Trabajadores
               </h3>
               <ul className="space-y-3">
                 <li>
@@ -223,39 +174,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                       textAlign: 'center' 
                     }}
                   >
-                    Sumate como proveedor
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="/experiencias" 
-                    className="hover:opacity-80 transition-opacity" 
-                    style={{ 
-                      fontFamily: 'Maitree, serif', 
-                      fontWeight: 400, 
-                      fontSize: '16px', 
-                      lineHeight: '100%', 
-                      letterSpacing: '0%', 
-                      textAlign: 'center' 
-                    }}
-                  >
-                    Experiencias
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="/recursos" 
-                    className="hover:opacity-80 transition-opacity" 
-                    style={{ 
-                      fontFamily: 'Maitree, serif', 
-                      fontWeight: 400, 
-                      fontSize: '16px', 
-                      lineHeight: '100%', 
-                      letterSpacing: '0%', 
-                      textAlign: 'center' 
-                    }}
-                  >
-                    Recursos útiles
+                    Sumate como Trabajador
                   </a>
                 </li>
                 <li>
@@ -277,7 +196,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
               </ul>
             </div>
 
-            {/* Empresa */}
+            {/* SERCO */}
             <div>
               <h3 
                 className="mb-6" 
@@ -290,7 +209,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                   textAlign: 'center' 
                 }}
               >
-                Empresa
+                SERCO
               </h3>
               <ul className="space-y-3">
                 <li>
@@ -315,26 +234,6 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                 </li>
                 <li>
                   <button 
-                    onClick={() => router.push('/trabaja-con-nosotros')} 
-                    className="hover:opacity-80 transition-opacity" 
-                    style={{ 
-                      fontFamily: 'Maitree, serif', 
-                      fontWeight: 400, 
-                      fontSize: '16px', 
-                      lineHeight: '100%', 
-                      letterSpacing: '0%', 
-                      textAlign: 'center', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      color: 'inherit' 
-                    }}
-                  >
-                    Trabaja con nosotros
-                  </button>
-                </li>
-                <li>
-                  <button 
                     onClick={() => router.push('/contacto')} 
                     className="hover:opacity-80 transition-opacity" 
                     style={{ 
@@ -353,26 +252,6 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                     Contacto
                   </button>
                 </li>
-                <li>
-                  <button 
-                    onClick={() => router.push('/prensa')} 
-                    className="hover:opacity-80 transition-opacity" 
-                    style={{ 
-                      fontFamily: 'Maitree, serif', 
-                      fontWeight: 400, 
-                      fontSize: '16px', 
-                      lineHeight: '100%', 
-                      letterSpacing: '0%', 
-                      textAlign: 'center', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      color: 'inherit' 
-                    }}
-                  >
-                    Prensa
-                  </button>
-                </li>
               </ul>
             </div>
           </div>
@@ -385,14 +264,14 @@ export default function Footer({ variant = 'full' }: FooterProps) {
             <p 
               style={{ 
                 fontFamily: 'Maitree, serif', 
-                fontStyle: 'italic', 
+                fontStyle: 'normal', 
                 fontSize: '16px', 
                 lineHeight: '100%', 
                 letterSpacing: '0%', 
                 textAlign: 'center' 
               }}
             >
-              Creado por Bren y Manu
+              Creado por Aquario
             </p>
           </div>
         </div>

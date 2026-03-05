@@ -35,6 +35,8 @@ export default function DashboardProvider() {
   const [showMenu, setShowMenu] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editedData, setEditedData] = useState<ProviderData | null>(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
 
   // Cargar datos del proveedor
   useEffect(() => {
@@ -212,7 +214,13 @@ export default function DashboardProvider() {
       >
         {/* Flecha atrás */}
         <button
-          onClick={() => router.back()}
+          onClick={() => {
+            if (editMode) {
+              setShowUnsavedModal(true);
+            } else {
+              router.back();
+            }
+          }}
           className="hover:bg-white/20 rounded-full transition-colors p-2"
           style={{ cursor: 'pointer' }}
         >
@@ -221,45 +229,109 @@ export default function DashboardProvider() {
           </svg>
         </button>
 
-        {/* Menú hamburguesa */}
+        {/* Botón menú con foto/inicial */}
         <button
           onClick={() => setShowMenu(!showMenu)}
-          className="hover:bg-white/20 rounded-full transition-colors p-2"
+          className="flex items-center gap-2 hover:bg-white/20 rounded-full transition-colors p-2"
           style={{ cursor: 'pointer' }}
         >
-          <svg width="32" height="32" fill="none" stroke={colors.neutral.black} strokeWidth="2.5" viewBox="0 0 24 24">
-            <path d="M3 12h18M3 6h18M3 18h18"/>
-          </svg>
+          {/* Foto miniatura o inicial */}
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            backgroundColor: '#FFFFFF',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '2px solid #000000'
+          }}>
+            {currentData.profileImage && currentData.profileImage.trim() && !currentData.profileImage.includes('placeholder') ? (
+              <Image
+                src={currentData.profileImage}
+                alt="Perfil"
+                width={40}
+                height={40}
+                style={{ objectFit: 'cover' }}
+              />
+            ) : (
+              <span style={{
+                fontFamily: typography.fontFamily.primary,
+                fontSize: '18px',
+                fontWeight: 600,
+                color: colors.neutral.black
+              }}>
+                {currentData.nombre.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
         </button>
       </header>
 
-      {/* Menú lateral desplegable */}
+      {/* Menú desplegable tipo card */}
       {showMenu && (
         <>
           <div 
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 z-40"
             onClick={() => setShowMenu(false)}
           />
           <div 
-            className="fixed top-0 left-0 h-full bg-white shadow-lg z-50"
-            style={{ width: '280px' }}
+            className="fixed right-4 sm:right-6 bg-white rounded-3xl shadow-2xl z-50"
+            style={{ 
+              top: 'calc(6rem + 16px)',
+              width: '280px',
+              border: '2px solid #000000'
+            }}
           >
             <div className="p-6">
-              <button
-                onClick={() => setShowMenu(false)}
-                className="mb-6"
-                style={{ cursor: 'pointer' }}
-              >
-                <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-              </button>
+              {/* Saludo con foto */}
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-200">
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  backgroundColor: '#E5E7EB',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid #000000'
+                }}>
+                  {currentData.profileImage && currentData.profileImage.trim() && !currentData.profileImage.includes('placeholder') ? (
+                    <Image
+                      src={currentData.profileImage}
+                      alt="Perfil"
+                      width={48}
+                      height={48}
+                      style={{ objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <span style={{
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: '20px',
+                      fontWeight: 600,
+                      color: colors.neutral.black
+                    }}>
+                      {currentData.nombre.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <p style={{
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.lg,
+                  fontWeight: 600,
+                  color: colors.neutral.black
+                }}>
+                  Hola, {currentData.nombre}!
+                </p>
+              </div>
               
-              <nav className="space-y-4">
+              <nav className="space-y-2">
                 <button
                   onClick={() => {
                     setShowMenu(false);
-                    router.push('/');
+                    // Ya estamos en Mi Perfil
                   }}
                   className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
                   style={{ 
@@ -269,7 +341,7 @@ export default function DashboardProvider() {
                     cursor: 'pointer'
                   }}
                 >
-                  Inicio
+                  Mi Perfil
                 </button>
                 
                 <button
@@ -285,13 +357,13 @@ export default function DashboardProvider() {
                     cursor: 'pointer'
                   }}
                 >
-                  Solicitudes de trabajo
+                  Solicitudes
                 </button>
                 
                 <button
                   onClick={() => {
-                    localStorage.clear();
-                    router.push('/login');
+                    setShowMenu(false);
+                    // TODO: Navegar a recomendaciones
                   }}
                   className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
                   style={{ 
@@ -301,9 +373,194 @@ export default function DashboardProvider() {
                     cursor: 'pointer'
                   }}
                 >
-                  Cerrar Sesión
+                  Recomendaciones
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    setShowLogoutModal(true);
+                  }}
+                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between"
+                  style={{ 
+                    fontFamily: typography.fontFamily.primary, 
+                    fontSize: typography.fontSize.base,
+                    color: colors.neutral.black,
+                    cursor: 'pointer'
+                  }}
+                >
+                  <span>Cerrar Sesión</span>
+                  <svg width="20" height="20" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                  </svg>
                 </button>
               </nav>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal de confirmación de cerrar sesión */}
+      {showLogoutModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+            onClick={() => setShowLogoutModal(false)}
+          >
+            <div 
+              className="bg-white rounded-3xl shadow-2xl p-8 mx-4"
+              style={{ 
+                maxWidth: '400px',
+                width: '100%',
+                backgroundColor: '#FFF8F0'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Botón X para cerrar */}
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Título */}
+              <h2 style={{
+                fontFamily: 'Maitree, serif',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: '#B45B39',
+                textAlign: 'center',
+                marginBottom: '32px'
+              }}>
+                ¿Seguro que deseas continuar?
+              </h2>
+
+              {/* Botones */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    localStorage.clear();
+                    router.push('/login');
+                  }}
+                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
+                  style={{
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
+                    color: '#FFFFFF',
+                    backgroundColor: '#B45B39',
+                    cursor: 'pointer',
+                    border: 'none'
+                  }}
+                >
+                  Si, Cerrar sesión
+                </button>
+                
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
+                  style={{
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
+                    color: '#FFFFFF',
+                    backgroundColor: '#B45B39',
+                    cursor: 'pointer',
+                    border: 'none'
+                  }}
+                >
+                  No, volver a mi perfil
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal de confirmación de cambios sin guardar */}
+      {showUnsavedModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+            onClick={() => setShowUnsavedModal(false)}
+          >
+            <div 
+              className="bg-white rounded-3xl shadow-2xl p-8 mx-4"
+              style={{ 
+                maxWidth: '400px',
+                width: '100%',
+                backgroundColor: '#FFF8F0'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Botón X para cerrar */}
+              <div className="flex justify-end mb-4">
+                <button
+                  onClick={() => setShowUnsavedModal(false)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Título */}
+              <h2 style={{
+                fontFamily: 'Maitree, serif',
+                fontSize: '24px',
+                fontWeight: 600,
+                color: '#B45B39',
+                textAlign: 'center',
+                marginBottom: '32px'
+              }}>
+                ¿Querés guardar los cambios?
+              </h2>
+
+              {/* Botones */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setShowUnsavedModal(false);
+                    handleSaveEdit();
+                    router.back();
+                  }}
+                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
+                  style={{
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
+                    color: '#FFFFFF',
+                    backgroundColor: '#B45B39',
+                    cursor: 'pointer',
+                    border: 'none'
+                  }}
+                >
+                  Guardar Cambios
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowUnsavedModal(false);
+                    setEditMode(false);
+                    setEditedData(null);
+                    router.back();
+                  }}
+                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
+                  style={{
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: typography.fontSize.base,
+                    color: '#FFFFFF',
+                    backgroundColor: '#B45B39',
+                    cursor: 'pointer',
+                    border: 'none'
+                  }}
+                >
+                  No, seguir sin guardar
+                </button>
+              </div>
             </div>
           </div>
         </>

@@ -330,7 +330,7 @@ export default function Home() {
           {/* Botón de búsqueda */}
           <button
             onClick={handleBuscar}
-            className="w-full mx-auto flex items-center justify-center gap-2 rounded-full backdrop-blur-md border shadow-lg transition-all hover:shadow-xl"
+            className="w-full mx-auto flex items-center justify-center gap-2 rounded-full shadow-lg transition-all hover:shadow-xl hover:opacity-90"
             style={{
               width: '396px',
               maxWidth: '100%',
@@ -341,14 +341,12 @@ export default function Home() {
               paddingBottom: '10px',
               paddingLeft: '12px',
               gap: '10px',
-              backgroundColor: 'rgba(191, 198, 238, 0.2)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              borderColor: 'rgba(255, 255, 255, 0.3)',
+              backgroundColor: '#B45B39',
+              border: 'none',
               fontFamily: typography.fontFamily.primary,
               fontSize: '16px',
               fontWeight: 500,
-              color: colors.primary.main
+              color: '#FFFFFF'
             }}
           >
             <span>Buscar</span>
@@ -360,104 +358,301 @@ export default function Home() {
       </main>
 
       {/* Sección: ¿Cómo funciona? */}
-      <section id="como-funciona" className="w-full py-12 sm:py-16 px-6" style={{ marginTop: '13px', backgroundColor: '#FFFCF9' }}>
-        <div className="max-w-4xl mx-auto">
+      <section id="como-funciona" className="w-full py-12 sm:py-16 px-6" style={{ marginTop: '60px', backgroundColor: '#FFFCF9' }}>
+        <div className="max-w-2xl mx-auto">
           {/* Título */}
-          <h2 className="font-normal text-[64px] text-center mb-16" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontStyle: 'normal', lineHeight: '1.5', fontSize: typography.fontSize['6xl'] }}>
-            ¿Cómo<br />funciona?
+          <h2 className="font-normal text-4xl sm:text-5xl text-center mb-20" style={{ 
+            fontFamily: 'Maitree, serif', 
+            color: colors.primary.main,
+            lineHeight: '1.2',
+            fontWeight: 600
+          }}>
+            ¿Cómo funciona?
           </h2>
 
-          {/* Flujo de pasos */}
-          <div className="relative w-full py-8" style={{ paddingLeft: '24px', paddingRight: '24px', top: '30px' }}>
-            {/* Contenedor principal con la imagen Line4 y elementos posicionados */}
-            <div className="relative" style={{ width: '432px', maxWidth: '100%', opacity: 1 }}>
-              {/* Imagen de la línea (Line4.png) */}
-              <div className="relative">
-                <Image 
-                  src="/Line4.png" 
-                  alt="Flow line" 
-                  width={432} 
-                  height={849}
-                  style={{ width: '432px', height: '849px', right: '37px', objectFit: 'contain' }}
-                  priority
-                />
-                
-                {/* Círculo 1 - Naranja/Terracota (superior izquierda) */}
-                <div 
-                  className="absolute rounded-full"
-                  style={{ 
-                    width: '49.23px', 
-                    height: '49px', 
-                    backgroundColor: colors.accent.brown,
-                    left: '-17px',
-                    top: '33px'
-                  }}
-                />
+          {/* Flujo de pasos con línea punteada vertical */}
+          <div className="relative" style={{ height: '480px' }}>
+            {/* Líneas punteadas verticales con degradado de colores - 480px total */}
+            {/* Línea 1: Naranja (#B45B39) */}
+            <div 
+              className="absolute left-1/2 transform -translate-x-1/2"
+              style={{
+                width: '4px',
+                height: '96px',
+                background: `repeating-linear-gradient(
+                  to bottom,
+                  #B45B39 0px,
+                  #B45B39 4px,
+                  transparent 4px,
+                  transparent 8px
+                )`,
+                opacity: 0.6,
+                top: 0
+              }}
+            />
+            {/* Línea 2: Marrón (#9C5946) */}
+            <div 
+              className="absolute left-1/2 transform -translate-x-1/2"
+              style={{
+                width: '4px',
+                height: '96px',
+                background: `repeating-linear-gradient(
+                  to bottom,
+                  #9C5946 0px,
+                  #9C5946 4px,
+                  transparent 4px,
+                  transparent 8px
+                )`,
+                opacity: 0.6,
+                top: '96px'
+              }}
+            />
+            {/* Línea 3: Marrón oscuro (#805655) */}
+            <div 
+              className="absolute left-1/2 transform -translate-x-1/2"
+              style={{
+                width: '4px',
+                height: '96px',
+                background: `repeating-linear-gradient(
+                  to bottom,
+                  #805655 0px,
+                  #805655 4px,
+                  transparent 4px,
+                  transparent 8px
+                )`,
+                opacity: 0.6,
+                top: '192px'
+              }}
+            />
+            {/* Línea 4: Gris azulado (#625366) */}
+            <div 
+              className="absolute left-1/2 transform -translate-x-1/2"
+              style={{
+                width: '4px',
+                height: '96px',
+                background: `repeating-linear-gradient(
+                  to bottom,
+                  #625366 0px,
+                  #625366 4px,
+                  transparent 4px,
+                  transparent 8px
+                )`,
+                opacity: 0.6,
+                top: '288px'
+              }}
+            />
+            {/* Línea 5: Azul (#425078) */}
+            <div 
+              className="absolute left-1/2 transform -translate-x-1/2"
+              style={{
+                width: '4px',
+                height: '96px',
+                background: `repeating-linear-gradient(
+                  to bottom,
+                  #425078 0px,
+                  #425078 4px,
+                  transparent 4px,
+                  transparent 8px
+                )`,
+                opacity: 0.6,
+                top: '384px'
+              }}
+            />
 
-                {/* Círculo 2 - Naranja/Terracota (derecha) */}
-                <div 
-                  className="absolute rounded-full"
-                  style={{ 
-                    width: '49.23px', 
-                    height: '49px', 
-                    backgroundColor: colors.accent.brown,
-                    right: '25px',
-                    top: '260px'
-                  }}
-                />
-
-                {/* Círculo 3 - Azul (izquierda medio) */}
-                <div 
-                  className="absolute rounded-full"
-                  style={{ 
-                    width: '49.23px', 
-                    height: '49px', 
-                    backgroundColor: colors.primary.main,
-                    left: '103px',
-                    top: '587px'
-                  }}
-                />
-
-                {/* Círculo 4 - Azul (derecha inferior) */}
-                <div 
-                  className="absolute rounded-full"
-                  style={{ 
-                    width: '49.23px', 
-                    height: '49px', 
-                    backgroundColor: colors.primary.main,
-                    right: '90px',
-                    top: '813px'
-                  }}
-                />
-
-                {/* Texto 1 - Paso 1 (a la derecha del círculo 1) - 3 renglones */}
-                <div className="absolute" style={{ left: '62px', top: '15px', maxWidth: '250px' }}>
-                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                    Seleccioná el tipo de profesional que necesitas y tu ubicación.
-                  </p>
-                </div>
-
-                {/* Texto 2 - Paso 2 (a la izquierda del círculo 2) - 4 renglones */}
-                <div className="absolute" style={{ left: '110px', top: '290px', maxWidth: '255px' }}>
-                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                    Describe en detalle el trabajo que necesitas hacer y agrega una foto para mayor referencia.
-                  </p>
-                </div>
-
-                {/* Texto 3 - Paso 3 (a la derecha del círculo 3) - 4 renglones */}
-                <div className="absolute" style={{ left: '170px', top: '595px', maxWidth: '260px' }}>
-                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                    Selecciona un profesional de la lista para enviar tu solicitud y datos de contacto.
-                  </p>
-                </div>
-
-                {/* Texto 4 - Paso 4 (a la izquierda del círculo 4) - 3 renglones */}
-                <div className="absolute" style={{ left: '55px', top: '855px', maxWidth: '290px' }}>
-                  <p className="font-normal text-[20px] leading-[120%] text-gray-800" style={{ fontFamily: typography.fontFamily.primary }}>
-                    Listo! El profesional se contactará con vos en un rango de 24 a 48hs
-                  </p>
-                </div>
+            {/* Paso 1 - Círculo naranja - Al inicio de la línea */}
+            <div className="absolute w-full flex items-center" style={{ top: '0', height: '33.03px' }}>
+              {/* Círculo */}
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2"
+                style={{
+                  width: '33.03px',
+                  height: '33.03px',
+                  borderRadius: '50%',
+                  background: '#B45B39',
+                  zIndex: 2
+                }}
+              />
+              {/* Texto a la derecha - 20px del círculo */}
+              <div style={{ 
+                position: 'absolute',
+                left: 'calc(50% + 16.5px + 20px)',
+                width: 'calc(50% - 16.5px - 20px - 24px)'
+              }}>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: colors.neutral.black
+                }}>
+                  Indicá el servicio que buscas y tu ubicación
+                </p>
               </div>
+            </div>
+
+            {/* Paso 2 - Círculo marrón */}
+            <div className="absolute w-full flex items-center" style={{ top: '96px', height: '33.03px' }}>
+              {/* Círculo */}
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2"
+                style={{
+                  width: '33.03px',
+                  height: '33.03px',
+                  borderRadius: '50%',
+                  background: '#9C5946',
+                  zIndex: 2
+                }}
+              />
+              {/* Texto a la izquierda - 20px del círculo */}
+              <div style={{ 
+                position: 'absolute',
+                right: 'calc(50% + 16.5px + 20px)',
+                width: 'calc(50% - 16.5px - 20px - 24px)',
+                textAlign: 'right'
+              }}>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: colors.neutral.black
+                }}>
+                  Elegí la especialidad que más se adapte a tu necesidad
+                </p>
+              </div>
+            </div>
+
+            {/* Paso 3 - Círculo marrón oscuro */}
+            <div className="absolute w-full flex items-center" style={{ top: '192px', height: '33.03px' }}>
+              {/* Círculo */}
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2"
+                style={{
+                  width: '33.03px',
+                  height: '33.03px',
+                  borderRadius: '50%',
+                  background: '#805655',
+                  zIndex: 2
+                }}
+              />
+              {/* Texto a la derecha - 20px del círculo */}
+              <div style={{ 
+                position: 'absolute',
+                left: 'calc(50% + 16.5px + 20px)',
+                width: 'calc(50% - 16.5px - 20px - 24px)'
+              }}>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: colors.neutral.black
+                }}>
+                  Seleccioná uno o varios prestadores para que te envíen un presupuesto.
+                </p>
+              </div>
+            </div>
+
+            {/* Paso 4 - Círculo gris azulado */}
+            <div className="absolute w-full flex items-center" style={{ top: '288px', height: '33.03px' }}>
+              {/* Círculo */}
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2"
+                style={{
+                  width: '33.03px',
+                  height: '33.03px',
+                  borderRadius: '50%',
+                  background: '#625366',
+                  zIndex: 2
+                }}
+              />
+              {/* Texto a la izquierda - 20px del círculo */}
+              <div style={{ 
+                position: 'absolute',
+                right: 'calc(50% + 16.5px + 20px)',
+                width: 'calc(50% - 16.5px - 20px - 24px)',
+                textAlign: 'right'
+              }}>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: colors.neutral.black
+                }}>
+                  Detallá tu necesidad incluso podes agregar fotos para ilustrar.
+                </p>
+              </div>
+            </div>
+
+            {/* Paso 5 - Círculo azul */}
+            <div className="absolute w-full flex items-center" style={{ top: '384px', height: '33.03px' }}>
+              {/* Círculo */}
+              <div 
+                className="absolute left-1/2 transform -translate-x-1/2"
+                style={{
+                  width: '33.03px',
+                  height: '33.03px',
+                  borderRadius: '50%',
+                  background: '#425078',
+                  zIndex: 2
+                }}
+              />
+              {/* Texto a la derecha - 20px del círculo */}
+              <div style={{ 
+                position: 'absolute',
+                left: 'calc(50% + 16.5px + 20px)',
+                width: 'calc(50% - 16.5px - 20px - 24px)'
+              }}>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '100%',
+                  letterSpacing: '0%',
+                  color: colors.neutral.black
+                }}>
+                  Indicá donde quieres recibir los presupuestos.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Semi-círculo final con degradado azul */}
+          <div className="relative flex justify-center" style={{ marginTop: '0px', marginBottom: '0px' }}>
+            <div 
+              style={{
+                width: '100%',
+                maxWidth: '600px',
+                height: '200px',
+                borderRadius: '300px 300px 0 0',
+                background: 'linear-gradient(180deg, #FFFCF9 0%, #8398B8 50%, #244C87 100%)',
+                position: 'relative',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingTop: '20px',
+                paddingLeft: '40px',
+                paddingRight: '40px'
+              }}
+            >
+              <p style={{
+                fontFamily: 'Maitree, serif',
+                fontSize: '16px',
+                fontWeight: 400,
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                color: '#FFFFFF',
+                textAlign: 'center',
+                maxWidth: '480px'
+              }}>
+                Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir a que profesional deseas contactar.
+              </p>
             </div>
           </div>
         </div>
@@ -474,7 +669,9 @@ export default function Home() {
         />
       )}
 
-      <Footer />
+      <div style={{ marginTop: '0px', backgroundColor: '#244C87' }}>
+        <Footer />
+      </div>
 
       {/* Modal: ¿Ya tienes una cuenta? */}
       <Modal

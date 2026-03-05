@@ -46,7 +46,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
   };
 
   return (
-    <div style={{ backgroundColor: colors.neutral.beige, minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#FFFCF9', minHeight: '100vh' }}>
       {/* Header con flecha para volver */}
       <header 
         className="fixed top-0 left-0 right-0 z-50 flex items-center"
