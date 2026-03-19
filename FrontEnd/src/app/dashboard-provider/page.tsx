@@ -603,6 +603,7 @@ export default function DashboardProvider() {
                   src={currentData.profileImage}
                   alt="Foto de perfil"
                   fill
+                  sizes="(max-width: 768px) 100vw, 400px"
                   style={{ objectFit: 'cover' }}
                 />
               ) : (
@@ -937,6 +938,7 @@ export default function DashboardProvider() {
                         src={img}
                         alt={`Trabajo ${currentData.portfolioImages?.indexOf(img)! + 1}`}
                         fill
+                        sizes="(max-width: 768px) 100vw, 300px"
                         style={{ objectFit: 'cover' }}
                       />
                       {editMode && (

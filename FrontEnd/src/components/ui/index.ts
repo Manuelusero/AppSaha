@@ -6,3 +6,4 @@ export { LoadingSpinner } from './LoadingSpinner';
 export { PasswordInput } from './PasswordInput';
 export { StarRating } from './StarRating';
 export { StatusBadge } from './StatusBadge';
+export { CookieBanner } from './CookieBanner';

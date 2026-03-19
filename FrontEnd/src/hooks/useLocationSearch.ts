@@ -67,7 +67,7 @@ export function useLocationSearch(options: UseLocationSearchOptions = {}) {
         `&accept-language=es`,
         {
           headers: {
-            'User-Agent': 'SAHA-App/1.0'
+            'User-Agent': 'SERCO-App/1.0'
           }
         }
       );

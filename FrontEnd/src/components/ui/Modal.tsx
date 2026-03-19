@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { colors, typography, spacing } from '@/styles/tokens';
 

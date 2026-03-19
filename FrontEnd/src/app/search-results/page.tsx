@@ -30,6 +30,27 @@ interface Provider {
   reviews: unknown[];
 }
 
+function ProviderStars({ rating }: { rating: number }) {
+  return (
+    <>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <svg
+          key={star}
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill={star <= rating ? '#FFC107' : 'none'}
+          stroke={star <= rating ? '#FFC107' : '#D1D5DB'}
+          strokeWidth="2"
+          className="inline"
+        >
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+        </svg>
+      ))}
+    </>
+  );
+}
+
 function SearchResultsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -135,23 +156,6 @@ function SearchResultsContent() {
     router.push(`/job-request?${params.toString()}`);
   };
 
-  const renderStars = (rating: number) => {
-    return [...Array(5)].map((_, idx) => (
-      <svg
-        key={`star-${idx}`}
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill={idx < rating ? '#FFC107' : 'none'}
-        stroke={idx < rating ? '#FFC107' : '#D1D5DB'}
-        strokeWidth="2"
-        className="inline"
-      >
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    ));
-  };
-
   const servicio = searchParams.get('servicio') || '';
   const ubicacion = searchParams.get('ubicacion') || '';
   const [error, setError] = useState('');
@@ -248,6 +252,7 @@ function SearchResultsContent() {
                       src={prof.foto}
                       alt={prof.nombre}
                       fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
                       style={{ borderRadius: '24px 24px 0 0' }}
                     />
@@ -281,7 +286,7 @@ function SearchResultsContent() {
                       
                       {/* Rating de estrellas */}
                       <div className="flex items-center gap-1 mb-6">
-                        {renderStars(prof.rating)}
+                        <ProviderStars rating={prof.rating} />
                       </div>
                     </div>
 

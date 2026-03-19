@@ -73,8 +73,7 @@ export default function Welcome() {
             marginBottom: '53px'
           }}
         >
-          <span className="block">Servicios</span>
-          <span className="block mt-2">Confiables</span>
+          Servicios Confiables
         </h2>
 
         {/* Botones */}

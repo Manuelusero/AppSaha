@@ -223,6 +223,7 @@ export default function ProviderProfile() {
                 src={getProfileImageUrl(provider.providerProfile.profilePhoto)}
                 alt={provider.name}
                 fill
+                sizes="(max-width: 768px) 100vw, 480px"
                 className="object-cover"
                 style={{ borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'block', verticalAlign: 'top' }}
               />
@@ -537,13 +538,12 @@ export default function ProviderProfile() {
                           setLightboxOpen(true);
                         }}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={photo}
-                          alt={`Trabajo ${index + 1}`}
+                          alt={`Trabajo ${workPhotos.indexOf(photo) + 1}`}
+                          fill
+                          sizes="342px"
                           style={{ 
-                            width: '100%',
-                            height: '100%',
                             objectFit: 'cover',
                             borderRadius: '24px'
                           }}
@@ -883,7 +883,7 @@ export default function ProviderProfile() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedImageIndex(selectedImageIndex - 1);
+                  setSelectedImageIndex(prev => prev - 1);
                 }}
                 className="absolute left-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
               >
@@ -898,13 +898,12 @@ export default function ProviderProfile() {
               className="relative w-full h-full flex items-center justify-center"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={workPhotos[selectedImageIndex]}
                 alt={`Trabajo ${selectedImageIndex + 1}`}
+                fill
+                sizes="100vw"
                 style={{
-                  maxWidth: '100%',
-                  maxHeight: '100%',
                   objectFit: 'contain'
                 }}
               />
@@ -915,7 +914,7 @@ export default function ProviderProfile() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedImageIndex(selectedImageIndex + 1);
+                  setSelectedImageIndex(prev => prev + 1);
                 }}
                 className="absolute right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
               >

@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  // TODO: Definir con diseñadora
-  title: 'SAHA',
-  description: 'TODO',
+  title: 'Elegí la especialidad – SERCO',
+  description: 'Seleccioná la especialidad del profesional que necesitás para recibir presupuestos personalizados.',
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

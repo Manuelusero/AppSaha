@@ -115,6 +115,7 @@ export default function Home() {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             borderColor: 'rgba(255, 255, 255, 0.3)',
+            cursor: 'pointer',
           }}
         >
           Ofrezco servicios
@@ -125,7 +126,7 @@ export default function Home() {
       <main id="buscar-servicios" className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-12" style={{ paddingTop: '60px' }}>
         {/* Label SERVICIOS CONFIABLES con línea punteada */}
         <div className="mb-8 flex flex-col items-center">
-          <p className="text-center" style={{
+          <p className="text-center whitespace-nowrap" style={{
             fontFamily: 'Avenir, sans-serif',
             fontSize: '15px',
             fontWeight: 800,
@@ -158,61 +159,92 @@ export default function Home() {
         </div>
 
         {/* Título principal con palabra animada */}
-        <div className="text-center mb-6 sm:mb-10 w-full max-w-lg px-4">
-          <h1 className="text-[45px] text-center" style={{ 
+        <div className="text-center mb-6 sm:mb-10 w-full max-w-lg md:max-w-5xl px-4">
+
+          {/* ── MOBILE: apilado vertical (sin cambios) ── */}
+          <h1 className="md:hidden text-[45px] text-center" style={{ 
             fontFamily: typography.fontFamily.primary, 
             color: colors.primary.main,
             fontWeight: 500,
             letterSpacing: '0%',
-            lineHeight: '190%'  /* Cambia este valor para ajustar el espacio entre líneas: 120%, 130%, 140%, 150%, etc. */
+            lineHeight: '190%'
           }}>
             Encontrá<br />
-          
-          {/* Carrusel horizontal de profesiones */}
-          <div className="relative flex items-center justify-center w-full overflow-hidden" style={{ marginBottom: '0', height: '85px', lineHeight: '85px' }}>
-            <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2">
-              {/* Mostrar 3 palabras: anterior, actual (centro), siguiente */}
+            <div className="relative flex items-center justify-center w-full overflow-hidden" style={{ marginBottom: '0', height: '85px', lineHeight: '85px' }}>
+              <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+                {[-1, 0, 1].map((offset) => {
+                  const index = (profesionActual + offset + profesiones.length) % profesiones.length;
+                  const profesion = profesiones[index];
+                  const isCenter = offset === 0;
+                  return (
+                    <div
+                      key={`mobile-${index}-${offset}`}
+                      className="transition-all duration-700 ease-in-out flex-shrink-0"
+                      style={{ 
+                        opacity: isCenter ? 1 : 0,
+                        position: 'absolute',
+                        left: isCenter ? '0' : offset < 0 ? '-200px' : '200px',
+                        transform: 'translateX(-50%)',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      <span className="block text-center transition-all duration-700 whitespace-nowrap text-[45px]" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontWeight: 700, lineHeight: '85px' }}>
+                        {profesion}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            confiables en tu<br />zona
+          </h1>
+
+          {/* ── DESKTOP: todo en una línea horizontal ── */}
+          <h1 className="hidden md:flex items-center justify-center gap-2 lg:gap-4 text-[32px] lg:text-[45px]" style={{ 
+            fontFamily: typography.fontFamily.primary, 
+            color: colors.primary.main,
+            fontWeight: 500,
+            lineHeight: '1.2',
+            whiteSpace: 'nowrap'
+          }}>
+            <span>Encontrá</span>
+
+            {/* Carrusel inline */}
+            <span className="relative inline-flex items-center justify-center overflow-hidden flex-shrink-0" style={{ width: 'clamp(190px, 25vw, 280px)', height: 'clamp(44px, 6vw, 60px)' }}>
               {[-1, 0, 1].map((offset) => {
                 const index = (profesionActual + offset + profesiones.length) % profesiones.length;
                 const profesion = profesiones[index];
                 const isCenter = offset === 0;
-                
                 return (
-                  <div
-                    key={`${index}-${offset}`}
-                    className="transition-all duration-700 ease-in-out flex-shrink-0"
+                  <span
+                    key={`desktop-${index}-${offset}`}
+                    className="transition-all duration-700 ease-in-out"
                     style={{ 
                       opacity: isCenter ? 1 : 0,
                       position: 'absolute',
-                      left: isCenter ? '0' : offset < 0 ? '-200px' : '200px',
+                      left: isCenter ? '50%' : offset < 0 ? '-50%' : '150%',
                       transform: 'translateX(-50%)',
-                      pointerEvents: 'none'
+                      pointerEvents: 'none',
+                      whiteSpace: 'nowrap',
+                      fontWeight: 700,
                     }}
                   >
-                    <span 
-                      className="block text-center transition-all duration-700 whitespace-nowrap text-[45px]"
-                      style={{ 
-                        fontFamily: typography.fontFamily.primary,
-                        color: colors.primary.main,
-                        fontWeight: 700,
-                        lineHeight: '85px'
-                      }}
-                    >
-                      {profesion}
-                    </span>
-                  </div>
+                    {profesion}
+                  </span>
                 );
               })}
-            </div>
-          </div>
-          confiables en tu<br />zona
+            </span>
+
+            <span>confiables en tu zona</span>
           </h1>
+
         </div>
 
         {/* Formulario de búsqueda */}
-        <div className="w-full max-w-md space-y-3 sm:space-y-4 px-4">
+        <div className="w-full max-w-md md:max-w-3xl px-4">
+          <div className="flex flex-col md:flex-row md:items-center md:gap-3">
           {/* Selector de servicio */}
-          <div className="relative">
+          <div className="relative md:flex-1 mb-3 md:mb-0">
             <input
               type="text"
               value={servicioSeleccionado}
@@ -259,7 +291,7 @@ export default function Home() {
           </div>
 
           {/* Selector de ubicación */}
-          <div className="relative">
+          <div className="relative md:flex-1 mb-3 md:mb-0">
             <div className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-gray-400">
               <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -330,23 +362,23 @@ export default function Home() {
           {/* Botón de búsqueda */}
           <button
             onClick={handleBuscar}
-            className="w-full mx-auto flex items-center justify-center gap-2 rounded-full shadow-lg transition-all hover:shadow-xl hover:opacity-90"
+            className="w-full md:w-auto mx-auto flex items-center justify-center gap-2 rounded-full shadow-lg transition-all hover:shadow-xl hover:opacity-90"
             style={{
-              width: '396px',
-              maxWidth: '100%',
+              minWidth: '130px',
               height: '46px',
               borderRadius: '24px',
               paddingTop: '10px',
-              paddingRight: '12px',
+              paddingRight: '20px',
               paddingBottom: '10px',
-              paddingLeft: '12px',
+              paddingLeft: '20px',
               gap: '10px',
               backgroundColor: '#B45B39',
               border: 'none',
               fontFamily: typography.fontFamily.primary,
               fontSize: '16px',
               fontWeight: 500,
-              color: '#FFFFFF'
+              color: '#FFFFFF',
+              cursor: 'pointer'
             }}
           >
             <span>Buscar</span>
@@ -354,14 +386,15 @@ export default function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
+          </div>
         </div>
       </main>
 
       {/* Sección: ¿Cómo funciona? */}
       <section id="como-funciona" className="w-full py-12 sm:py-16 px-6" style={{ marginTop: '60px', backgroundColor: '#FFFCF9' }}>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl md:max-w-5xl mx-auto">
           {/* Título */}
-          <h2 className="font-normal text-4xl sm:text-5xl text-center mb-20" style={{ 
+          <h2 className="font-normal text-4xl sm:text-5xl text-center mb-12 md:mb-16" style={{ 
             fontFamily: 'Maitree, serif', 
             color: colors.primary.main,
             lineHeight: '1.2',
@@ -371,6 +404,7 @@ export default function Home() {
           </h2>
 
           {/* Flujo de pasos con línea punteada vertical */}
+          <div className="md:hidden">
           <div className="relative" style={{ height: '480px' }}>
             {/* Líneas punteadas verticales con degradado de colores - 480px total */}
             {/* Línea 1: Naranja (#B45B39) */}
@@ -621,9 +655,61 @@ export default function Home() {
               </div>
             </div>
           </div>
+          </div> {/* end md:hidden */}
 
-          {/* Semi-círculo final con degradado azul */}
-          <div className="relative flex justify-center" style={{ marginTop: '0px', marginBottom: '0px' }}>
+          {/* DESKTOP: timeline horizontal */}
+          <div className="hidden md:flex items-start justify-between px-4 relative mt-4 mb-10">
+            {/* Línea con degradado que conecta los círculos */}
+            <div
+              className="absolute"
+              style={{
+                top: '22px',
+                left: '10%',
+                right: '10%',
+                height: '3px',
+                background: 'linear-gradient(to right, #B45B39, #9C5946, #805655, #625366, #425078)',
+                opacity: 0.6,
+              }}
+            />
+            {[
+              { color: '#B45B39', text: 'Indicá el servicio que buscás y tu ubicación' },
+              { color: '#9C5946', text: 'Elegí la especialidad que más se adapte a tu necesidad' },
+              { color: '#805655', text: 'Seleccioná uno o varios prestadores para que te envíen un presupuesto' },
+              { color: '#625366', text: 'Detallá tu necesidad, podés agregar fotos para ilustrar' },
+              { color: '#425078', text: 'Indicá dónde querés recibir los presupuestos' },
+            ].map((paso) => (
+              <div key={paso.color} className="flex flex-col items-center flex-1">
+                <div
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '50%',
+                    background: paso.color,
+                    position: 'relative',
+                    zIndex: 2,
+                    flexShrink: 0,
+                  }}
+                />
+                <p
+                  style={{
+                    fontFamily: 'Maitree, serif',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    color: colors.neutral.black,
+                    textAlign: 'center',
+                    marginTop: '16px',
+                    lineHeight: '1.5',
+                    maxWidth: '160px',
+                  }}
+                >
+                  {paso.text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Semi-círculo final con degradado azul - solo mobile */}
+          <div className="md:hidden relative flex justify-center" style={{ marginTop: '0px', marginBottom: '0px' }}>
             <div 
               style={{
                 width: '100%',
@@ -654,6 +740,21 @@ export default function Home() {
                 Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir a que profesional deseas contactar.
               </p>
             </div>
+          </div>
+
+          {/* Párrafo final - solo desktop */}
+          <div className="hidden md:flex justify-center mt-20 mb-16">
+            <p style={{
+              fontFamily: 'Maitree, serif',
+              fontSize: '20px',
+              fontWeight: 400,
+              lineHeight: '1.6',
+              color: '#244C87',
+              textAlign: 'center',
+              maxWidth: '640px',
+            }}>
+              ¡Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir al profesional que más te convenga.
+            </p>
           </div>
         </div>
       </section>

@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  // TODO: Definir con diseñadora
-  title: 'SAHA',
-  description: 'TODO',
+  title: 'Mis solicitudes – SERCO',
+  description: 'Revisá el estado de tus solicitudes de trabajo y presupuestos recibidos en SERCO.',
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {
