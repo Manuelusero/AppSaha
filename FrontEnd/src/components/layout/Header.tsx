@@ -101,7 +101,7 @@ export default function Header({
       {/* Menú de usuario o botón de login */}
       {showAuthButton && (
         <>
-          {isAuthenticated && providerData ? (
+          {providerData ? (
             <div className="relative profile-menu-container">
               <div 
                 className="flex items-center gap-3 cursor-pointer"

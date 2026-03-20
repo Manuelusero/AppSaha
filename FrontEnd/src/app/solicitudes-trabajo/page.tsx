@@ -1,27 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { colors, typography } from '@/styles/tokens';
+import { ProviderHeader } from '@/components/layout';
 
 // Tipo para las solicitudes
+type EstadoSolicitud = 'pendiente' | 'vencido' | 'aceptado' | 'completado';
+type TabFiltro = 'todas' | EstadoSolicitud;
+
 interface Solicitud {
   id: string;
   clienteNombre: string;
   ubicacion: string;
   especialidades: string[];
-  estado: 'pendiente' | 'aceptado' | 'completado';
+  estado: EstadoSolicitud;
   fotos?: string[];
   urgencia?: string;
   descripcion?: string;
 }
 
 export default function SolicitudesTrabajo() {
-  const router = useRouter();
-  const [showMenu, setShowMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showPresupuestoForm, setShowPresupuestoForm] = useState(false);
+  const [tabActiva, setTabActiva] = useState<TabFiltro>('todas');
+  const [presupuestoSolicitud, setPresupuestoSolicitud] = useState<Solicitud | null>(null);
+  const [presupuestoEnviado, setPresupuestoEnviado] = useState<string | null>(null);
   const [presupuestoData, setPresupuestoData] = useState({
     valorTrabajo: '',
     tiempoEstimado: '',
@@ -42,20 +45,43 @@ export default function SolicitudesTrabajo() {
       especialidades: ['Pintura de exteriores', 'Restauración y lijado'],
       estado: 'pendiente',
       urgencia: 'MEDIA',
-      descripcion: 'Tengo la pared echa mierda y necesito que le hagan el service completo',
+      descripcion: 'Tengo la pared hecha mierda y necesito que le hagan el service completo',
       fotos: ['https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400']
     },
     {
+      id: '4',
+      clienteNombre: 'María González',
+      ubicacion: 'Palermo, Buenos Aires',
+      especialidades: ['Pintura interior'],
+      estado: 'pendiente',
+      urgencia: 'ALTA',
+      descripcion: 'Necesito pintar 3 habitaciones antes del fin de semana'
+    },
+    {
+      id: '5',
+      clienteNombre: 'Carlos Ruiz',
+      ubicacion: 'San Isidro, Buenos Aires',
+      especialidades: ['Restauración y lijado'],
+      estado: 'vencido'
+    },
+    {
+      id: '6',
+      clienteNombre: 'Laura Méndez',
+      ubicacion: 'Belgrano, Buenos Aires',
+      especialidades: ['Pintura de exteriores'],
+      estado: 'vencido'
+    },
+    {
       id: '2',
-      clienteNombre: 'Vicente Lopez',
-      ubicacion: 'Buenos Aires',
+      clienteNombre: 'Roberto Sánchez',
+      ubicacion: 'Recoleta, Buenos Aires',
       especialidades: ['Pintura de exteriores', 'Restauración y lijado'],
       estado: 'aceptado'
     },
     {
       id: '3',
-      clienteNombre: 'Vicente Lopez',
-      ubicacion: 'Buenos Aires',
+      clienteNombre: 'Ana Torres',
+      ubicacion: 'Flores, Buenos Aires',
       especialidades: ['Pintura de exteriores', 'Restauración y lijado'],
       estado: 'completado'
     }
@@ -68,40 +94,43 @@ export default function SolicitudesTrabajo() {
   };
 
   const getEstadoStyles = (estado: string) => {
-    switch(estado) {
+    switch (estado) {
       case 'pendiente':
-        return { 
-          backgroundColor: '#E8D4C8', 
-          color: '#6B4E3D',
-          text: 'Pendiente'
-        };
+        return { backgroundColor: '#E8D4C8', color: '#6B4E3D', text: 'Pendiente' };
+      case 'vencido':
+        return { backgroundColor: '#F3E8E8', color: '#9B2C2C', text: 'Vencido' };
       case 'aceptado':
-        return { 
-          backgroundColor: '#C8E8D4', 
-          color: '#3D6B4E',
-          text: 'Aceptado'
-        };
+        return { backgroundColor: '#C8E8D4', color: '#3D6B4E', text: 'Aceptado' };
       case 'completado':
-        return { 
-          backgroundColor: '#E8D4C8', 
-          color: '#6B4E3D',
-          text: '✓'
-        };
+        return { backgroundColor: '#E8E8E8', color: '#4B5563', text: '✓ Completado' };
       default:
-        return { 
-          backgroundColor: '#E8D4C8', 
-          color: '#6B4E3D',
-          text: estado
-        };
+        return { backgroundColor: '#E8D4C8', color: '#6B4E3D', text: estado };
     }
   };
+
+  // Tabs de filtro
+  const tabs: { key: TabFiltro; label: string }[] = [
+    { key: 'todas',     label: 'Todas' },
+    { key: 'pendiente', label: 'Pendientes' },
+    { key: 'vencido',   label: 'Vencidas' },
+    { key: 'aceptado',  label: 'Aceptadas' },
+    { key: 'completado',label: 'Completadas' },
+  ];
+
+  const contarPor = (estado: EstadoSolicitud) =>
+    solicitudes.filter((s) => s.estado === estado).length;
+
+  const solicitudesFiltradas =
+    tabActiva === 'todas'
+      ? solicitudes
+      : solicitudes.filter((s) => s.estado === tabActiva);
 
   const tieneSolicitudes = solicitudes.length > 0;
 
   const handleEnviarPresupuesto = () => {
     // TODO: Enviar presupuesto al backend
     console.log('Presupuesto enviado:', presupuestoData);
-    setShowPresupuestoForm(false);
+    setPresupuestoEnviado(presupuestoSolicitud?.clienteNombre ?? '');
     setPresupuestoData({
       valorTrabajo: '',
       tiempoEstimado: '',
@@ -110,118 +139,78 @@ export default function SolicitudesTrabajo() {
     });
   };
 
-  return (
-    <div style={{ backgroundColor: '#FFFCF9', minHeight: '100vh' }}>
-      {/* Header sticky con degradado */}
-      <header 
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
-        style={{
-          height: '6rem',
-          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
-          paddingLeft: '24px',
-          paddingRight: '24px'
-        }}
-      >
-        {/* Flecha para volver atrás */}
-        <button 
-          onClick={() => router.back()}
-          style={{ cursor: 'pointer', padding: '8px' }}
-        >
-          <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
+  const handleCerrarModal = () => {
+    setPresupuestoSolicitud(null);
+    setPresupuestoEnviado(null);
+  };
 
-        {/* Menú hamburguesa */}
-        <button 
-          onClick={() => setShowMenu(true)}
-          style={{ cursor: 'pointer', padding: '8px' }}
-        >
-          <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-            <path d="M3 12h18M3 6h18M3 18h18"/>
-          </svg>
-        </button>
-      </header>
+  // Contenido del detalle expandido — accordion en mobile, siempre visible en desktop
+  const detalleContent = (solicitud: Solicitud) => (
+    <>
+      <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+        Cliente: <span style={{ fontWeight: 400 }}>{solicitud.clienteNombre}</span>
+      </p>
 
-      {/* Menú lateral */}
-      {showMenu && (
+      <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+        Ubicación: <span style={{ fontWeight: 400 }}>{solicitud.ubicacion}</span>
+      </p>
+
+      {solicitud.urgencia && (
+        <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+          Urgencia: <span style={{ fontWeight: 400 }}>{solicitud.urgencia}</span>
+        </p>
+      )}
+
+      {solicitud.descripcion && (
+        <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+          Descripción: <span style={{ fontWeight: 400 }}>{solicitud.descripcion}</span>
+        </p>
+      )}
+
+      {solicitud.fotos && solicitud.fotos.length > 0 && (
         <>
-          <div 
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowMenu(false)}
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginTop: '10px', marginBottom: '6px' }}>
+            Foto del problema:
+          </p>
+          <img
+            src={solicitud.fotos[0]}
+            alt="Foto del problema"
+            style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '10px', marginBottom: '10px' }}
           />
-          <div 
-            className="fixed top-0 left-0 h-full bg-white shadow-lg z-50"
-            style={{ width: '280px' }}
-          >
-            <div className="p-6">
-              <button
-                onClick={() => setShowMenu(false)}
-                className="mb-6"
-                style={{ cursor: 'pointer' }}
-              >
-                <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-              </button>
-              
-              <nav className="space-y-4">
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    router.push('/dashboard-provider');
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Mi Perfil
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    router.push('/');
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Inicio
-                </button>
-                
-                <button
-                  onClick={() => {
-                    localStorage.clear();
-                    router.push('/login');
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cerrar Sesión
-                </button>
-              </nav>
-            </div>
-          </div>
         </>
       )}
 
+      <button
+        onClick={(e) => { e.stopPropagation(); setPresupuestoSolicitud(solicitud); }}
+        style={{ width: '100%', padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer', marginTop: '8px' }}
+      >
+        Enviar Presupuesto
+      </button>
+    </>
+  );
+
+  return (
+    <div style={{ backgroundColor: '#FFFCF9', minHeight: '100vh' }}>
+      {/* Header del proveedor */}
+      <ProviderHeader activePage="solicitudes" />
+
       {/* Contenido principal */}
-      <main style={{ paddingTop: 'calc(6rem + 48px)', paddingLeft: '24px', paddingRight: '24px', paddingBottom: '48px' }}>
-        <div className="max-w-2xl mx-auto">
+      <style>{`
+        .main-content {
+          padding-top: calc(80px + 48px);
+          padding-left: 24px;
+          padding-right: 24px;
+          padding-bottom: 48px;
+        }
+        @media (min-width: 768px) {
+          .main-content {
+            padding-left: 68px;
+            padding-right: 68px;
+          }
+        }
+      `}</style>
+      <main className="main-content">
+        <div>
           {tieneSolicitudes ? (
             <>
               {/* Vista con solicitudes */}
@@ -236,383 +225,220 @@ export default function SolicitudesTrabajo() {
                 Mis Solicitudes
               </h1>
 
-              {/* Lista de solicitudes */}
-              <div className="space-y-4">
-                {solicitudes.map((solicitud) => {
-                  const estadoStyles = getEstadoStyles(solicitud.estado);
-                  const isExpanded = expandedId === solicitud.id;
-                  
-                  return (
-                    <div key={solicitud.id}>
-                      <div
-                        onClick={() => setExpandedId(isExpanded ? null : solicitud.id)}
+              {/* Barra de chips / tabs */}
+              <style>{`
+                .chips-wrapper {
+                  overflow-x: auto;
+                  -webkit-overflow-scrolling: touch;
+                  margin-bottom: 28px;
+                  /* Rompe el padding del padre para ir de borde a borde */
+                  margin-left: -24px;
+                  margin-right: -24px;
+                }
+                .chips-inner {
+                  display: inline-flex;
+                  gap: 8px;
+                  flex-wrap: nowrap;
+                  padding: 4px 24px;
+                  /* El padding-right en el inner resuelve el bug de trailing padding en scroll */
+                }
+                @media (min-width: 768px) {
+                  .chips-wrapper {
+                    margin-left: 0;
+                    margin-right: 0;
+                    overflow-x: visible;
+                  }
+                  .chips-inner {
+                    flex-wrap: wrap;
+                    padding: 4px 0;
+                  }
+                }
+              `}</style>
+              <div className="chips-wrapper">
+                <div className="chips-inner">
+                  {tabs.map(({ key, label }) => {
+                    const isActive = tabActiva === key;
+                    const count = key === 'todas' ? solicitudes.length : contarPor(key as EstadoSolicitud);
+                    const isPendienteTab = key === 'pendiente';
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => { setTabActiva(key); setExpandedId(null); }}
                         style={{
-                          width: '100%',
-                          maxWidth: '433px',
-                          minHeight: '103px',
-                          backgroundColor: '#FFFFFF',
-                          borderRadius: '24px',
-                          padding: '16px 20px',
+                          position: 'relative',
                           display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '8px 16px',
+                          borderRadius: '999px',
+                          border: isActive ? 'none' : '1.5px solid #E5E7EB',
+                          backgroundColor: isActive ? '#244C87' : '#FFFFFF',
+                          color: isActive ? '#FFFFFF' : colors.neutral[600],
+                          fontFamily: 'Maitree, serif',
+                          fontSize: '14px',
+                          fontWeight: isActive ? 600 : 400,
                           cursor: 'pointer',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          margin: '0 auto 16px auto'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.12)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+                          transition: 'all 0.15s',
+                          whiteSpace: 'nowrap',
                         }}
                       >
-                        {/* Fila superior: ubicación y estado */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div>
-                            <p style={{
-                              fontFamily: 'Maitree, serif',
-                              fontWeight: 500,
-                              fontSize: '16px',
-                              lineHeight: '100%',
-                              letterSpacing: '0%',
-                              color: colors.neutral.black,
-                              margin: 0
-                            }}>
-                              {solicitud.clienteNombre}, {solicitud.ubicacion}
-                            </p>
-                          </div>
-                          
-                          <div style={{
-                            backgroundColor: estadoStyles.backgroundColor,
-                            color: estadoStyles.color,
-                            padding: '6px 12px',
-                            borderRadius: '12px',
-                            fontFamily: 'Maitree, serif',
-                            fontWeight: 400,
-                            fontSize: '12px',
-                            lineHeight: '100%',
-                            letterSpacing: '0%',
-                            whiteSpace: 'nowrap'
+                        {label}
+                        {count > 0 && (
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minWidth: '20px',
+                            height: '20px',
+                            padding: '0 5px',
+                            borderRadius: '999px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: isActive
+                              ? 'rgba(255,255,255,0.25)'
+                              : isPendienteTab
+                              ? '#B45B39'
+                              : '#F3F4F6',
+                            color: isActive
+                              ? '#FFFFFF'
+                              : isPendienteTab
+                              ? '#FFFFFF'
+                              : colors.neutral[500],
                           }}>
-                            {estadoStyles.text}
-                          </div>
-                        </div>
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-                        {/* Fila inferior: especialidades */}
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px' }}>
-                          {solicitud.especialidades.map((esp) => (
-                            <div
-                              key={`${solicitud.id}-${esp}`}
-                              style={{
-                                padding: '6px 16px',
-                                border: `1px solid ${colors.neutral[300]}`,
-                                borderRadius: '20px',
-                                fontFamily: 'Maitree, serif',
-                                fontWeight: 400,
-                                fontSize: '14px',
-                                lineHeight: '100%',
-                                color: colors.neutral[600]
-                              }}
-                            >
-                              {esp}
-                            </div>
-                          ))}
+              {/* Lista de solicitudes — mobile: 1 col / desktop: flex-wrap */}
+              <style>{`
+                .solicitudes-grid {
+                  display: flex;
+                  flex-direction: column;
+                  gap: 16px;
+                  align-items: stretch;
+                }
+                @media (min-width: 768px) {
+                  .solicitudes-grid {
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    gap: 20px;
+                    align-items: flex-start;
+                  }
+                  .solicitud-card {
+                    flex: 0 0 220px;
+                    width: 220px;
+                  }
+                }
+              `}</style>
+              <div className="solicitudes-grid">
+                {solicitudesFiltradas.map((solicitud) => {
+                  const estadoStyles = getEstadoStyles(solicitud.estado);
+                  const isExpanded = expandedId === solicitud.id;
+                  const isPendiente = solicitud.estado === 'pendiente';
+
+                  return (
+                    <div
+                      key={solicitud.id}
+                      onClick={() => setExpandedId(isExpanded ? null : solicitud.id)}
+                      className="solicitud-card"
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '20px',
+                        padding: '14px 16px',
+                        boxShadow: isExpanded
+                          ? '0 4px 16px rgba(0,0,0,0.12)'
+                          : '0 2px 8px rgba(0,0,0,0.08)',
+                        cursor: 'pointer',
+                        transition: 'box-shadow 0.2s',
+                        border: isExpanded && isPendiente ? '2px solid #E8D4C8' : '2px solid transparent',
+                        minWidth: 0,
+                      }}
+                    >
+                      {/* ── Cabecera de la card (siempre visible) ── */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        {/* Mobile: 'Servicio Solicitado' solo cuando está expandida y pendiente */}
+                        <p className="md:hidden" style={{
+                          fontFamily: 'Maitree, serif',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          color: colors.neutral.black,
+                          margin: 0,
+                          flex: 1,
+                          paddingRight: '8px'
+                        }}>
+                          {isExpanded && isPendiente ? 'Servicio Solicitado' : solicitud.ubicacion}
+                        </p>
+                        {/* Desktop: 'Servicio Solicitado' siempre para pendientes (detalle siempre visible) */}
+                        <p className="hidden md:block" style={{
+                          fontFamily: 'Maitree, serif',
+                          fontWeight: 600,
+                          fontSize: '13px',
+                          color: colors.neutral.black,
+                          margin: 0,
+                          flex: 1,
+                          paddingRight: '8px'
+                        }}>
+                          {isPendiente ? 'Servicio Solicitado' : solicitud.ubicacion}
+                        </p>
+                        <div style={{
+                          backgroundColor: estadoStyles.backgroundColor,
+                          color: estadoStyles.color,
+                          padding: '4px 8px',
+                          borderRadius: '10px',
+                          fontFamily: 'Maitree, serif',
+                          fontWeight: 400,
+                          fontSize: '11px',
+                          whiteSpace: 'nowrap',
+                          flexShrink: 0,
+                        }}>
+                          {estadoStyles.text}
                         </div>
                       </div>
 
-                      {/* Contenido expandido */}
-                      {isExpanded && solicitud.estado === 'pendiente' && (
+                      {/* Especialidades */}
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '10px' }}>
+                        {solicitud.especialidades.map((esp) => (
+                          <div
+                            key={`${solicitud.id}-${esp}`}
+                            style={{
+                              padding: '4px 10px',
+                              border: `1px solid ${colors.neutral[300]}`,
+                              borderRadius: '20px',
+                              fontFamily: 'Maitree, serif',
+                              fontWeight: 400,
+                              fontSize: '11px',
+                              color: colors.neutral[600],
+                            }}
+                          >
+                            {esp}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* ── Detalle expandido (mobile: solo si isExpanded; desktop: siempre visible si pendiente) ── */}
+                      {(isExpanded || undefined) && isPendiente && (
                         <div
-                          style={{
-                            width: '100%',
-                            maxWidth: '433px',
-                            backgroundColor: '#FFFFFF',
-                            borderRadius: '24px',
-                            padding: '24px',
-                            margin: '0 auto 16px auto',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-                            border: '2px solid #E8D4C8'
-                          }}
+                          className="md:hidden"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ marginTop: '20px', borderTop: '1px solid #F0E8E0', paddingTop: '16px' }}
                         >
-                          <h2 style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '20px',
-                            fontWeight: 600,
-                            color: colors.neutral.black,
-                            marginBottom: '16px'
-                          }}>
-                            Servicio Solicitado
-                          </h2>
+                          {detalleContent(solicitud)}
+                        </div>
+                      )}
 
-                          {/* Cliente */}
-                          <p style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: colors.neutral.black,
-                            marginBottom: '4px'
-                          }}>
-                            Cliente: <span style={{ fontWeight: 400 }}>{solicitud.clienteNombre}</span>
-                          </p>
-
-                          {/* Ubicación */}
-                          <p style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: colors.neutral.black,
-                            marginBottom: '4px'
-                          }}>
-                            Ubicación: <span style={{ fontWeight: 400 }}>{solicitud.ubicacion}</span>
-                          </p>
-
-                          {/* Urgencia */}
-                          <p style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: colors.neutral.black,
-                            marginBottom: '4px'
-                          }}>
-                            Urgencia: <span style={{ fontWeight: 400 }}>{solicitud.urgencia}</span>
-                          </p>
-
-                          {/* Descripción */}
-                          <p style={{
-                            fontFamily: 'Maitree, serif',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            color: colors.neutral.black,
-                            marginBottom: '4px'
-                          }}>
-                            Descripción: <span style={{ fontWeight: 400 }}>{solicitud.descripcion}</span>
-                          </p>
-
-                          {/* Foto del problema */}
-                          {solicitud.fotos && solicitud.fotos.length > 0 && (
-                            <>
-                              <p style={{
-                                fontFamily: 'Maitree, serif',
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: colors.neutral.black,
-                                marginTop: '16px',
-                                marginBottom: '8px'
-                              }}>
-                                Foto del problema:
-                              </p>
-                              <img
-                                src={solicitud.fotos[0]}
-                                alt="Foto del problema"
-                                style={{
-                                  width: '100%',
-                                  height: '200px',
-                                  objectFit: 'cover',
-                                  borderRadius: '12px',
-                                  marginBottom: '16px'
-                                }}
-                              />
-                            </>
-                          )}
-
-                          {/* Botón Enviar Presupuesto o Formulario */}
-                          {!showPresupuestoForm ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setShowPresupuestoForm(true);
-                              }}
-                              style={{
-                                width: '100%',
-                                padding: '12px',
-                                backgroundColor: '#E8D4C8',
-                                color: '#6B4E3D',
-                                border: 'none',
-                                borderRadius: '12px',
-                                fontFamily: 'Maitree, serif',
-                                fontSize: '16px',
-                                fontWeight: 500,
-                                cursor: 'pointer',
-                                marginTop: '8px'
-                              }}
-                            >
-                              Enviar Presupuesto
-                            </button>
-                          ) : (
-                            <div style={{ marginTop: '16px' }}>
-                              <h3 style={{
-                                fontFamily: 'Maitree, serif',
-                                fontSize: '18px',
-                                fontWeight: 600,
-                                color: colors.neutral.black,
-                                marginBottom: '16px'
-                              }}>
-                                Completá tu presupuesto
-                              </h3>
-
-                              {/* Valor del trabajo */}
-                              <div style={{ marginBottom: '12px' }}>
-                                <label style={{
-                                  fontFamily: 'Maitree, serif',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: colors.neutral.black,
-                                  display: 'block',
-                                  marginBottom: '4px'
-                                }}>
-                                  Valor del trabajo
-                                </label>
-                                <input
-                                  type="text"
-                                  value={presupuestoData.valorTrabajo}
-                                  onChange={(e) => setPresupuestoData({...presupuestoData, valorTrabajo: e.target.value})}
-                                  placeholder="$0.00"
-                                  style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontFamily: 'Maitree, serif',
-                                    fontSize: '14px'
-                                  }}
-                                />
-                              </div>
-
-                              {/* Tiempo estimado */}
-                              <div style={{ marginBottom: '12px' }}>
-                                <label style={{
-                                  fontFamily: 'Maitree, serif',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: colors.neutral.black,
-                                  display: 'block',
-                                  marginBottom: '4px'
-                                }}>
-                                  Tiempo estimado
-                                </label>
-                                <input
-                                  type="text"
-                                  value={presupuestoData.tiempoEstimado}
-                                  onChange={(e) => setPresupuestoData({...presupuestoData, tiempoEstimado: e.target.value})}
-                                  placeholder="Ej: 2 días"
-                                  style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontFamily: 'Maitree, serif',
-                                    fontSize: '14px'
-                                  }}
-                                />
-                              </div>
-
-                              {/* Cómo sería el trabajo */}
-                              <div style={{ marginBottom: '12px' }}>
-                                <label style={{
-                                  fontFamily: 'Maitree, serif',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: colors.neutral.black,
-                                  display: 'block',
-                                  marginBottom: '4px'
-                                }}>
-                                  Cómo sería el trabajo
-                                </label>
-                                <textarea
-                                  value={presupuestoData.descripcionTrabajo}
-                                  onChange={(e) => setPresupuestoData({...presupuestoData, descripcionTrabajo: e.target.value})}
-                                  placeholder="Describe cómo realizarías el trabajo..."
-                                  rows={3}
-                                  style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontFamily: 'Maitree, serif',
-                                    fontSize: '14px',
-                                    resize: 'vertical'
-                                  }}
-                                />
-                              </div>
-
-                              {/* Materiales aproximados */}
-                              <div style={{ marginBottom: '16px' }}>
-                                <label style={{
-                                  fontFamily: 'Maitree, serif',
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: colors.neutral.black,
-                                  display: 'block',
-                                  marginBottom: '4px'
-                                }}>
-                                  Materiales aproximados
-                                </label>
-                                <textarea
-                                  value={presupuestoData.materialesAproximados}
-                                  onChange={(e) => setPresupuestoData({...presupuestoData, materialesAproximados: e.target.value})}
-                                  placeholder="Lista de materiales necesarios..."
-                                  rows={3}
-                                  style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    border: '1px solid #D1D5DB',
-                                    borderRadius: '8px',
-                                    fontFamily: 'Maitree, serif',
-                                    fontSize: '14px',
-                                    resize: 'vertical'
-                                  }}
-                                />
-                              </div>
-
-                              {/* Botones */}
-                              <div style={{ display: 'flex', gap: '8px' }}>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowPresupuestoForm(false);
-                                  }}
-                                  style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    backgroundColor: '#F3F4F6',
-                                    color: colors.neutral.black,
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontFamily: 'Maitree, serif',
-                                    fontSize: '14px',
-                                    fontWeight: 500,
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Cancelar
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEnviarPresupuesto();
-                                  }}
-                                  style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    backgroundColor: '#B45B39',
-                                    color: '#FFFFFF',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    fontFamily: 'Maitree, serif',
-                                    fontSize: '14px',
-                                    fontWeight: 500,
-                                    cursor: 'pointer'
-                                  }}
-                                >
-                                  Enviar
-                                </button>
-                              </div>
-                            </div>
-                          )}
+                      {/* Desktop: siempre visible si pendiente */}
+                      {isPendiente && (
+                        <div
+                          className="hidden md:block"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ marginTop: '20px', borderTop: '1px solid #F0E8E0', paddingTop: '16px' }}
+                        >
+                          {detalleContent(solicitud)}
                         </div>
                       )}
                     </div>
@@ -739,6 +565,152 @@ export default function SolicitudesTrabajo() {
           )}
         </div>
       </main>
+
+      {/* ── Modal Enviar Presupuesto ── */}
+      {presupuestoSolicitud && (
+        <div
+          onClick={presupuestoEnviado ? undefined : handleCerrarModal}
+          style={{
+            position: 'fixed', inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000,
+            padding: '24px',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '24px',
+              padding: '32px',
+              width: '100%',
+              maxWidth: '480px',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+            }}
+          >
+            {presupuestoEnviado ? (
+              /* ── Pantalla de éxito ── */
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>✓</div>
+                <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '22px', fontWeight: 700, color: '#B45B39', marginBottom: '16px' }}>
+                  ¡Presupuesto enviado!
+                </h2>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '15px',
+                  color: colors.neutral[600],
+                  lineHeight: '1.6',
+                  marginBottom: '28px',
+                }}>
+                  Tu presupuesto fue enviado a <strong style={{ color: '#B45B39' }}>{presupuestoEnviado}</strong>.
+                  Nos pondremos en contacto contigo cuando tengamos una respuesta.
+                </p>
+                <button
+                  onClick={handleCerrarModal}
+                  style={{ padding: '12px 40px', backgroundColor: '#B45B39', color: '#FFFFFF', border: 'none', borderRadius: '12px', fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Entendido
+                </button>
+              </div>
+            ) : (
+              <>
+            {/* Header del modal */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 700, color: colors.neutral.black, margin: 0 }}>
+                  Enviar Presupuesto
+                </h2>
+                <p style={{ fontFamily: 'Maitree, serif', fontSize: '13px', color: colors.neutral[500], margin: '4px 0 0' }}>
+                  {presupuestoSolicitud.clienteNombre} — {presupuestoSolicitud.ubicacion}
+                </p>
+              </div>
+              <button
+                onClick={handleCerrarModal}
+                style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: colors.neutral[400], lineHeight: 1, padding: '0 0 0 12px' }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Valor del trabajo */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 500, color: colors.neutral.black, display: 'block', marginBottom: '6px' }}>
+                Valor del trabajo
+              </label>
+              <input
+                type="text"
+                value={presupuestoData.valorTrabajo}
+                onChange={(e) => setPresupuestoData({ ...presupuestoData, valorTrabajo: e.target.value })}
+                placeholder="$0.00"
+                style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Tiempo estimado */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 500, color: colors.neutral.black, display: 'block', marginBottom: '6px' }}>
+                Tiempo estimado
+              </label>
+              <input
+                type="text"
+                value={presupuestoData.tiempoEstimado}
+                onChange={(e) => setPresupuestoData({ ...presupuestoData, tiempoEstimado: e.target.value })}
+                placeholder="Ej: 2 días"
+                style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '14px', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Cómo sería el trabajo */}
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 500, color: colors.neutral.black, display: 'block', marginBottom: '6px' }}>
+                Cómo sería el trabajo
+              </label>
+              <textarea
+                value={presupuestoData.descripcionTrabajo}
+                onChange={(e) => setPresupuestoData({ ...presupuestoData, descripcionTrabajo: e.target.value })}
+                placeholder="Describe cómo realizarías el trabajo..."
+                rows={3}
+                style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Materiales aproximados */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 500, color: colors.neutral.black, display: 'block', marginBottom: '6px' }}>
+                Materiales aproximados
+              </label>
+              <textarea
+                value={presupuestoData.materialesAproximados}
+                onChange={(e) => setPresupuestoData({ ...presupuestoData, materialesAproximados: e.target.value })}
+                placeholder="Lista de materiales necesarios..."
+                rows={3}
+                style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '14px', resize: 'vertical', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            {/* Botones */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={handleCerrarModal}
+                style={{ flex: 1, padding: '12px', backgroundColor: '#F3F4F6', color: colors.neutral.black, border: 'none', borderRadius: '12px', fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 500, cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleEnviarPresupuesto}
+                style={{ flex: 1, padding: '12px', backgroundColor: '#B45B39', color: '#FFFFFF', border: 'none', borderRadius: '12px', fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                Enviar
+              </button>
+            </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

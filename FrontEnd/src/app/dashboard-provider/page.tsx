@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { colors, typography } from '@/styles/tokens';
-import { apiGet, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY } from '@/utils';
+import { apiGet, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth } from '@/utils';
 import { getEspecialidades } from '../data/especialidades';
+import { ProviderHeader } from '@/components/layout';
 
 interface ProviderData {
   id: number;
@@ -35,8 +36,9 @@ export default function DashboardProvider() {
   const [showMenu, setShowMenu] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editedData, setEditedData] = useState<ProviderData | null>(null);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar datos del proveedor
   useEffect(() => {
@@ -47,12 +49,19 @@ export default function DashboardProvider() {
       return;
     }
 
+    // Validar formato del providerId antes de hacer la llamada
+    if (!providerId.match(/^[a-z0-9]+$/i)) {
+      console.warn('providerId en localStorage tiene formato inválido:', providerId);
+      router.push('/login');
+      return;
+    }
+
     // Cargar datos del proveedor desde la API
     apiGet<any>(`/providers/${providerId}`)
       .then(data => {
         const profile = data.providerProfile;
         if (!profile) {
-          console.error('No se encontró providerProfile');
+          console.warn('No se encontró providerProfile para:', providerId);
           return;
         }
 
@@ -109,7 +118,8 @@ export default function DashboardProvider() {
         });
       })
       .catch(err => {
-        console.error('Error cargando proveedor:', err);
+        // Usar warn para no disparar el overlay de Next.js
+        console.warn('No se pudo cargar desde API, usando datos locales:', err.message);
         
         // Fallback a localStorage
         const registroCompleto = localStorage.getItem('registroCompleto');
@@ -200,285 +210,79 @@ export default function DashboardProvider() {
     }
   };
 
+  const handlePhotoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !editedData) return;
+    const providerId = localStorage.getItem(PROVIDER_ID_KEY);
+    if (!providerId) return;
+
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach(file => formData.append('fotosTrabajos', file));
+
+      const result = await apiUpload<{ success: boolean; portfolioImages: string[] }>(
+        `/providers/${providerId}/portfolio`,
+        formData
+      );
+
+      if (result.success) {
+        // Las URLs que devuelve el backend son los filenames/paths; convertirlas a URLs de display
+        const newDisplayUrls = result.portfolioImages.map(img => getPortfolioImageUrl(img));
+        handleFieldChange('portfolioImages', newDisplayUrls);
+        // Sincronizar providerData también para que no se pierda al cancelar y volver
+        setProviderData(prev => prev ? { ...prev, portfolioImages: newDisplayUrls } : prev);
+      }
+    } catch (error) {
+      console.error('Error subiendo fotos:', error);
+      alert('Error al subir las fotos. Inténtalo de nuevo.');
+    } finally {
+      setUploadingPhoto(false);
+      // Limpiar el input para poder subir la misma foto otra vez si se quiere
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDeletePhoto = async (imgUrl: string) => {
+    if (!editedData) return;
+    const providerId = localStorage.getItem(PROVIDER_ID_KEY);
+    if (!providerId) return;
+
+    // Optimistic update: quitar del estado inmediatamente
+    const newImages = editedData.portfolioImages?.filter(url => url !== imgUrl) || [];
+    handleFieldChange('portfolioImages', newImages);
+
+    try {
+      const response = await fetchWithAuth(`/providers/${providerId}/portfolio`, {
+        method: 'DELETE',
+        body: JSON.stringify({ photoUrl: imgUrl }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        setProviderData(prev => prev ? { ...prev, portfolioImages: newImages } : prev);
+      }
+    } catch (error) {
+      console.error('Error eliminando foto:', error);
+      // Revertir si falla
+      handleFieldChange('portfolioImages', editedData.portfolioImages || []);
+    }
+  };
+
   const currentData = editMode ? editedData : providerData;
   if (!currentData) return null;
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header Fixed */}
-      <header 
-        className="fixed top-0 left-0 right-0 w-full px-4 sm:px-6 py-6 sm:py-8 flex items-center justify-between z-50"
-        style={{ 
-          background: 'linear-gradient(180deg, rgba(36, 76, 135, 0.8) 0%, rgba(255, 252, 249, 0.8) 100%)',
+      {/* Header del proveedor */}
+      <ProviderHeader
+        activePage="perfil"
+        onBack={() => {
+          if (editMode) {
+            setShowUnsavedModal(true);
+          } else {
+            router.back();
+          }
         }}
-      >
-        {/* Flecha atrás */}
-        <button
-          onClick={() => {
-            if (editMode) {
-              setShowUnsavedModal(true);
-            } else {
-              router.back();
-            }
-          }}
-          className="hover:bg-white/20 rounded-full transition-colors p-2"
-          style={{ cursor: 'pointer' }}
-        >
-          <svg width="32" height="32" fill="none" stroke={colors.neutral.black} strokeWidth="2.5" viewBox="0 0 24 24">
-            <path d="M15 18l-6-6 6-6"/>
-          </svg>
-        </button>
-
-        {/* Botón menú con foto/inicial */}
-        <button
-          onClick={() => setShowMenu(!showMenu)}
-          className="flex items-center gap-2 hover:bg-white/20 rounded-full transition-colors p-2"
-          style={{ cursor: 'pointer' }}
-        >
-          {/* Foto miniatura o inicial */}
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            backgroundColor: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '2px solid #000000'
-          }}>
-            {currentData.profileImage && currentData.profileImage.trim() && !currentData.profileImage.includes('placeholder') ? (
-              <Image
-                src={currentData.profileImage}
-                alt="Perfil"
-                width={40}
-                height={40}
-                style={{ objectFit: 'cover' }}
-              />
-            ) : (
-              <span style={{
-                fontFamily: typography.fontFamily.primary,
-                fontSize: '18px',
-                fontWeight: 600,
-                color: colors.neutral.black
-              }}>
-                {currentData.nombre.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-        </button>
-      </header>
-
-      {/* Menú desplegable tipo card */}
-      {showMenu && (
-        <>
-          <div 
-            className="fixed inset-0 z-40"
-            onClick={() => setShowMenu(false)}
-          />
-          <div 
-            className="fixed right-4 sm:right-6 bg-white rounded-3xl shadow-2xl z-50"
-            style={{ 
-              top: 'calc(6rem + 16px)',
-              width: '280px',
-              border: '2px solid #000000'
-            }}
-          >
-            <div className="p-6">
-              {/* Saludo con foto */}
-              <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-200">
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  backgroundColor: '#E5E7EB',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '2px solid #000000'
-                }}>
-                  {currentData.profileImage && currentData.profileImage.trim() && !currentData.profileImage.includes('placeholder') ? (
-                    <Image
-                      src={currentData.profileImage}
-                      alt="Perfil"
-                      width={48}
-                      height={48}
-                      style={{ objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <span style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: '20px',
-                      fontWeight: 600,
-                      color: colors.neutral.black
-                    }}>
-                      {currentData.nombre.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <p style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.lg,
-                  fontWeight: 600,
-                  color: colors.neutral.black
-                }}>
-                  Hola, {currentData.nombre}!
-                </p>
-              </div>
-              
-              <nav className="space-y-2">
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    // Ya estamos en Mi Perfil
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Mi Perfil
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    router.push('/solicitudes-trabajo');
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Solicitudes
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    // TODO: Navegar a recomendaciones
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Recomendaciones
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    setShowLogoutModal(true);
-                  }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between"
-                  style={{ 
-                    fontFamily: typography.fontFamily.primary, 
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <span>Cerrar Sesión</span>
-                  <svg width="20" height="20" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-                  </svg>
-                </button>
-              </nav>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Modal de confirmación de cerrar sesión */}
-      {showLogoutModal && (
-        <>
-          <div 
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-            onClick={() => setShowLogoutModal(false)}
-          >
-            <div 
-              className="bg-white rounded-3xl shadow-2xl p-8 mx-4"
-              style={{ 
-                maxWidth: '400px',
-                width: '100%',
-                backgroundColor: '#FFF8F0'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Botón X para cerrar */}
-              <div className="flex justify-end mb-4">
-                <button
-                  onClick={() => setShowLogoutModal(false)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-
-              {/* Título */}
-              <h2 style={{
-                fontFamily: 'Maitree, serif',
-                fontSize: '24px',
-                fontWeight: 600,
-                color: '#B45B39',
-                textAlign: 'center',
-                marginBottom: '32px'
-              }}>
-                ¿Seguro que deseas continuar?
-              </h2>
-
-              {/* Botones */}
-              <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    localStorage.clear();
-                    router.push('/login');
-                  }}
-                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#FFFFFF',
-                    backgroundColor: '#B45B39',
-                    cursor: 'pointer',
-                    border: 'none'
-                  }}
-                >
-                  Si, Cerrar sesión
-                </button>
-                
-                <button
-                  onClick={() => setShowLogoutModal(false)}
-                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#FFFFFF',
-                    backgroundColor: '#B45B39',
-                    cursor: 'pointer',
-                    border: 'none'
-                  }}
-                >
-                  No, volver a mi perfil
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      />
 
       {/* Modal de confirmación de cambios sin guardar */}
       {showUnsavedModal && (
@@ -921,8 +725,10 @@ export default function DashboardProvider() {
               </h2>
               
               <div 
-                className="flex gap-4 overflow-x-auto pb-4"
+                className="flex gap-4 pb-4"
                 style={{ 
+                  overflowX: currentData.portfolioImages && currentData.portfolioImages.length > 0 ? 'auto' : 'visible',
+                  flexWrap: currentData.portfolioImages && currentData.portfolioImages.length > 0 ? 'nowrap' : 'wrap',
                   scrollbarWidth: 'thin',
                   scrollbarColor: '#244C87 #E5E7EB'
                 }}
@@ -943,10 +749,7 @@ export default function DashboardProvider() {
                       />
                       {editMode && (
                         <button
-                          onClick={() => {
-                            const newImages = currentData.portfolioImages?.filter((url) => url !== img) || [];
-                            handleFieldChange('portfolioImages', newImages);
-                          }}
+                          onClick={() => handleDeletePhoto(img)}
                           className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors"
                           style={{
                             fontSize: '20px',
@@ -959,40 +762,81 @@ export default function DashboardProvider() {
                       )}
                     </div>
                   ))
-                ) : (
-                  editMode && (
-                    <p style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.sm,
-                      color: colors.neutral[400]
-                    }}>
-                      No hay fotos en la galería
-                    </p>
-                  )
-                )}
+                ) : null}
                 
                 {/* Botón agregar foto en modo edición */}
                 {editMode && (
-                  <div 
-                    className="flex-shrink-0 rounded-2xl border-2 border-dashed border-gray-300 hover:border-[#244C87] transition-colors cursor-pointer flex items-center justify-center"
-                    style={{ width: '300px', height: '200px' }}
-                    onClick={() => alert('TODO: Implementar subida de fotos')}
-                  >
-                    <div className="text-center">
-                      <span style={{
-                        fontSize: '48px',
-                        color: '#244C87'
-                      }}>+</span>
-                      <p style={{
-                        fontFamily: typography.fontFamily.primary,
-                        fontSize: typography.fontSize.sm,
-                        color: colors.neutral[600],
-                        marginTop: '8px'
-                      }}>
-                        Agregar foto
-                      </p>
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/gif"
+                      multiple
+                      style={{ display: 'none' }}
+                      onChange={(e) => handlePhotoUpload(e.target.files)}
+                    />
+                    <div 
+                      className="flex-shrink-0 rounded-2xl border-2 border-dashed transition-colors flex items-center justify-center"
+                      style={{
+                        width: '100%',
+                        height: '160px',
+                        borderColor: uploadingPhoto ? '#244C87' : '#D1D5DB',
+                        backgroundColor: uploadingPhoto ? '#F0F4FF' : 'transparent',
+                        cursor: uploadingPhoto ? 'wait' : 'pointer'
+                      }}
+                      onClick={() => !uploadingPhoto && fileInputRef.current?.click()}
+                    >
+                      <div className="text-center">
+                        {uploadingPhoto ? (
+                          <>
+                            <div style={{
+                              width: '36px',
+                              height: '36px',
+                              border: '3px solid #E5E7EB',
+                              borderTopColor: '#244C87',
+                              borderRadius: '50%',
+                              animation: 'spin 0.8s linear infinite',
+                              margin: '0 auto'
+                            }} />
+                            <p style={{
+                              fontFamily: typography.fontFamily.primary,
+                              fontSize: typography.fontSize.sm,
+                              color: '#244C87',
+                              marginTop: '10px'
+                            }}>
+                              Subiendo...
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <span style={{
+                              fontSize: '40px',
+                              color: '#244C87',
+                              lineHeight: 1
+                            }}>+</span>
+                            <p style={{
+                              fontFamily: typography.fontFamily.primary,
+                              fontSize: typography.fontSize.sm,
+                              color: colors.neutral[600],
+                              marginTop: '8px'
+                            }}>
+                              Agregar foto
+                            </p>
+                            {(!currentData.portfolioImages || currentData.portfolioImages.length === 0) && (
+                              <p style={{
+                                fontFamily: typography.fontFamily.primary,
+                                fontSize: typography.fontSize.xs,
+                                color: colors.neutral[400],
+                                marginTop: '4px'
+                              }}>
+                                No hay fotos en la galería
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
