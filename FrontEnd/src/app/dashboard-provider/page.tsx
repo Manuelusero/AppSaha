@@ -38,7 +38,9 @@ export default function DashboardProvider() {
   const [editedData, setEditedData] = useState<ProviderData | null>(null);
   const [showUnsavedModal, setShowUnsavedModal] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingProfilePhoto, setUploadingProfilePhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const profilePhotoInputRef = useRef<HTMLInputElement>(null);
 
   // Cargar datos del proveedor
   useEffect(() => {
@@ -207,6 +209,35 @@ export default function DashboardProvider() {
   const handleFieldChange = (field: keyof ProviderData, value: any) => {
     if (editedData) {
       setEditedData({ ...editedData, [field]: value });
+    }
+  };
+
+  const handleProfilePhotoUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0 || !editedData) return;
+    const providerId = localStorage.getItem(PROVIDER_ID_KEY);
+    if (!providerId) return;
+
+    setUploadingProfilePhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('fotoPerfil', files[0]);
+
+      const result = await apiUpload<{ success: boolean; profilePhoto: string }>(
+        `/providers/${providerId}/profile-photo`,
+        formData
+      );
+
+      if (result.success) {
+        const newUrl = getProfileImageUrl(result.profilePhoto);
+        handleFieldChange('profileImage', newUrl);
+        setProviderData(prev => prev ? { ...prev, profileImage: newUrl } : prev);
+      }
+    } catch (error) {
+      console.error('Error subiendo foto de perfil:', error);
+      alert('Error al subir la foto. Intentá de nuevo.');
+    } finally {
+      setUploadingProfilePhoto(false);
+      if (profilePhotoInputRef.current) profilePhotoInputRef.current.value = '';
     }
   };
 
@@ -415,16 +446,45 @@ export default function DashboardProvider() {
               )}
               {editMode && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                  <input
+                    ref={profilePhotoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png"
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleProfilePhotoUpload(e.target.files)}
+                  />
                   <button
-                    onClick={() => alert('TODO: Implementar cambio de foto')}
-                    className="px-4 py-2 rounded-full bg-white hover:bg-gray-100 transition-colors"
+                    onClick={() => !uploadingProfilePhoto && profilePhotoInputRef.current?.click()}
+                    className="px-4 py-2 rounded-full bg-white hover:bg-gray-100 transition-colors flex items-center gap-2"
                     style={{
                       fontFamily: typography.fontFamily.primary,
                       fontSize: typography.fontSize.sm,
-                      cursor: 'pointer'
+                      cursor: uploadingProfilePhoto ? 'wait' : 'pointer',
+                      opacity: uploadingProfilePhoto ? 0.8 : 1
                     }}
                   >
-                    Cambiar foto
+                    {uploadingProfilePhoto ? (
+                      <>
+                        <div style={{
+                          width: '14px',
+                          height: '14px',
+                          border: '2px solid #D1D5DB',
+                          borderTopColor: '#244C87',
+                          borderRadius: '50%',
+                          animation: 'spin 0.8s linear infinite',
+                          flexShrink: 0
+                        }} />
+                        Subiendo...
+                      </>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#244C87" strokeWidth="2">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                          <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                        Cambiar foto
+                      </>
+                    )}
                   </button>
                 </div>
               )}
@@ -778,8 +838,8 @@ export default function DashboardProvider() {
                     <div 
                       className="flex-shrink-0 rounded-2xl border-2 border-dashed transition-colors flex items-center justify-center"
                       style={{
-                        width: '100%',
-                        height: '160px',
+                        width: currentData.portfolioImages && currentData.portfolioImages.length > 0 ? '300px' : '100%',
+                        height: '200px',
                         borderColor: uploadingPhoto ? '#244C87' : '#D1D5DB',
                         backgroundColor: uploadingPhoto ? '#F0F4FF' : 'transparent',
                         cursor: uploadingPhoto ? 'wait' : 'pointer'

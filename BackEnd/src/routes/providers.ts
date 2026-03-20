@@ -341,6 +341,36 @@ router.get('/categories/list', async (req, res) => {
   }
 });
 
+// POST /api/providers/:id/profile-photo - Actualizar foto de perfil
+router.post('/:id/profile-photo', upload.single('fotoPerfil'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const file = req.file as any;
+    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+
+    if (!file) {
+      return res.status(400).json({ error: 'No se envió ninguna foto' });
+    }
+
+    const photoUrl = isProduction
+      ? (file.path || file.url || file.filename)
+      : file.filename;
+
+    await prisma.providerProfile.update({
+      where: { userId: id },
+      data: { profilePhoto: photoUrl }
+    });
+
+    res.json({ success: true, profilePhoto: photoUrl });
+
+  } catch (error) {
+    console.error('Error al actualizar foto de perfil:', error);
+    res.status(500).json({ error: 'Error al actualizar foto de perfil' });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
 // POST /api/providers/:id/portfolio - Agregar fotos al portfolio
 router.post('/:id/portfolio', upload.array('fotosTrabajos', 10), async (req, res) => {
   try {
