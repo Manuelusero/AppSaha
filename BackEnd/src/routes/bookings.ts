@@ -602,6 +602,9 @@ router.post('/:id/send-budget', authenticateToken, async (req: any, res) => {
 
     console.log('✅ Presupuesto guardado. Token generado:', clientDataToken);
 
+    // URL que el proveedor puede compartir con el cliente
+    const clientDataUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/client-contact/${clientDataToken}`;
+
     // ENVIAR PRESUPUESTO AL CLIENTE por el método que eligió
     try {
       const budgetData = {
@@ -734,7 +737,7 @@ router.post('/client-data/:token', async (req, res) => {
     }
 
     // Actualizar el cliente con los datos reales
-    await prisma.user.update({
+    await (prisma.user.update as any)({
       where: { id: booking.clientId },
       data: {
         email: clientEmail,
@@ -746,9 +749,9 @@ router.post('/client-data/:token', async (req, res) => {
     const updatedBooking = await prisma.booking.update({
       where: { id: booking.id },
       data: {
-        clientEmail,
-        clientPhone,
-        clientContactMethod
+        clientEmail: clientEmail ?? undefined,
+        clientPhone: clientPhone ?? undefined,
+        clientContactMethod: clientContactMethod ?? undefined
       }
     });
 

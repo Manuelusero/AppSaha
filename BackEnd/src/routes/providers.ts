@@ -1,6 +1,6 @@
 import express from 'express';
 import prisma from '../db/prisma.js';
-import { uploadProviderFiles } from '../middleware/upload.js';
+import { upload, uploadProviderFiles } from '../middleware/upload.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
@@ -336,6 +336,120 @@ router.get('/categories/list', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener categorías:', error);
     res.status(500).json({ error: 'Error al obtener categorías' });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+// POST /api/providers/:id/portfolio - Agregar fotos al portfolio
+router.post('/:id/portfolio', upload.array('fotosTrabajos', 10), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const files = req.files as Express.Multer.File[];
+    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: 'No se enviaron fotos' });
+    }
+
+    // Obtener el provider actual
+    const provider = await prisma.user.findUnique({
+      where: { id, role: 'PROVIDER' },
+      include: { providerProfile: true }
+    });
+
+    if (!provider || !provider.providerProfile) {
+      return res.status(404).json({ error: 'Proveedor no encontrado' });
+    }
+
+    // Parsear fotos existentes
+    let existingImages: string[] = [];
+    try {
+      const raw = provider.providerProfile.portfolioImages;
+      existingImages = typeof raw === 'string'
+        ? JSON.parse(raw)
+        : (raw as unknown as string[]) || [];
+    } catch {
+      existingImages = [];
+    }
+
+    // Extraer URLs de las nuevas fotos
+    const newPhotos = files.map((f: any) =>
+      isProduction ? (f.path || f.url || f.filename) : f.filename
+    );
+
+    const updatedImages = [...existingImages, ...newPhotos];
+
+    // Actualizar en DB
+    await prisma.providerProfile.update({
+      where: { userId: id },
+      data: {
+        portfolioImages: JSON.stringify(updatedImages),
+        workPhotos: JSON.stringify(updatedImages)
+      }
+    });
+
+    res.json({
+      success: true,
+      portfolioImages: updatedImages
+    });
+
+  } catch (error) {
+    console.error('Error al subir fotos al portfolio:', error);
+    res.status(500).json({ error: 'Error al subir fotos' });
+  } finally {
+    await prisma.$disconnect();
+  }
+});
+
+// DELETE /api/providers/:id/portfolio - Eliminar una foto del portfolio
+router.delete('/:id/portfolio', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { photoUrl } = req.body;
+
+    if (!photoUrl) {
+      return res.status(400).json({ error: 'Se requiere photoUrl' });
+    }
+
+    const provider = await prisma.user.findUnique({
+      where: { id, role: 'PROVIDER' },
+      include: { providerProfile: true }
+    });
+
+    if (!provider || !provider.providerProfile) {
+      return res.status(404).json({ error: 'Proveedor no encontrado' });
+    }
+
+    let existingImages: string[] = [];
+    try {
+      const raw = provider.providerProfile.portfolioImages;
+      existingImages = typeof raw === 'string'
+        ? JSON.parse(raw)
+        : (raw as unknown as string[]) || [];
+    } catch {
+      existingImages = [];
+    }
+
+    // Eliminar la foto del array (comparar por filename o URL completa)
+    const updatedImages = existingImages.filter(img => img !== photoUrl && !img.includes(photoUrl) && !photoUrl.includes(img));
+
+    await prisma.providerProfile.update({
+      where: { userId: id },
+      data: {
+        portfolioImages: JSON.stringify(updatedImages),
+        workPhotos: JSON.stringify(updatedImages)
+      }
+    });
+
+    res.json({
+      success: true,
+      portfolioImages: updatedImages
+    });
+
+  } catch (error) {
+    console.error('Error al eliminar foto del portfolio:', error);
+    res.status(500).json({ error: 'Error al eliminar foto' });
   } finally {
     await prisma.$disconnect();
   }
