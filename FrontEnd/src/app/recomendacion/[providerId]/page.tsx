@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { colors, typography } from '@/styles/tokens';
+import { apiGet, apiPost } from '@/utils/api';
 
 export default function RecomendacionPage({ params }: { params: Promise<{ providerId: string }> }) {
   const resolvedParams = use(params);
@@ -13,13 +14,28 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
   const [mensaje, setMensaje] = useState('');
   const [calificacion, setCalificacion] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [providerData, setProviderData] = useState({
+    nombre: '',
+    apellido: '',
+    profilePhoto: null as string | null,
+  });
 
-  // TODO: Cargar datos del proveedor desde la API usando resolvedParams.providerId
-  const providerData = {
-    nombre: 'Ricardo',
-    apellido: 'Rodriguez',
-    profileImage: '/placeholder-profile.jpg' // TODO: Obtener imagen real
-  };
+  useEffect(() => {
+    apiGet<any>(`/providers/${resolvedParams.providerId}`)
+      .then((data) => {
+        const fullName: string = data.name || '';
+        const parts = fullName.trim().split(' ');
+        setProviderData({
+          nombre: parts[0] || 'el profesional',
+          apellido: parts.slice(1).join(' ') || '',
+          profilePhoto: data.providerProfile?.profilePhoto || null,
+        });
+      })
+      .catch(() => {
+        setProviderData({ nombre: 'el profesional', apellido: '', profilePhoto: null });
+      });
+  }, [resolvedParams.providerId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,16 +50,22 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
       return;
     }
 
-    // TODO: Enviar recomendación a la API
-    console.log({
-      providerId: resolvedParams.providerId,
-      nombre,
-      mensaje,
-      calificacion
-    });
-
-    alert('¡Gracias por tu recomendación!');
-    router.push('/');
+    setSubmitting(true);
+    try {
+      await apiPost('/support/contact', {
+        tipo: 'recomendacion',
+        providerId: resolvedParams.providerId,
+        nombre,
+        mensaje,
+        calificacion,
+      });
+      alert('¡Gracias por tu recomendación!');
+      router.push('/');
+    } catch {
+      alert('Error al enviar la recomendación. Por favor intenta nuevamente.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -205,17 +227,18 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
             {/* Botón enviar */}
             <button
               type="submit"
+              disabled={submitting}
               className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
               style={{
                 fontFamily: typography.fontFamily.primary,
                 fontSize: typography.fontSize.base,
                 color: '#FFFFFF',
-                backgroundColor: '#B45B39',
-                cursor: 'pointer',
+                backgroundColor: submitting ? '#D9A08A' : '#B45B39',
+                cursor: submitting ? 'not-allowed' : 'pointer',
                 border: 'none'
               }}
             >
-              Enviar
+              {submitting ? 'Enviando...' : 'Enviar'}
             </button>
           </form>
         </div>

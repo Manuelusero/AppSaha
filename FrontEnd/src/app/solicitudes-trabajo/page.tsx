@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { colors, typography } from '@/styles/tokens';
 import { ProviderHeader } from '@/components/layout';
+import { useBookingsStore } from '@/store/bookingsStore';
+import { apiPost } from '@/utils/api';
 
 // Tipo para las solicitudes
 type EstadoSolicitud = 'pendiente' | 'vencido' | 'aceptado' | 'completado';
@@ -33,59 +35,37 @@ export default function SolicitudesTrabajo() {
   });
 
   // TODO: Obtener el providerId del usuario actual
-  const providerId = typeof window !== 'undefined' ? localStorage.getItem('providerId') || '123' : '123';
+  const providerId = typeof window !== 'undefined' ? localStorage.getItem('providerId') || '' : '';
   const profileLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/recomendacion/${providerId}`;
 
-  // TODO: Obtener solicitudes desde el backend
-  const [solicitudes] = useState<Solicitud[]>([
-    {
-      id: '1',
-      clienteNombre: 'Pepito Perez',
-      ubicacion: 'Vicente Lopez, Buenos Aires',
-      especialidades: ['Pintura de exteriores', 'Restauración y lijado'],
-      estado: 'pendiente',
-      urgencia: 'MEDIA',
-      descripcion: 'Tengo la pared hecha mierda y necesito que le hagan el service completo',
-      fotos: ['https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400']
-    },
-    {
-      id: '4',
-      clienteNombre: 'María González',
-      ubicacion: 'Palermo, Buenos Aires',
-      especialidades: ['Pintura interior'],
-      estado: 'pendiente',
-      urgencia: 'ALTA',
-      descripcion: 'Necesito pintar 3 habitaciones antes del fin de semana'
-    },
-    {
-      id: '5',
-      clienteNombre: 'Carlos Ruiz',
-      ubicacion: 'San Isidro, Buenos Aires',
-      especialidades: ['Restauración y lijado'],
-      estado: 'vencido'
-    },
-    {
-      id: '6',
-      clienteNombre: 'Laura Méndez',
-      ubicacion: 'Belgrano, Buenos Aires',
-      especialidades: ['Pintura de exteriores'],
-      estado: 'vencido'
-    },
-    {
-      id: '2',
-      clienteNombre: 'Roberto Sánchez',
-      ubicacion: 'Recoleta, Buenos Aires',
-      especialidades: ['Pintura de exteriores', 'Restauración y lijado'],
-      estado: 'aceptado'
-    },
-    {
-      id: '3',
-      clienteNombre: 'Ana Torres',
-      ubicacion: 'Flores, Buenos Aires',
-      especialidades: ['Pintura de exteriores', 'Restauración y lijado'],
-      estado: 'completado'
+  const { bookings, isLoading, fetchBookings } = useBookingsStore();
+  const [sendingBudget, setSendingBudget] = useState(false);
+
+  const mapStatusToEstado = (status: string): EstadoSolicitud => {
+    switch (status) {
+      case 'pending': return 'pendiente';
+      case 'accepted':
+      case 'confirmed':
+      case 'in_progress': return 'aceptado';
+      case 'completed': return 'completado';
+      default: return 'vencido';
     }
-  ]);
+  };
+
+  const solicitudes: Solicitud[] = bookings.map((b) => ({
+    id: b.id,
+    clienteNombre: b.clientName,
+    ubicacion: b.location,
+    especialidades: b.service ? [b.service] : [],
+    estado: mapStatusToEstado(b.status),
+    urgencia: b.urgency && b.urgency !== 'No especificada' ? b.urgency : undefined,
+    descripcion: b.description || undefined,
+    fotos: b.problemPhoto ? [b.problemPhoto] : undefined,
+  }));
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(profileLink);
@@ -127,16 +107,24 @@ export default function SolicitudesTrabajo() {
 
   const tieneSolicitudes = solicitudes.length > 0;
 
-  const handleEnviarPresupuesto = () => {
-    // TODO: Enviar presupuesto al backend
-    console.log('Presupuesto enviado:', presupuestoData);
-    setPresupuestoEnviado(presupuestoSolicitud?.clienteNombre ?? '');
-    setPresupuestoData({
-      valorTrabajo: '',
-      tiempoEstimado: '',
-      descripcionTrabajo: '',
-      materialesAproximados: ''
-    });
+  const handleEnviarPresupuesto = async () => {
+    if (!presupuestoSolicitud) return;
+    setSendingBudget(true);
+    try {
+      await apiPost(`/bookings/${presupuestoSolicitud.id}/send-budget`, {
+        budgetPrice: presupuestoData.valorTrabajo,
+        budgetDetails: presupuestoData.descripcionTrabajo,
+        budgetMaterials: presupuestoData.materialesAproximados || null,
+        budgetTime: presupuestoData.tiempoEstimado || null,
+      });
+      setPresupuestoEnviado(presupuestoSolicitud.clienteNombre);
+      setPresupuestoData({ valorTrabajo: '', tiempoEstimado: '', descripcionTrabajo: '', materialesAproximados: '' });
+      fetchBookings();
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar el presupuesto');
+    } finally {
+      setSendingBudget(false);
+    }
   };
 
   const handleCerrarModal = () => {
@@ -210,8 +198,14 @@ export default function SolicitudesTrabajo() {
         }
       `}</style>
       <main className="main-content">
-        <div>
-          {tieneSolicitudes ? (
+        {isLoading && (
+          <div style={{ textAlign: 'center', padding: '80px 0', fontFamily: 'Maitree, serif', color: '#9CA3AF' }}>
+            Cargando solicitudes...
+          </div>
+        )}
+        {!isLoading && (
+          <>
+            {tieneSolicitudes ? (
             <>
               {/* Vista con solicitudes */}
               <h1 style={{
@@ -563,7 +557,8 @@ export default function SolicitudesTrabajo() {
           </p>
             </>
           )}
-        </div>
+          </>
+        )}
       </main>
 
       {/* ── Modal Enviar Presupuesto ── */}
@@ -701,9 +696,10 @@ export default function SolicitudesTrabajo() {
               </button>
               <button
                 onClick={handleEnviarPresupuesto}
-                style={{ flex: 1, padding: '12px', backgroundColor: '#B45B39', color: '#FFFFFF', border: 'none', borderRadius: '12px', fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}
+                disabled={sendingBudget}
+                style={{ flex: 1, padding: '12px', backgroundColor: sendingBudget ? '#D9A08A' : '#B45B39', color: '#FFFFFF', border: 'none', borderRadius: '12px', fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 600, cursor: sendingBudget ? 'not-allowed' : 'pointer' }}
               >
-                Enviar
+                {sendingBudget ? 'Enviando...' : 'Enviar'}
               </button>
             </div>
               </>

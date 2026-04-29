@@ -51,6 +51,10 @@ export default function Header({
     }
   }, [providerId]);
 
+  // Determine which menu to show
+  const isClientUser = isAuthenticated && user?.role === 'CLIENT';
+  const isProviderUser = isAuthenticated && (!!providerData || user?.role === 'PROVIDER');
+
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -101,7 +105,7 @@ export default function Header({
       {/* Menú de usuario o botón de login */}
       {showAuthButton && (
         <>
-          {providerData ? (
+          {isProviderUser && providerData ? (
             <div className="relative profile-menu-container">
               <div 
                 className="flex items-center gap-3 cursor-pointer"
@@ -249,6 +253,110 @@ export default function Header({
                       gap: spacing[2],
                       transition: 'background-color 200ms ease'
                     }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.error.light}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                      <polyline points="16 17 21 12 16 7"/>
+                      <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : isClientUser ? (
+            /* ── CLIENT menu ── */
+            <div className="relative profile-menu-container">
+              <div
+                className="flex items-center gap-3 cursor-pointer"
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                style={{
+                  padding: spacing[2],
+                  backgroundColor: withOpacity(colors.primary.pale, 0.2),
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: `1px solid ${withOpacity(colors.neutral.white, 0.3)}`,
+                  borderRadius: borderRadius['2xl'],
+                  boxShadow: shadows.md
+                }}
+              >
+                {/* Avatar inicial */}
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: borderRadius.full,
+                  backgroundColor: colors.primary.main,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: colors.neutral.white,
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '18px',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                }}>
+                  {user?.name?.charAt(0)?.toUpperCase() || 'C'}
+                </div>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={colors.primary.main}
+                  strokeWidth="2"
+                  style={{
+                    transform: showProfileMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease'
+                  }}
+                >
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </div>
+
+              {showProfileMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '60px',
+                  right: '0',
+                  backgroundColor: colors.neutral.white,
+                  borderRadius: borderRadius.md,
+                  boxShadow: shadows.lg,
+                  overflow: 'hidden',
+                  minWidth: '200px',
+                  zIndex: 1000
+                }}>
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/dashboard-client'); }}
+                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: 'Maitree, serif', fontSize: '16px', color: colors.primary.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.neutral[100]}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Mis Solicitudes
+                  </button>
+
+                  <button
+                    onClick={() => { setShowProfileMenu(false); router.push('/buscar'); }}
+                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: 'Maitree, serif', fontSize: '16px', color: colors.primary.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.neutral[100]}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    Buscar Servicios
+                  </button>
+
+                  <div style={{ height: '1px', backgroundColor: colors.neutral[200], margin: spacing[2] }}/>
+
+                  <button
+                    onClick={handleLogout}
+                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: 'Maitree, serif', fontSize: '16px', color: colors.error.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.error.light}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >

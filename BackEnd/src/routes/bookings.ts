@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { randomBytes } from 'crypto';
 import prisma from '../db/prisma.js';
 import { uploadProblemPhoto } from '../middleware/upload.js';
 import {
@@ -580,8 +581,8 @@ router.post('/:id/send-budget', authenticateToken, async (req: any, res) => {
       return res.status(403).json({ error: 'No autorizado' });
     }
 
-    // Generar token único para que el cliente ingrese sus datos
-    const clientDataToken = `token_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    // Generar token criptográficamente seguro para que el cliente ingrese sus datos
+    const clientDataToken = randomBytes(32).toString('hex');
     const tokenExpiry = new Date();
     tokenExpiry.setDate(tokenExpiry.getDate() + 7); // Expira en 7 días
 

@@ -1,10 +1,30 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import prisma from '../db/prisma.js';
 
 const router = express.Router();
 
-// GET todos los usuarios
-router.get('/', async (req, res) => {
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
+
+const authenticateToken = (req: any, res: any, next: any) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Token no proporcionado' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
+    req.user = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+};
+
+const requireAdmin = (req: any, res: any, next: any) => {
+  if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Acceso restringido a administradores' });
+  next();
+};
+
+// GET todos los usuarios (solo ADMIN)
+router.get('/', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       orderBy: { createdAt: 'desc' }
@@ -15,10 +35,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET un usuario por ID
-router.get('/:id', async (req, res) => {
+// GET un usuario por ID (requiere autenticación)
+router.get('/:id', authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
+
+    // Solo el propio usuario o un admin puede ver el perfil
+    if (req.user.userId !== id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'No tienes permiso para ver este usuario' });
+    }
     const user = await prisma.user.findUnique({
       where: { id }
     });
@@ -41,11 +66,16 @@ router.post('/', async (req, res) => {
   });
 });
 
-// PUT actualizar un usuario
-router.put('/:id', async (req, res) => {
+// PUT actualizar un usuario (requiere autenticación, solo el propio usuario o ADMIN)
+router.put('/:id', authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
     const { email, name } = req.body;
+
+    // Solo el propio usuario o un admin puede actualizar
+    if (req.user.userId !== id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'No tienes permiso para actualizar este usuario' });
+    }
     
     const user = await prisma.user.update({
       where: { id },
@@ -58,8 +88,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE eliminar un usuario
-router.delete('/:id', async (req, res) => {
+// DELETE eliminar un usuario (solo ADMIN)
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     

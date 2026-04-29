@@ -1,9 +1,24 @@
 import express from 'express';
+import jwt from 'jsonwebtoken';
 import prisma from '../db/prisma.js';
 import { upload, uploadProviderFiles } from '../middleware/upload.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
+
+const authenticateToken = (req: any, res: any, next: any) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Token no proporcionado' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
+    req.user = decoded;
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Token inválido' });
+  }
+};
 
 // GET /api/providers/test - Endpoint de prueba sin base de datos
 router.get('/test', async (req, res) => {
@@ -197,8 +212,6 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
       error: 'Error al registrar proveedor',
       details: error instanceof Error ? error.message : 'Error desconocido'
     });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -278,8 +291,6 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('❌ Error al obtener proveedores:', error);
     res.status(500).json({ error: 'Error al obtener proveedores' });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -315,8 +326,6 @@ router.get('/:id', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener proveedor:', error);
     res.status(500).json({ error: 'Error al obtener proveedor' });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
@@ -336,13 +345,11 @@ router.get('/categories/list', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener categorías:', error);
     res.status(500).json({ error: 'Error al obtener categorías' });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
 // POST /api/providers/:id/profile-photo - Actualizar foto de perfil
-router.post('/:id/profile-photo', upload.single('fotoPerfil'), async (req, res) => {
+router.post('/:id/profile-photo', authenticateToken, upload.single('fotoPerfil'), async (req: any, res) => {
   try {
     const { id } = req.params;
     const file = req.file as any;
@@ -366,13 +373,11 @@ router.post('/:id/profile-photo', upload.single('fotoPerfil'), async (req, res) 
   } catch (error) {
     console.error('Error al actualizar foto de perfil:', error);
     res.status(500).json({ error: 'Error al actualizar foto de perfil' });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
 // POST /api/providers/:id/portfolio - Agregar fotos al portfolio
-router.post('/:id/portfolio', upload.array('fotosTrabajos', 10), async (req, res) => {
+router.post('/:id/portfolio', authenticateToken, upload.array('fotosTrabajos', 10), async (req: any, res) => {
   try {
     const { id } = req.params;
     const files = req.files as Express.Multer.File[];
@@ -427,13 +432,11 @@ router.post('/:id/portfolio', upload.array('fotosTrabajos', 10), async (req, res
   } catch (error) {
     console.error('Error al subir fotos al portfolio:', error);
     res.status(500).json({ error: 'Error al subir fotos' });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 
 // DELETE /api/providers/:id/portfolio - Eliminar una foto del portfolio
-router.delete('/:id/portfolio', async (req, res) => {
+router.delete('/:id/portfolio', authenticateToken, async (req: any, res) => {
   try {
     const { id } = req.params;
     const { photoUrl } = req.body;
@@ -480,8 +483,6 @@ router.delete('/:id/portfolio', async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar foto del portfolio:', error);
     res.status(500).json({ error: 'Error al eliminar foto' });
-  } finally {
-    await prisma.$disconnect();
   }
 });
 

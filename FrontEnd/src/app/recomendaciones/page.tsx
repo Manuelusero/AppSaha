@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { colors, typography } from '@/styles/tokens';
 import { ProviderHeader } from '@/components/layout';
+import { apiGet } from '@/utils/api';
 
 interface Recomendacion {
   id: string;
@@ -12,37 +13,7 @@ interface Recomendacion {
   fecha: string; // ISO date string
 }
 
-// TODO: Reemplazar con datos reales de la API
-const MOCK_RECOMENDACIONES: Recomendacion[] = [
-  {
-    id: '1',
-    clienteNombre: 'María García',
-    calificacion: 5,
-    mensaje: 'Excelente trabajo. Llegó puntual, fue muy profesional y dejó todo limpio. Lo recomiendo sin dudarlo.',
-    fecha: '2025-06-10',
-  },
-  {
-    id: '2',
-    clienteNombre: 'Carlos López',
-    calificacion: 4,
-    mensaje: 'Muy buen servicio. Solucionó el problema rápido y explicó bien lo que había pasado. Volvería a contratarlo.',
-    fecha: '2025-05-28',
-  },
-  {
-    id: '3',
-    clienteNombre: 'Ana Torres',
-    calificacion: 5,
-    mensaje: 'Súper recomendado. Trabajó con mucho cuidado y el resultado fue perfecto. Muy amable y responsable.',
-    fecha: '2025-05-14',
-  },
-  {
-    id: '4',
-    clienteNombre: 'Javier Ruiz',
-    calificacion: 3,
-    mensaje: 'Buen trabajo en general, aunque tardó un poco más de lo estimado. El resultado final fue satisfactorio.',
-    fecha: '2025-04-30',
-  },
-];
+// MOCK data removed — now fetched from API
 
 function StarDisplay({ rating }: { rating: number }) {
   return (
@@ -72,11 +43,28 @@ function formatFecha(isoDate: string): string {
 export default function RecomendacionesPage() {
   const [copied, setCopied] = useState(false);
   const [providerId, setProviderId] = useState<string>('');
-  const [recomendaciones] = useState<Recomendacion[]>(MOCK_RECOMENDACIONES);
+  const [recomendaciones, setRecomendaciones] = useState<Recomendacion[]>([]);
+  const [fetchLoading, setFetchLoading] = useState(false);
 
   useEffect(() => {
-    const id = localStorage.getItem('providerId') || 'mi-perfil';
+    const id = localStorage.getItem('providerId') || '';
     setProviderId(id);
+    if (!id) return;
+
+    setFetchLoading(true);
+    apiGet<{ reviews: any[] }>(`/reviews/provider/${id}`)
+      .then((data) => {
+        const mapped: Recomendacion[] = (data.reviews || []).map((r: any) => ({
+          id: r.id,
+          clienteNombre: r.client?.name || 'Cliente',
+          calificacion: r.rating,
+          mensaje: r.comment || '',
+          fecha: r.createdAt ? r.createdAt.split('T')[0] : '',
+        }));
+        setRecomendaciones(mapped);
+      })
+      .catch(() => setRecomendaciones([]))
+      .finally(() => setFetchLoading(false));
   }, []);
 
   const linkRecomendacion = providerId
@@ -329,7 +317,11 @@ export default function RecomendacionesPage() {
         )}
 
         {/* Cards de recomendaciones */}
-        {recomendaciones.length === 0 ? (
+        {fetchLoading ? (
+          <div style={{ textAlign: 'center', padding: '48px 0', color: '#9CA3AF', fontFamily: "'Maitree', serif" }}>
+            Cargando recomendaciones...
+          </div>
+        ) : recomendaciones.length === 0 ? (
           <div className="empty-state">
             <div
               style={{

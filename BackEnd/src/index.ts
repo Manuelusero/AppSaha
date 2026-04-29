@@ -9,6 +9,8 @@ import providersRouter from './routes/providers.js';
 import bookingsRouter from './routes/bookings.js';
 import reviewsRouter from './routes/reviews.js';
 import supportRouter from './routes/support.js';
+import messagesRouter from './routes/messages.js';
+import favoritesRouter from './routes/favorites.js';
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -39,8 +41,7 @@ const corsOptions = {
       callback(null, true);
     } else {
       console.log('CORS: Origin no permitido:', origin);
-      // En producción, ser más estricto (puedes cambiar a false después)
-      callback(null, true);
+      callback(new Error('Not allowed by CORS'), false);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -88,6 +89,8 @@ app.use('/api/providers', providersRouter);
 app.use('/api/bookings', bookingsRouter);
 app.use('/api/reviews', reviewsRouter);
 app.use('/api/support', supportRouter);
+app.use('/api/messages', messagesRouter);
+app.use('/api/favorites', favoritesRouter);
 
 // Manejo de errores básico
 app.use((req, res) => {

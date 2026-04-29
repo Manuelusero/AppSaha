@@ -211,7 +211,7 @@ function SearchResultsContent() {
 
       {/* Main Content */}
       <main className="flex-1 py-8">
-        <div className="w-full max-w-4xl mx-auto" style={{ paddingLeft: '24px', paddingRight: '24px' }}>
+        <div className="w-full max-w-6xl mx-auto px-6">
           {/* Texto de instrucción */}
           <p className="text-center mb-8" style={{ 
             fontFamily: 'Maitree, serif',
@@ -224,10 +224,8 @@ function SearchResultsContent() {
             Selecciona uno o más profesionales para recibir sus presupuestos y tiempos de ejecución
           </p>
 
-
-
-          {/* Grid de profesionales */}
-          <div className="flex flex-col items-center" style={{ gap: '80px'}}>
+          {/* Grid de profesionales: 1 col mobile → 2 col tablet → 3 col desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {loading ? (
               <div className="text-center py-12">
                 <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#244C87' }}>
@@ -238,16 +236,14 @@ function SearchResultsContent() {
               profesionales.map((prof) => (
                 <div 
                   key={prof.id}
-                  className="bg-white overflow-hidden transition-all duration-300 relative"
+                  className="bg-white overflow-hidden transition-all duration-300 relative w-full"
                   style={{ 
-                    width: '100%',
-                    maxWidth: '431px',
                     borderRadius: '24px',
                     boxShadow: '0px 4px 90px 0px rgba(0, 0, 0, 0.25)'
                   }}
                 >
                   {/* Imagen del profesional */}
-                  <div className="w-full relative" style={{ height: '380px', borderRadius: '24px 24px 0 0' }}>
+                  <div className="w-full relative" style={{ height: '260px', borderRadius: '24px 24px 0 0' }}>
                     <Image
                       src={prof.foto}
                       alt={prof.nombre}
@@ -337,7 +333,7 @@ function SearchResultsContent() {
           </div>
 
           {/* Botón de continuar y mensaje de error */}
-          <div className="flex flex-col items-center mt-12 gap-4">
+          <div className="flex flex-col items-center mt-16 gap-4">
             <button
               onClick={() => {
                 if (selectedProviders.length === 0) {
