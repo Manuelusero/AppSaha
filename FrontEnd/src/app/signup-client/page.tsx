@@ -73,7 +73,33 @@ export default function SignupClient() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col lg:flex-row">
+
+      {/* ── Panel izquierdo — solo desktop ── */}
+      <div
+        className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center px-16 py-12 relative overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #1a3a6e 0%, #3A5FA0 60%, #5E83AE 100%)' }}
+      >
+        {/* Círculos decorativos */}
+        <div style={{ position: 'absolute', top: '-80px', right: '-80px', width: '320px', height: '320px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)' }} />
+        <div style={{ position: 'absolute', bottom: '-60px', left: '-60px', width: '240px', height: '240px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.07)' }} />
+
+        <div className="relative z-10 text-center">
+          <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '52px', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.1, marginBottom: '24px', letterSpacing: '-1px' }}>
+            SERCO
+          </h1>
+          <div style={{ width: '60px', height: '3px', backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: '2px', margin: '0 auto 32px' }} />
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 400, color: 'rgba(255,255,255,0.95)', lineHeight: 1.4, marginBottom: '16px' }}>
+            Tu cuenta para contratar<br />los mejores profesionales<br />cerca de vos
+          </p>
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 400, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
+            Recibí presupuestos, comparás opciones<br />y elegís con confianza.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Panel derecho — formulario (mobile + desktop) ── */}
+      <div className="flex-1 bg-gradient-to-br from-blue-50 via-white to-green-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -197,6 +223,7 @@ export default function SignupClient() {
           </div>
         </div>
       </div>
+      </div>{/* fin panel derecho */}
     </div>
   );
 }

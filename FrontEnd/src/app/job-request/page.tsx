@@ -135,7 +135,40 @@ function JobRequestContent() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-6" style={{ paddingTop: '24px' }}>
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-5xl">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-start">
+
+            {/* ── Panel izquierdo — solo desktop ── */}
+            <div className="hidden lg:flex flex-col justify-center" style={{ paddingTop: '60px' }}>
+              <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '40px', fontWeight: 400, color: '#244C87', lineHeight: 1.2, marginBottom: '24px' }}>
+                Contános qué<br />necesitás
+              </h2>
+              <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 400, color: '#6B7280', lineHeight: 1.7, marginBottom: '40px' }}>
+                Cuanto más detallás el trabajo, mejor será
+                el presupuesto que recibís. Adjuntá una foto
+                si ya tenés una para que el profesional
+                entienda mejor el problema.
+              </p>
+              {/* Pasos */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {[
+                  { num: '1', label: 'Describí el trabajo' },
+                  { num: '2', label: 'Adjuntá una foto (opcional)' },
+                  { num: '3', label: 'Elegí la urgencia' },
+                  { num: '4', label: 'Recibí los presupuestos' },
+                ].map(step => (
+                  <div key={step.num} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#244C87', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 600, color: '#FFFFFF' }}>{step.num}</span>
+                    </div>
+                    <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#374151' }}>{step.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Panel derecho — formulario (mobile + desktop) ── */}
+            <div className="w-full max-w-md mx-auto lg:max-w-none lg:mx-0">
           {/* Título y subtítulo */}
           <div className="text-center" style={{ marginBottom: '48px' }}>
             <h1 style={{ 
@@ -283,6 +316,8 @@ function JobRequestContent() {
               Último paso
             </button>
           </div>
+          </div>{/* fin panel derecho */}
+          </div>{/* fin grid */}
         </div>
       </main>
 

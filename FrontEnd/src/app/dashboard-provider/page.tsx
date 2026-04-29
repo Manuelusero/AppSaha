@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { colors, typography } from '@/styles/tokens';
-import { apiGet, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth } from '@/utils';
+import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth } from '@/utils';
 import { getEspecialidades } from '../data/especialidades';
 import { ProviderHeader } from '@/components/layout';
 
@@ -191,18 +191,29 @@ export default function DashboardProvider() {
 
   const handleSaveEdit = async () => {
     if (!editedData) return;
-    
+    const providerId = localStorage.getItem(PROVIDER_ID_KEY);
+    if (!providerId) return;
+
     try {
-      // TODO: Llamar a la API para guardar los cambios
-      // await apiPut(`/providers/${editedData.id}`, editedData);
-      
+      await apiPut(`/providers/${providerId}`, {
+        location: editedData.ubicacion,
+        bio: editedData.descripcion,
+        serviceDescription: editedData.descripcion,
+        serviceCategory: editedData.serviceCategory,
+        specialties: editedData.specialties,
+        experience: editedData.experiencia,
+        serviceRadius: editedData.alcanceTrabajo ? Number(editedData.alcanceTrabajo) : 0,
+        instagram: editedData.instagram,
+        facebook: editedData.facebook,
+        linkedin: editedData.linkedin,
+      });
+
       setProviderData(editedData);
       setEditMode(false);
       setEditedData(null);
-      alert('Perfil actualizado exitosamente');
     } catch (error) {
       console.error('Error al guardar:', error);
-      alert('Error al guardar los cambios');
+      alert('Error al guardar los cambios. Intentá de nuevo.');
     }
   };
 
@@ -403,7 +414,11 @@ export default function DashboardProvider() {
 
       {/* Contenido principal - con padding-top para compensar header fixed */}
       <main style={{ paddingTop: 'calc(6rem + 48px)', paddingLeft: '24px', paddingRight: '24px' }}>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-6xl mx-auto">
+          {/* Layout: 1 col mobile, 2 col desktop */}
+          <div className="lg:grid lg:grid-cols-[380px_1fr] lg:gap-8">
+          {/* Columna izquierda: foto + nombre */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
           {/* Botón Editar Perfil - Solo mostrar cuando NO está en modo edición */}
           {!editMode && (
             <div className="flex justify-center mb-6">
@@ -422,7 +437,6 @@ export default function DashboardProvider() {
               </button>
             </div>
           )}
-
           {/* Card de perfil con imagen */}
           <div 
             className="rounded-3xl overflow-hidden mb-6"
@@ -567,6 +581,10 @@ export default function DashboardProvider() {
             </div>
           </div>
 
+          </div>{/* fin left col */}
+
+          {/* Columna derecha: detalles */}
+          <div>
           {/* Experiencia profesional */}
           {(currentData.experiencia > 0 || editMode) && (
             <div className="mb-6">
@@ -975,6 +993,8 @@ export default function DashboardProvider() {
               </button>
             </div>
           )}
+          </div>{/* fin right col */}
+          </div>{/* fin grid */}
         </div>
       </main>
     </div>

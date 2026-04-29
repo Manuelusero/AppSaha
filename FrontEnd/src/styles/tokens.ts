@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * DESIGN TOKENS - Sistema de Diseño Centralizado SERCO/SAHA
+ * DESIGN TOKENS - Sistema de Diseño Centralizado SERCO
  * ============================================================================
  * 
  * Este archivo contiene TODOS los tokens de diseño de la aplicación.

@@ -348,6 +348,53 @@ router.get('/categories/list', async (req, res) => {
   }
 });
 
+// PUT /api/providers/:id - Actualizar datos del perfil del proveedor
+router.put('/:id', authenticateToken, async (req: any, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.userId;
+
+    // Solo el propio proveedor puede actualizar su perfil
+    if (userId !== id) {
+      return res.status(403).json({ error: 'No autorizado' });
+    }
+
+    const {
+      location,
+      bio,
+      serviceDescription,
+      serviceCategory,
+      specialties,
+      experience,
+      serviceRadius,
+      instagram,
+      facebook,
+      linkedin
+    } = req.body;
+
+    const updated = await prisma.providerProfile.update({
+      where: { userId: id },
+      data: {
+        ...(location !== undefined && { location }),
+        ...(bio !== undefined && { bio }),
+        ...(serviceDescription !== undefined && { serviceDescription }),
+        ...(serviceCategory !== undefined && { serviceCategory }),
+        ...(specialties !== undefined && { specialties: Array.isArray(specialties) ? JSON.stringify(specialties) : specialties }),
+        ...(experience !== undefined && { experience: Number(experience) }),
+        ...(serviceRadius !== undefined && { serviceRadius: Number(serviceRadius) }),
+        ...(instagram !== undefined && { instagram }),
+        ...(facebook !== undefined && { facebook }),
+        ...(linkedin !== undefined && { linkedin }),
+      }
+    });
+
+    res.json({ success: true, providerProfile: updated });
+  } catch (error) {
+    console.error('Error al actualizar proveedor:', error);
+    res.status(500).json({ error: 'Error al actualizar el perfil' });
+  }
+});
+
 // POST /api/providers/:id/profile-photo - Actualizar foto de perfil
 router.post('/:id/profile-photo', authenticateToken, upload.single('fotoPerfil'), async (req: any, res) => {
   try {
