@@ -47,8 +47,12 @@ router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
       location
     } = req.body;
 
-    // Obtener el nombre del archivo subido (si existe)
-    const problemPhotoFilename = req.file ? req.file.filename : null;
+    // Obtener URL/nombre del archivo subido (si existe)
+    // req.file.path = full Cloudinary https URL (production)
+    // req.file.filename = local filename (development)
+    const problemPhotoFilename = req.file
+      ? (req.file.path?.startsWith('http') ? req.file.path : req.file.filename)
+      : null;
 
     console.log('📥 Solicitud de cliente invitado recibida:', {
       providerId,
