@@ -428,6 +428,10 @@ export default function ProviderSignup() {
       if (data.provider?.id) {
         localStorage.setItem('providerId', data.provider.id);
       }
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.provider.id);
+      }
       
       // Mostrar modal de éxito
       setMostrarModalExito(true);

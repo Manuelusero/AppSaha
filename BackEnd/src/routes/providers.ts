@@ -190,12 +190,20 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
 
     console.log('✅ Proveedor creado exitosamente:', newProvider.id);
 
+    // Generar JWT para login automático
+    const token = jwt.sign(
+      { userId: newProvider.id, role: 'PROVIDER' },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
     // No devolver contraseña
     const { password: _, ...providerWithoutPassword } = newProvider;
 
     res.status(201).json({
       success: true,
       message: 'Proveedor registrado exitosamente',
+      token,
       provider: providerWithoutPassword,
       files: {
         fotoPerfil,
