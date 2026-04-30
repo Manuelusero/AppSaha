@@ -42,6 +42,21 @@ export default function DashboardProvider() {
   const [uploadingProfilePhoto, setUploadingProfilePhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
+  const [showProfesionDropdown, setShowProfesionDropdown] = useState(false);
+
+  const profesionOpciones = [
+    { value: 'PLOMERIA', label: 'Plomeros' },
+    { value: 'ELECTRICIDAD', label: 'Electricistas' },
+    { value: 'PINTURA', label: 'Pintores' },
+    { value: 'ALBANILERIA', label: 'Albañiles' },
+    { value: 'CARPINTERIA', label: 'Carpinteros' },
+    { value: 'HERRERIA', label: 'Herreros' },
+    { value: 'LIMPIEZA', label: 'Limpiadores' },
+    { value: 'JARDINERIA', label: 'Jardineros' },
+    { value: 'MASAJES', label: 'Masajistas' },
+    { value: 'CLASES', label: 'Profesores' },
+    { value: 'COSTURA', label: 'Modistas' },
+  ];
 
   const { bookings, fetchBookings } = useBookingsStore();
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -524,34 +539,36 @@ export default function DashboardProvider() {
                     {currentData.nombre} {currentData.apellido}
                   </h1>
                   
-                  <select
-                    value={currentData.serviceCategory}
-                    onChange={(e) => {
-                      handleFieldChange('serviceCategory', e.target.value);
-                      // Reset specialties when category changes
-                      handleFieldChange('specialties', []);
-                    }}
-                    className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{
-                      fontFamily: 'Maitree, serif',
-                      fontSize: '16px',
-                      color: currentData.serviceCategory ? colors.neutral.black : colors.neutral[400],
-                      appearance: 'auto',
-                    }}
-                  >
-                    <option value="" disabled>Profesión</option>
-                    <option value="PLOMERIA">Plomeros</option>
-                    <option value="ELECTRICIDAD">Electricistas</option>
-                    <option value="PINTURA">Pintores</option>
-                    <option value="ALBANILERIA">Albañiles</option>
-                    <option value="CARPINTERIA">Carpinteros</option>
-                    <option value="HERRERIA">Herreros</option>
-                    <option value="LIMPIEZA">Limpiadores</option>
-                    <option value="JARDINERIA">Jardineros</option>
-                    <option value="MASAJES">Masajistas</option>
-                    <option value="CLASES">Profesores</option>
-                    <option value="COSTURA">Modistas</option>
-                  </select>
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      readOnly
+                      value={profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? ''}
+                      onFocus={() => setShowProfesionDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 200)}
+                      placeholder="Profesión"
+                      className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer"
+                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}
+                    />
+                    {showProfesionDropdown && (
+                      <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                        {profesionOpciones.map((op) => (
+                          <div
+                            key={op.value}
+                            onMouseDown={() => {
+                              handleFieldChange('serviceCategory', op.value);
+                              handleFieldChange('specialties', []);
+                              setShowProfesionDropdown(false);
+                            }}
+                            className="px-5 py-3 hover:bg-indigo-50 cursor-pointer text-gray-700 text-base transition-colors"
+                            style={{ fontFamily: 'Maitree, serif', backgroundColor: currentData.serviceCategory === op.value ? '#EEF2FF' : undefined }}
+                          >
+                            {op.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   <input
                     type="text"
