@@ -40,6 +40,7 @@ export default function SolicitudesTrabajo() {
 
   const { bookings, isLoading, fetchBookings } = useBookingsStore();
   const [sendingBudget, setSendingBudget] = useState(false);
+  const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   const mapStatusToEstado = (status: string): EstadoSolicitud => {
     switch (status) {
@@ -180,7 +181,7 @@ export default function SolicitudesTrabajo() {
   return (
     <div style={{ backgroundColor: '#FFFCF9', minHeight: '100vh' }}>
       {/* Header del proveedor */}
-      <ProviderHeader activePage="solicitudes" />
+      <ProviderHeader activePage="solicitudes" pendingCount={pendingCount} />
 
       {/* Contenido principal */}
       <style>{`

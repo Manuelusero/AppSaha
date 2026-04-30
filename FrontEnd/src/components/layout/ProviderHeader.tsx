@@ -11,6 +11,8 @@ interface ProviderHeaderProps {
   onBack?: () => void;
   /** Página activa para resaltar en el menú */
   activePage?: 'perfil' | 'solicitudes' | 'recomendaciones';
+  /** Número de solicitudes pendientes para mostrar badge */
+  pendingCount?: number;
 }
 
 interface ProviderData {
@@ -18,7 +20,7 @@ interface ProviderData {
   profileImage: string;
 }
 
-export default function ProviderHeader({ onBack, activePage }: ProviderHeaderProps) {
+export default function ProviderHeader({ onBack, activePage, pendingCount = 0 }: ProviderHeaderProps) {
   const router = useRouter();
   const [providerData, setProviderData] = useState<ProviderData | null>(null);
   const [showMenu, setShowMenu] = useState(false);
@@ -136,18 +138,42 @@ export default function ProviderHeader({ onBack, activePage }: ProviderHeaderPro
           className="flex items-center gap-2 hover:bg-white/20 rounded-full transition-colors p-2"
           style={{ cursor: 'pointer' }}
         >
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            backgroundColor: '#FFFFFF',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: '2px solid #000000',
-          }}>
-            {avatarContent}
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <div style={{
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              backgroundColor: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px solid #000000',
+            }}>
+              {avatarContent}
+            </div>
+            {pendingCount > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                backgroundColor: '#EF4444',
+                color: '#FFFFFF',
+                borderRadius: '9999px',
+                minWidth: '18px',
+                height: '18px',
+                fontSize: '11px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 4px',
+                border: '2px solid white',
+                lineHeight: 1,
+              }}>
+                {pendingCount > 99 ? '99+' : pendingCount}
+              </span>
+            )}
           </div>
         </button>
       </header>
@@ -204,10 +230,27 @@ export default function ProviderHeader({ onBack, activePage }: ProviderHeaderPro
 
                 <button
                   onClick={() => { setShowMenu(false); router.push('/solicitudes-trabajo'); }}
-                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="w-full text-left p-3 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between"
                   style={menuItemStyle('solicitudes')}
                 >
-                  Solicitudes
+                  <span>Solicitudes</span>
+                  {pendingCount > 0 && (
+                    <span style={{
+                      backgroundColor: '#EF4444',
+                      color: '#FFFFFF',
+                      borderRadius: '9999px',
+                      minWidth: '22px',
+                      height: '22px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '0 6px',
+                    }}>
+                      {pendingCount > 99 ? '99+' : pendingCount}
+                    </span>
+                  )}
                 </button>
 
                 <button

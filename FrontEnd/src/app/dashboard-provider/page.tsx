@@ -7,6 +7,7 @@ import { colors, typography } from '@/styles/tokens';
 import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth } from '@/utils';
 import { getEspecialidades } from '../data/especialidades';
 import { ProviderHeader } from '@/components/layout';
+import { useBookingsStore } from '@/store/bookingsStore';
 
 interface ProviderData {
   id: number;
@@ -42,7 +43,10 @@ export default function DashboardProvider() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
 
-  // Cargar datos del proveedor
+  const { bookings, fetchBookings } = useBookingsStore();
+  const pendingCount = bookings.filter(b => b.status === 'pending').length;
+
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
   useEffect(() => {
     const providerId = localStorage.getItem(PROVIDER_ID_KEY);
     
@@ -317,6 +321,7 @@ export default function DashboardProvider() {
       {/* Header del proveedor */}
       <ProviderHeader
         activePage="perfil"
+        pendingCount={pendingCount}
         onBack={() => {
           if (editMode) {
             setShowUnsavedModal(true);
