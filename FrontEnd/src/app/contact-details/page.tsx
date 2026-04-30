@@ -167,7 +167,7 @@ function ContactDetailsContent() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {[
                   { icon: '🔒', text: 'Tus datos son 100% privados' },
-                  { icon: '📩', text: 'Recibís el presupuesto en minutos' },
+                  { icon: '📩', text: 'Recibís el presupuesto en las próximas 48hs' },
                   { icon: '⭐', text: 'Profesionales verificados por SERCO' },
                 ].map(item => (
                   <div key={item.text} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -376,7 +376,7 @@ function ContactDetailsContent() {
           </div>
 
           {/* Botón Enviar */}
-          <div className="flex justify-start">
+          <div className="flex justify-start mb-16">
             <button
               onClick={handleSubmit}
               className="px-8 py-3 rounded-full transition-colors shadow-md"
