@@ -113,7 +113,7 @@ export default function SolicitudesTrabajo() {
     setSendingBudget(true);
     try {
       await apiPost(`/bookings/${presupuestoSolicitud.id}/send-budget`, {
-        budgetPrice: presupuestoData.valorTrabajo,
+        budgetPrice: presupuestoData.valorTrabajo.replace(/\./g, '').replace(/,/g, '.'),  // strip thousand dots
         budgetDetails: presupuestoData.descripcionTrabajo,
         budgetMaterials: presupuestoData.materialesAproximados || null,
         budgetTime: presupuestoData.tiempoEstimado || null,
@@ -638,9 +638,16 @@ export default function SolicitudesTrabajo() {
               </label>
               <input
                 type="text"
+                inputMode="numeric"
                 value={presupuestoData.valorTrabajo}
-                onChange={(e) => setPresupuestoData({ ...presupuestoData, valorTrabajo: e.target.value })}
-                placeholder="$0.00"
+                onChange={(e) => {
+                  // Strip everything except digits
+                  const digits = e.target.value.replace(/\D/g, '');
+                  // Format with dots as thousand separators
+                  const formatted = digits === '' ? '' : Number(digits).toLocaleString('es-AR');
+                  setPresupuestoData({ ...presupuestoData, valorTrabajo: formatted });
+                }}
+                placeholder="0"
                 style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #E5E7EB', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '14px', boxSizing: 'border-box' }}
               />
             </div>
