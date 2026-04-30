@@ -152,7 +152,34 @@ function ContactDetailsContent() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col items-center px-6" style={{ paddingTop: '24px' }}>
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-5xl">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-start">
+
+            {/* ── Panel izquierdo — solo desktop ── */}
+            <div className="hidden lg:flex flex-col justify-center" style={{ paddingTop: '40px' }}>
+              <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '40px', fontWeight: 400, color: '#244C87', lineHeight: 1.2, marginBottom: '24px' }}>
+                Casi listo,<br />¡ya encontraste<br />tu profesional!
+              </h2>
+              <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#6B7280', lineHeight: 1.7, marginBottom: '40px' }}>
+                Completá tus datos para que el profesional<br />
+                pueda contactarte con el presupuesto.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {[
+                  { icon: '🔒', text: 'Tus datos son 100% privados' },
+                  { icon: '📩', text: 'Recibís el presupuesto en minutos' },
+                  { icon: '⭐', text: 'Profesionales verificados por SERCO' },
+                ].map(item => (
+                  <div key={item.text} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '24px' }}>{item.icon}</span>
+                    <span style={{ fontFamily: 'Maitree, serif', fontSize: '16px', color: '#374151' }}>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Panel derecho — formulario (mobile + desktop) ── */}
+            <div className="w-full max-w-md mx-auto lg:max-w-none lg:mx-0">
           {/* Título y subtítulo */}
           <div className="text-center" style={{ marginBottom: '48px' }}>
             <h1 style={{ 
@@ -365,6 +392,8 @@ function ContactDetailsContent() {
               Enviar
             </button>
           </div>
+          </div>{/* fin panel derecho */}
+          </div>{/* fin grid */}
         </div>
       </main>
 

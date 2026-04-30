@@ -414,11 +414,11 @@ export default function DashboardProvider() {
 
       {/* Contenido principal - con padding-top para compensar header fixed */}
       <main style={{ paddingTop: 'calc(6rem + 48px)', paddingLeft: '24px', paddingRight: '24px' }}>
-        <div className="max-w-6xl mx-auto">
-          {/* Layout: 1 col mobile, 2 col desktop */}
-          <div className="lg:grid lg:grid-cols-[380px_1fr] lg:gap-8">
-          {/* Columna izquierda: foto + nombre */}
-          <div className="lg:sticky lg:top-8 lg:self-start">
+        <div className="max-w-xl mx-auto">
+          {/* Layout: una columna centrada (mobile y desktop iguales) */}
+          <div>
+          {/* Perfil: foto + nombre */}
+          <div>
           {/* Botón Editar Perfil - Solo mostrar cuando NO está en modo edición */}
           {!editMode && (
             <div className="flex justify-center mb-6">
@@ -581,9 +581,9 @@ export default function DashboardProvider() {
             </div>
           </div>
 
-          </div>{/* fin left col */}
+          </div>{/* fin col perfil */}
 
-          {/* Columna derecha: detalles */}
+          {/* Detalles: experiencia, servicios, zona, galeria, descripcion */}
           <div>
           {/* Experiencia profesional */}
           {(currentData.experiencia > 0 || editMode) && (
@@ -921,8 +921,7 @@ export default function DashboardProvider() {
           )}
 
           {/* Descripción */}
-          {(currentData.descripcion || editMode) && (
-            <div className="mb-6">
+          <div className="mb-6">
               <h2 style={{
                 fontFamily: 'Maitree, serif',
                 fontSize: '20px',
@@ -950,14 +949,13 @@ export default function DashboardProvider() {
                 <p style={{
                   fontFamily: typography.fontFamily.primary,
                   fontSize: typography.fontSize.base,
-                  color: colors.neutral.black,
+                  color: currentData.descripcion ? colors.neutral.black : colors.neutral[400],
                   lineHeight: '1.6'
                 }}>
-                  {currentData.descripcion}
+                  {currentData.descripcion || 'Aún no hay descripción.'}
                 </p>
               )}
             </div>
-          )}
 
           {/* Referencias eliminadas por petición del usuario */}
 
@@ -993,8 +991,8 @@ export default function DashboardProvider() {
               </button>
             </div>
           )}
-          </div>{/* fin right col */}
-          </div>{/* fin grid */}
+          </div>{/* fin col detalles */}
+          </div>{/* fin wrapper */}
         </div>
       </main>
     </div>
