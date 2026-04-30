@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { colors, typography } from '@/styles/tokens';
 import { ProviderHeader } from '@/components/layout';
 import { useBookingsStore } from '@/store/bookingsStore';
-import { apiPost } from '@/utils/api';
+import { apiPost, apiPatch } from '@/utils/api';
 
 // Tipo para las solicitudes
-type EstadoSolicitud = 'pendiente' | 'vencido' | 'aceptado' | 'completado';
+type EstadoSolicitud = 'pendiente' | 'rechazado' | 'aceptado' | 'completado';
 type TabFiltro = 'todas' | EstadoSolicitud;
 
 interface Solicitud {
@@ -40,6 +40,7 @@ export default function SolicitudesTrabajo() {
 
   const { bookings, isLoading, fetchBookings } = useBookingsStore();
   const [sendingBudget, setSendingBudget] = useState(false);
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   const mapStatusToEstado = (status: string): EstadoSolicitud => {
@@ -49,7 +50,9 @@ export default function SolicitudesTrabajo() {
       case 'confirmed':
       case 'in_progress': return 'aceptado';
       case 'completed': return 'completado';
-      default: return 'vencido';
+      case 'rejected': return 'rechazado';
+      case 'cancelled': return 'rechazado';
+      default: return 'rechazado';
     }
   };
 
@@ -78,8 +81,8 @@ export default function SolicitudesTrabajo() {
     switch (estado) {
       case 'pendiente':
         return { backgroundColor: '#E8D4C8', color: '#6B4E3D', text: 'Pendiente' };
-      case 'vencido':
-        return { backgroundColor: '#F3E8E8', color: '#9B2C2C', text: 'Vencido' };
+      case 'rechazado':
+        return { backgroundColor: '#F3E8E8', color: '#9B2C2C', text: 'Rechazado' };
       case 'aceptado':
         return { backgroundColor: '#C8E8D4', color: '#3D6B4E', text: 'Aceptado' };
       case 'completado':
@@ -91,11 +94,11 @@ export default function SolicitudesTrabajo() {
 
   // Tabs de filtro
   const tabs: { key: TabFiltro; label: string }[] = [
-    { key: 'todas',     label: 'Todas' },
-    { key: 'pendiente', label: 'Pendientes' },
-    { key: 'vencido',   label: 'Vencidas' },
-    { key: 'aceptado',  label: 'Aceptadas' },
-    { key: 'completado',label: 'Completadas' },
+    { key: 'todas',      label: 'Todas' },
+    { key: 'pendiente',  label: 'Pendientes' },
+    { key: 'rechazado',  label: 'Rechazadas' },
+    { key: 'aceptado',   label: 'Aceptadas' },
+    { key: 'completado', label: 'Completadas' },
   ];
 
   const contarPor = (estado: EstadoSolicitud) =>
@@ -131,6 +134,19 @@ export default function SolicitudesTrabajo() {
   const handleCerrarModal = () => {
     setPresupuestoSolicitud(null);
     setPresupuestoEnviado(null);
+  };
+
+  const handleRechazar = async (solicitud: Solicitud) => {
+    if (!confirm(`¿Seguro que querés rechazar la solicitud de ${solicitud.clienteNombre}?`)) return;
+    setRejectingId(solicitud.id);
+    try {
+      await apiPatch(`/bookings/${solicitud.id}/status`, { status: 'REJECTED' });
+      fetchBookings();
+    } catch (err: any) {
+      alert(err.message || 'Error al rechazar la solicitud');
+    } finally {
+      setRejectingId(null);
+    }
   };
 
   // Contenido del detalle expandido — accordion en mobile, siempre visible en desktop
@@ -170,12 +186,21 @@ export default function SolicitudesTrabajo() {
       )}
 
       {solicitud.estado === 'pendiente' && (
-        <button
-          onClick={(e) => { e.stopPropagation(); setPresupuestoSolicitud(solicitud); }}
-          style={{ width: '100%', padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer', marginTop: '8px' }}
-        >
-          Enviar Presupuesto
-        </button>
+        <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); setPresupuestoSolicitud(solicitud); }}
+            style={{ flex: 1, padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+          >
+            Enviar Presupuesto
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleRechazar(solicitud); }}
+            disabled={rejectingId === solicitud.id}
+            style={{ flex: 1, padding: '9px', backgroundColor: rejectingId === solicitud.id ? '#F9FAFB' : '#FEE2E2', color: '#B91C1C', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: rejectingId === solicitud.id ? 'wait' : 'pointer', opacity: rejectingId === solicitud.id ? 0.7 : 1 }}
+          >
+            {rejectingId === solicitud.id ? 'Rechazando...' : 'Rechazar'}
+          </button>
+        </div>
       )}
     </>
   );

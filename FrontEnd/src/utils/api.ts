@@ -113,6 +113,26 @@ export async function apiPut<T = unknown>(
 }
 
 /**
+ * PATCH request con autenticación
+ */
+export async function apiPatch<T = unknown>(
+  endpoint: string,
+  data: unknown
+): Promise<T> {
+  const response = await fetchWithAuth(endpoint, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Error desconocido' }));
+    throw new Error(error.error || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
  * DELETE request con autenticación
  */
 export async function apiDelete<T = unknown>(endpoint: string): Promise<T> {
