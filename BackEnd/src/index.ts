@@ -34,7 +34,8 @@ const corsOptions = {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:3001',
       process.env.FRONTEND_URL,
-      'https://serco-eosin.vercel.app', // Frontend en producción
+      'https://serco-eosin.vercel.app',
+      'https://app-saha.vercel.app',
     ].filter(Boolean); // Eliminar valores undefined/null
     
     if (allowedOrigins.includes(origin)) {
