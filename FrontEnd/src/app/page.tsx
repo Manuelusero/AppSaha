@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { colors, typography } from '@/styles/tokens';
+import { useAuth } from '@/contexts';
+import { apiPost } from '@/utils/api';
 
 export default function Welcome() {
   const router = useRouter();
@@ -247,6 +249,7 @@ export default function Welcome() {
 // Componente de Login integrado
 function LoginContent({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -257,14 +260,16 @@ function LoginContent({ onClose }: { onClose: () => void }) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
-      // TODO: Implementar lógica de login real
-      // Por ahora simular delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirigir según tipo de usuario
-      router.push('/dashboard-provider');
+      const data = await apiPost<{ token: string; user: any }>('/auth/login', { email, password });
+      const providerId = data.user.role === 'PROVIDER' ? data.user.id : undefined;
+      login(data.token, data.user, providerId);
+      onClose();
+      if (data.user.role === 'PROVIDER') {
+        router.push('/dashboard-provider');
+      } else {
+        router.push('/buscar');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
