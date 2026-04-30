@@ -494,6 +494,7 @@ router.patch('/:id/status', authenticateToken, async (req: any, res) => {
         rejectedAt: status === 'REJECTED' ? new Date() : undefined,
         completedAt: status === 'COMPLETED' ? new Date() : undefined,
         cancelledAt: status === 'CANCELLED' ? new Date() : undefined,
+        cancellationReason: (status === 'REJECTED' || status === 'CANCELLED') ? (cancellationReason || null) : undefined,
       },
       include: {
         client: {

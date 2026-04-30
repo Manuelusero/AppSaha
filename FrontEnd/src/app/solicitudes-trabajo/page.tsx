@@ -41,6 +41,8 @@ export default function SolicitudesTrabajo() {
   const { bookings, isLoading, fetchBookings } = useBookingsStore();
   const [sendingBudget, setSendingBudget] = useState(false);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectModalSolicitud, setRejectModalSolicitud] = useState<Solicitud | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   const mapStatusToEstado = (status: string): EstadoSolicitud => {
@@ -136,11 +138,20 @@ export default function SolicitudesTrabajo() {
     setPresupuestoEnviado(null);
   };
 
-  const handleRechazar = async (solicitud: Solicitud) => {
-    if (!confirm(`¿Seguro que querés rechazar la solicitud de ${solicitud.clienteNombre}?`)) return;
-    setRejectingId(solicitud.id);
+  const handleRechazar = (solicitud: Solicitud) => {
+    setRejectReason('');
+    setRejectModalSolicitud(solicitud);
+  };
+
+  const confirmRechazar = async () => {
+    if (!rejectModalSolicitud) return;
+    setRejectingId(rejectModalSolicitud.id);
     try {
-      await apiPatch(`/bookings/${solicitud.id}/status`, { status: 'REJECTED' });
+      await apiPatch(`/bookings/${rejectModalSolicitud.id}/status`, {
+        status: 'REJECTED',
+        cancellationReason: rejectReason.trim() || null,
+      });
+      setRejectModalSolicitud(null);
       fetchBookings();
     } catch (err: any) {
       alert(err.message || 'Error al rechazar la solicitud');
@@ -586,6 +597,60 @@ export default function SolicitudesTrabajo() {
           </>
         )}
       </main>
+
+      {/* ── Modal Rechazar Solicitud ── */}
+      {rejectModalSolicitud && (
+        <div
+          onClick={() => setRejectModalSolicitud(null)}
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ backgroundColor: '#FFF8F0', borderRadius: '24px', padding: '32px 28px', width: '100%', maxWidth: '400px', boxShadow: '0 8px 32px rgba(0,0,0,0.16)' }}
+          >
+            {/* X cerrar */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+              <button onClick={() => setRejectModalSolicitud(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                <svg width="20" height="20" fill="none" stroke="#374151" strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#B91C1C', textAlign: 'center', marginBottom: '8px' }}>
+              Rechazar solicitud
+            </h2>
+            <p style={{ fontFamily: 'Maitree, serif', fontSize: '14px', color: '#6B7280', textAlign: 'center', marginBottom: '24px' }}>
+              {rejectModalSolicitud.clienteNombre}
+            </p>
+
+            <label style={{ fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '8px' }}>
+              Motivo (opcional)
+            </label>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Ej: No puedo tomar trabajo en esa zona, estoy sin disponibilidad este mes..."
+              rows={4}
+              style={{ width: '100%', padding: '12px 14px', borderRadius: '14px', border: '2px solid #E5E7EB', fontFamily: 'Maitree, serif', fontSize: '14px', color: '#374151', resize: 'none', outline: 'none', boxSizing: 'border-box' }}
+            />
+
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <button
+                onClick={() => setRejectModalSolicitud(null)}
+                style={{ flex: 1, padding: '11px', borderRadius: '999px', border: '2px solid #E5E7EB', background: 'white', fontFamily: 'Maitree, serif', fontSize: '14px', color: '#374151', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmRechazar}
+                disabled={!!rejectingId}
+                style={{ flex: 1, padding: '11px', borderRadius: '999px', border: 'none', background: rejectingId ? '#F9FAFB' : '#B91C1C', color: rejectingId ? '#9CA3AF' : 'white', fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 600, cursor: rejectingId ? 'wait' : 'pointer' }}
+              >
+                {rejectingId ? 'Rechazando...' : 'Confirmar rechazo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal Enviar Presupuesto ── */}
       {presupuestoSolicitud && (
