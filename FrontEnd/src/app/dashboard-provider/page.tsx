@@ -524,18 +524,34 @@ export default function DashboardProvider() {
                     {currentData.nombre} {currentData.apellido}
                   </h1>
                   
-                  <input
-                    type="text"
+                  <select
                     value={currentData.serviceCategory}
-                    onChange={(e) => handleFieldChange('serviceCategory', e.target.value)}
-                    placeholder="Profesión"
+                    onChange={(e) => {
+                      handleFieldChange('serviceCategory', e.target.value);
+                      // Reset specialties when category changes
+                      handleFieldChange('specialties', []);
+                    }}
                     className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
                     style={{
                       fontFamily: 'Maitree, serif',
                       fontSize: '16px',
-                      color: colors.neutral.black
+                      color: currentData.serviceCategory ? colors.neutral.black : colors.neutral[400],
+                      appearance: 'auto',
                     }}
-                  />
+                  >
+                    <option value="" disabled>Profesión</option>
+                    <option value="PLOMERIA">Plomeros</option>
+                    <option value="ELECTRICIDAD">Electricistas</option>
+                    <option value="PINTURA">Pintores</option>
+                    <option value="ALBANILERIA">Albañiles</option>
+                    <option value="CARPINTERIA">Carpinteros</option>
+                    <option value="HERRERIA">Herreros</option>
+                    <option value="LIMPIEZA">Limpiadores</option>
+                    <option value="JARDINERIA">Jardineros</option>
+                    <option value="MASAJES">Masajistas</option>
+                    <option value="CLASES">Profesores</option>
+                    <option value="COSTURA">Modistas</option>
+                  </select>
 
                   <input
                     type="text"
