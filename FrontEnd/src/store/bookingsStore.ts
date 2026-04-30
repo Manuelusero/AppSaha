@@ -47,7 +47,11 @@ export const useBookingsStore = create<BookingsState>((set, get) => ({
     try {
       const data = await apiGet<Array<{
         id: string;
-        client: { name: string; email: string; phone?: string };
+        client: { name: string; email: string; phone?: string } | null;
+        // Guest booking fields (used when client is null)
+        clientName?: string | null;
+        clientEmail?: string | null;
+        clientPhone?: string | null;
         location?: string;
         address?: string;
         description: string;
@@ -71,15 +75,15 @@ export const useBookingsStore = create<BookingsState>((set, get) => ({
 
         return {
           id: booking.id,
-          clientName: booking.client.name,
+          clientName: booking.client?.name || booking.clientName || 'Cliente invitado',
           service: 'Servicio solicitado',
           location: booking.location || booking.address || 'Ubicación no especificada',
           description: booking.description,
           urgency: booking.clientNotes?.includes('Urgencia:')
             ? booking.clientNotes.split('Urgencia:')[1].split('.')[0].trim()
             : 'No especificada',
-          contactEmail: booking.client.email,
-          contactPhone: booking.client.phone || 'No especificado',
+          contactEmail: booking.client?.email || booking.clientEmail || '',
+          contactPhone: booking.client?.phone || booking.clientPhone || 'No especificado',
           problemPhoto: problemPhotoUrl,
           createdAt: new Date(booking.createdAt).toLocaleDateString('es-AR'),
           status: booking.status.toLowerCase() as 'pending' | 'accepted' | 'rejected',
