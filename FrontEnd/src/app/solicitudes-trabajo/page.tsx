@@ -169,12 +169,14 @@ export default function SolicitudesTrabajo() {
         </>
       )}
 
-      <button
-        onClick={(e) => { e.stopPropagation(); setPresupuestoSolicitud(solicitud); }}
-        style={{ width: '100%', padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer', marginTop: '8px' }}
-      >
-        Enviar Presupuesto
-      </button>
+      {solicitud.estado === 'pendiente' && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setPresupuestoSolicitud(solicitud); }}
+          style={{ width: '100%', padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer', marginTop: '8px' }}
+        >
+          Enviar Presupuesto
+        </button>
+      )}
     </>
   );
 
@@ -350,13 +352,13 @@ export default function SolicitudesTrabajo() {
                           : '0 2px 8px rgba(0,0,0,0.08)',
                         cursor: 'pointer',
                         transition: 'box-shadow 0.2s',
-                        border: isExpanded && isPendiente ? '2px solid #E8D4C8' : '2px solid transparent',
+                        border: isExpanded ? '2px solid #E8D4C8' : '2px solid transparent',
                         minWidth: 0,
                       }}
                     >
                       {/* ── Cabecera de la card (siempre visible) ── */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        {/* Mobile: 'Servicio Solicitado' solo cuando está expandida y pendiente */}
+                        {/* Mobile: 'Servicio Solicitado' cuando está expandida */}
                         <p className="md:hidden" style={{
                           fontFamily: 'Maitree, serif',
                           fontWeight: 600,
@@ -366,7 +368,7 @@ export default function SolicitudesTrabajo() {
                           flex: 1,
                           paddingRight: '8px'
                         }}>
-                          {isExpanded && isPendiente ? 'Servicio Solicitado' : solicitud.ubicacion}
+                          {isExpanded ? 'Servicio Solicitado' : solicitud.ubicacion}
                         </p>
                         {/* Desktop: 'Servicio Solicitado' siempre para pendientes (detalle siempre visible) */}
                         <p className="hidden md:block" style={{
@@ -378,7 +380,7 @@ export default function SolicitudesTrabajo() {
                           flex: 1,
                           paddingRight: '8px'
                         }}>
-                          {isPendiente ? 'Servicio Solicitado' : solicitud.ubicacion}
+                          {isPendiente ? 'Servicio Solicitado' : (isExpanded ? 'Servicio Solicitado' : solicitud.ubicacion)}
                         </p>
                         <div style={{
                           backgroundColor: estadoStyles.backgroundColor,
@@ -415,8 +417,8 @@ export default function SolicitudesTrabajo() {
                         ))}
                       </div>
 
-                      {/* ── Detalle expandido (mobile: solo si isExpanded; desktop: siempre visible si pendiente) ── */}
-                      {(isExpanded || undefined) && isPendiente && (
+                      {/* ── Detalle expandido (mobile: accordion; desktop: siempre visible si pendiente, accordion para el resto) ── */}
+                      {isExpanded && (
                         <div
                           className="md:hidden"
                           onClick={(e) => e.stopPropagation()}
@@ -426,16 +428,14 @@ export default function SolicitudesTrabajo() {
                         </div>
                       )}
 
-                      {/* Desktop: siempre visible si pendiente */}
-                      {isPendiente && (
-                        <div
-                          className="hidden md:block"
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ marginTop: '20px', borderTop: '1px solid #F0E8E0', paddingTop: '16px' }}
-                        >
-                          {detalleContent(solicitud)}
-                        </div>
-                      )}
+                      {/* Desktop: siempre visible si pendiente, accordion para el resto */}
+                      <div
+                        className="hidden md:block"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{ display: (isPendiente || isExpanded) ? undefined : 'none', marginTop: '20px', borderTop: '1px solid #F0E8E0', paddingTop: '16px' }}
+                      >
+                        {(isPendiente || isExpanded) && detalleContent(solicitud)}
+                      </div>
                     </div>
                   );
                 })}
