@@ -197,5 +197,62 @@ export default {
   sendClientConfirmationWhatsApp,
   sendBudgetToClientEmail,
   sendBudgetToClientWhatsApp,
-  sendProviderNewBookingNotification
+  sendProviderNewBookingNotification,
+  sendRejectionToClientEmail,
+  sendRejectionToClientWhatsApp
 };
+
+// TODO: Notificación de rechazo al cliente
+// Implementar cuando tengamos credenciales de email (Nodemailer/Resend) y WhatsApp (Twilio)
+
+export async function sendRejectionToClientEmail(
+  email: string,
+  clientName: string,
+  providerName: string,
+  reason: string | null
+) {
+  console.log(`📧 [TODO] Enviar rechazo por email a ${email}`);
+
+  // TODO: Implementar con Nodemailer o Resend
+  /*
+  const emailContent = {
+    to: email,
+    subject: `Tu solicitud a ${providerName} no pudo ser tomada`,
+    html: `
+      <h1>Hola ${clientName},</h1>
+      <p>${providerName} no puede tomar tu solicitud en este momento.</p>
+      ${reason ? `<p><strong>Motivo:</strong> ${reason}</p>` : ''}
+      <p>Podés buscar otro profesional disponible en nuestra plataforma.</p>
+      <br>
+      <p>Saludos,<br>Equipo SAHA</p>
+    `
+  };
+  await emailService.send(emailContent);
+  */
+
+  return { success: true, method: 'email' };
+}
+
+export async function sendRejectionToClientWhatsApp(
+  phone: string,
+  clientName: string,
+  providerName: string,
+  reason: string | null
+) {
+  console.log(`📱 [TODO] Enviar rechazo por WhatsApp a ${phone}`);
+
+  // TODO: Implementar con Twilio
+  /*
+  const message = `Hola ${clientName}!
+
+Lamentablemente ${providerName} no puede tomar tu solicitud en este momento.
+${reason ? `\nMotivo: ${reason}` : ''}
+
+Podés buscar otro profesional en nuestra plataforma.
+
+- Equipo SAHA`;
+  await whatsappService.send(phone, message);
+  */
+
+  return { success: true, method: 'whatsapp' };
+}
