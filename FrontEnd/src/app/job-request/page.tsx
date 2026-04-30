@@ -307,7 +307,7 @@ function JobRequestContent() {
           `}</style>
 
           {/* Botón Último paso */}
-          <div className="flex justify-end">
+          <div className="flex justify-end mb-16">
             <button
               onClick={handleSubmit}
               className="px-8 py-3 rounded-full transition-colors shadow-md"

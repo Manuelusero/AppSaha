@@ -218,15 +218,23 @@ export default function ProviderProfile() {
           {/* Card Principal del Perfil */}
           <div className="bg-white md:rounded-3xl overflow-hidden md:border md:shadow-lg mb-8">
             {/* Imagen Principal */}
-            <div className="relative overflow-hidden" style={{ width: '100%', height: '269px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', lineHeight: 0 }}>
-              <Image
-                src={getProfileImageUrl(provider.providerProfile.profilePhoto)}
-                alt={provider.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 480px"
-                className="object-cover"
-                style={{ borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'block', verticalAlign: 'top' }}
-              />
+            <div className="relative overflow-hidden" style={{ width: '100%', height: '269px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', lineHeight: 0, backgroundColor: '#E5E7EB' }}>
+              {getProfileImageUrl(provider.providerProfile.profilePhoto) ? (
+                <Image
+                  src={getProfileImageUrl(provider.providerProfile.profilePhoto)}
+                  alt={provider.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 480px"
+                  className="object-cover"
+                  style={{ borderTopLeftRadius: '24px', borderTopRightRadius: '24px', display: 'block', verticalAlign: 'top' }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="#9CA3AF">
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                  </svg>
+                </div>
+              )}
             </div>
 
             {/* Información del Profesional */}

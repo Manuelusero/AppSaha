@@ -4,10 +4,16 @@ import { UPLOADS_URL } from './constants';
  * Construye URL completa para archivos subidos
  */
 export const getUploadUrl = (folder: string, filename?: string | null): string => {
-  if (!filename) return '/default-avatar.png';
+  if (!filename) return '';
   if (filename.startsWith('http')) return filename;
   if (filename.startsWith('data:')) return filename; // Base64
-  return `${UPLOADS_URL}/${folder}/${filename}`;
+  // En producción (Vercel) los filenames locales no existen en el servidor
+  // Solo construir URL local si estamos en desarrollo
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+    return `${UPLOADS_URL}/${folder}/${filename}`;
+  }
+  // En producción, solo URLs absolutas (Cloudinary) son válidas
+  return '';
 };
 
 /**

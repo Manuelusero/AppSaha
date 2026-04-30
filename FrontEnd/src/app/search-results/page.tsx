@@ -243,15 +243,23 @@ function SearchResultsContent() {
                   }}
                 >
                   {/* Imagen del profesional */}
-                  <div className="w-full relative" style={{ height: '260px', borderRadius: '24px 24px 0 0' }}>
-                    <Image
-                      src={prof.foto}
-                      alt={prof.nombre}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover"
-                      style={{ borderRadius: '24px 24px 0 0' }}
-                    />
+                  <div className="w-full relative" style={{ height: '260px', borderRadius: '24px 24px 0 0', overflow: 'hidden', backgroundColor: '#E5E7EB' }}>
+                    {prof.foto ? (
+                      <Image
+                        src={prof.foto}
+                        alt={prof.nombre}
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-cover"
+                        style={{ borderRadius: '24px 24px 0 0' }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: '#D1D5DB' }}>
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="#9CA3AF">
+                          <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                        </svg>
+                      </div>
+                    )}
                   </div>
 
                   {/* Información del profesional */}
