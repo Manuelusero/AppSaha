@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { getEspecialidades } from '../data/especialidades';
 import { Footer } from '@/components/layout';
 import { Input, Button } from '@/components/ui';
+import WorkZoneMap from '@/components/ui/WorkZoneMap';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useForm } from '@/hooks';
 
@@ -270,6 +271,16 @@ export default function ProviderSignup() {
       return false;
     }
 
+    return true;
+  };
+
+  // Validar tamaño de archivos (máx 1.5MB por archivo para evitar error 413)
+  const validateFileSize = (file: File, maxSizeMB: number = 1.5): boolean => {
+    const maxBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxBytes) {
+      alert(`El archivo "${file.name}" es muy pesado. Tamaño máximo: ${maxSizeMB}MB. Tamaño actual: ${(file.size / 1024 / 1024).toFixed(2)}MB`);
+      return false;
+    }
     return true;
   };
 
@@ -931,44 +942,23 @@ export default function ProviderSignup() {
                     Alcance del trabajo
                   </label>
                   
-                  {/* Contenedor del mapa */}
-                  <div 
-                    className="w-full rounded-3xl border-2 border-gray-300 bg-gray-50 flex items-center justify-center relative overflow-hidden"
-                    style={{ height: '240px' }}
-                  >
-                    {/* TODO: Integrar Google Maps API para mostrar mapa real con círculo de radio ajustable */}
-                    {values.ubicacion ? (
-                      <div className="relative w-full h-full flex items-center justify-center">
-                        {/* Círculo que representa el radio de alcance */}
-                        <div 
-                          className="border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center"
-                          style={{ 
-                            width: `${Math.min(values.alcanceTrabajo ? parseInt(values.alcanceTrabajo) * 6 : 100, 200)}px`,
-                            height: `${Math.min(values.alcanceTrabajo ? parseInt(values.alcanceTrabajo) * 6 : 100, 200)}px`,
-                            transition: 'width 0.3s ease, height 0.3s ease'
-                          }}
-                        >
-                          {/* Ícono de ubicación */}
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="#244C87" stroke="#244C87" strokeWidth="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                            <circle cx="12" cy="10" r="3" fill="white"/>
-                          </svg>
-                        </div>
-                        
-                        {/* Etiqueta con el radio actual */}
-                        <div 
-                          className="absolute bottom-4 bg-white px-4 py-2 rounded-full shadow-md border border-gray-200"
-                          style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral.black }}
-                        >
-                          Radio: {values.alcanceTrabajo || '0'} km
-                        </div>
-                      </div>
-                    ) : (
+                  {/* Mapa interactivo con Leaflet */}
+                  {values.ubicacion ? (
+                    <WorkZoneMap
+                      location={values.ubicacion}
+                      radius={parseInt(values.alcanceTrabajo) || 0}
+                      onRadiusChange={(newRadius) => setFieldValue('alcanceTrabajo', newRadius.toString())}
+                    />
+                  ) : (
+                    <div 
+                      className="w-full rounded-3xl border-2 border-gray-300 bg-gray-50 flex items-center justify-center"
+                      style={{ height: '240px' }}
+                    >
                       <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[400] }}>
                         Seleccioná una ubicación primero
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   
                   {/* Slider para ajustar el radio */}
                   {values.ubicacion && (
@@ -1037,6 +1027,8 @@ export default function ProviderSignup() {
                     onChange={(e) => {
                       const files = e.target.files;
                       if (files) {
+                        if (files[0] && !validateFileSize(files[0])) { e.target.value = ''; return; }
+                        if (files[1] && !validateFileSize(files[1])) { e.target.value = ''; return; }
                         setFieldValue('fotoDniFrente', files[0] || null);
                         setFieldValue('fotoDniDorso', files[1] || null);
                       }
@@ -1080,7 +1072,11 @@ export default function ProviderSignup() {
                       id={`file-cert-${idx}`}
                       type="file"
                       accept="image/*,application/pdf"
-                      onChange={(e) => actualizarArchivoCertificado(idx, e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        if (file && !validateFileSize(file)) { e.target.value = ''; return; }
+                        actualizarArchivoCertificado(idx, file);
+                      }}
                       className="hidden"
                     />
                   </div>
@@ -1138,7 +1134,11 @@ export default function ProviderSignup() {
                     id="file-perfil"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setFieldValue('fotoPerfil', e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file && !validateFileSize(file)) { e.target.value = ''; return; }
+                      setFieldValue('fotoPerfil', file);
+                    }}
                     className="hidden"
                   />
                 </div>
@@ -1216,6 +1216,14 @@ export default function ProviderSignup() {
                     multiple
                     onChange={(e) => {
                       const newFiles = Array.from(e.target.files || []);
+                      // Validar tamaño de cada archivo
+                      for (const file of newFiles) {
+                        if (!validateFileSize(file)) {
+                          e.target.value = '';
+                          return;
+                        }
+                      }
+                      
                       const currentTotal = values.fotosTrabajos.length;
                       const availableSlots = 5 - currentTotal;
                       

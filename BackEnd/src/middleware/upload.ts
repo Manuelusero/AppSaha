@@ -144,7 +144,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
 export const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB por archivo
+    fileSize: 2 * 1024 * 1024 // 2MB por archivo (Vercel limit: 4.5MB total)
   },
   fileFilter: fileFilter
 });
