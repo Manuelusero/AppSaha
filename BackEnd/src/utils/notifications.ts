@@ -1,14 +1,30 @@
-/**
- * UTILIDADES PARA NOTIFICACIONES
- * 
- * Este archivo contiene las funciones para enviar notificaciones
- * por email, WhatsApp y SMS a clientes y proveedores.
- * 
- * TODO: Implementar las funciones reales con servicios como:
- * - Nodemailer para emails
- * - Twilio para WhatsApp/SMS
- * - O servicios alternativos según preferencia
- */
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Remitente provisional. Cuando haya dominio verificado en Resend cambiar por ej: notificaciones@saha.com.ar
+const FROM = 'SAHA <onboarding@resend.dev>';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
+
+const emailWrapper = (content: string) => `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#FFFCF9;font-family:'Georgia',serif;">
+  <div style="max-width:560px;margin:40px auto;background:#FFFFFF;border-radius:24px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+    <div style="background:#244C87;padding:28px 32px;">
+      <h1 style="margin:0;color:#FFFFFF;font-size:22px;font-weight:600;letter-spacing:0.5px;">SAHA</h1>
+      <p style="margin:4px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Servicios del hogar y más</p>
+    </div>
+    <div style="padding:32px;">
+      ${content}
+    </div>
+    <div style="padding:20px 32px;border-top:1px solid #F0E8E0;text-align:center;">
+      <p style="margin:0;color:#9CA3AF;font-size:12px;">Este email fue enviado automáticamente. No respondas este mensaje.</p>
+    </div>
+  </div>
+</body>
+</html>`;
 
 interface BookingData {
   id: string;
@@ -25,37 +41,35 @@ interface BudgetData {
   estimatedTime: string;
 }
 
-/**
- * NOTIFICACIONES AL CLIENTE
- */
+// ─── Confirmación al cliente: solicitud recibida ──────────────────────────────
 
-// Confirmar que la solicitud fue enviada
 export async function sendClientConfirmationEmail(
-  email: string, 
-  clientName: string, 
+  email: string,
+  clientName: string,
   bookingId: string
 ) {
-  console.log(`📧 Enviando email de confirmación a ${email}`);
-  
-  // TODO: Implementar envío de email
-  /*
-  const emailContent = {
-    to: email,
-    subject: 'Presupuesto solicitado - Serco',
-    html: `
-      <h1>Hola ${clientName},</h1>
-      <p>Tu solicitud de presupuesto ha sido enviada exitosamente.</p>
-      <p>En las próximas 48 horas recibirás el presupuesto detallado.</p>
-      <p>Número de solicitud: ${bookingId}</p>
-      <br>
-      <p>Saludos,<br>Equipo Serco</p>
-    `
-  };
-  
-  await emailService.send(emailContent);
-  */
-  
-  return { success: true, method: 'email' };
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Tu solicitud fue enviada — SAHA',
+      html: emailWrapper(`
+        <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${clientName}!</h2>
+        <p style="color:#374151;line-height:1.6;">Tu solicitud de presupuesto fue enviada exitosamente. El profesional la revisará y te enviará su presupuesto a la brevedad.</p>
+        <div style="background:#F9FAFB;border-radius:12px;padding:16px;margin:24px 0;">
+          <p style="margin:0;color:#6B7280;font-size:13px;">Número de solicitud</p>
+          <p style="margin:4px 0 0;color:#374151;font-size:14px;font-weight:600;">${bookingId}</p>
+        </div>
+        <p style="color:#374151;line-height:1.6;">Te notificaremos cuando el presupuesto esté listo.</p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+      `)
+    });
+    console.log(`📧 Confirmación enviada a ${email}`);
+    return { success: true, method: 'email' };
+  } catch (error) {
+    console.error('❌ Error enviando confirmación al cliente:', error);
+    return { success: false, method: 'email' };
+  }
 }
 
 export async function sendClientConfirmationWhatsApp(
@@ -63,24 +77,13 @@ export async function sendClientConfirmationWhatsApp(
   clientName: string,
   bookingId: string
 ) {
-  console.log(`📱 Enviando WhatsApp de confirmación a ${phone}`);
-  
-  // TODO: Implementar envío de WhatsApp
-  /*
-  const message = `Hola ${clientName}! Tu solicitud de presupuesto fue enviada exitosamente.
-En las próximas 48hs recibirás el presupuesto detallado.
-
-Número de solicitud: ${bookingId}
-
-- Serco`;
-  
-  await whatsappService.send(phone, message);
-  */
-  
+  // TODO: Implementar con Twilio cuando tengamos el número de WhatsApp Business
+  console.log(`📱 [TODO] WhatsApp confirmación → ${phone}`);
   return { success: true, method: 'whatsapp' };
 }
 
-// Enviar presupuesto detallado cuando el profesional responde
+// ─── Presupuesto al cliente ───────────────────────────────────────────────────
+
 export async function sendBudgetToClientEmail(
   email: string,
   clientName: string,
@@ -88,36 +91,47 @@ export async function sendBudgetToClientEmail(
   budget: BudgetData,
   bookingId: string
 ) {
-  console.log(`📧 Enviando presupuesto por email a ${email}`);
-  
-  // TODO: Implementar envío de presupuesto
-  /*
-  const emailContent = {
-    to: email,
-    subject: `Presupuesto de ${providerName} - Serco`,
-    html: `
-      <h1>Hola ${clientName},</h1>
-      <p>${providerName} ha enviado su presupuesto:</p>
-      
-      <h2>Detalles del presupuesto</h2>
-      <p><strong>Precio:</strong> $${budget.price}</p>
-      <p><strong>Tiempo estimado:</strong> ${budget.estimatedTime}</p>
-      <p><strong>Detalles:</strong></p>
-      <p>${budget.details}</p>
-      ${budget.materials ? `<p><strong>Materiales:</strong> ${budget.materials}</p>` : ''}
-      
-      <p>Para aceptar o consultar más detalles, ingresa a tu solicitud:</p>
-      <a href="https://serco.com/bookings/${bookingId}">Ver presupuesto completo</a>
-      
-      <br><br>
-      <p>Saludos,<br>Equipo Serco</p>
-    `
-  };
-  
-  await emailService.send(emailContent);
-  */
-  
-  return { success: true, method: 'email' };
+  try {
+    const precio = new Intl.NumberFormat('es-AR').format(budget.price);
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: `Tu presupuesto de ${providerName} está listo — SAHA`,
+      html: emailWrapper(`
+        <h2 style="margin:0 0 8px;color:#244C87;font-size:20px;">Hola, ${clientName}!</h2>
+        <p style="color:#374151;line-height:1.6;margin-bottom:24px;"><strong>${providerName}</strong> revisó tu solicitud y te envía el siguiente presupuesto:</p>
+
+        <div style="background:#F0F4FF;border-radius:16px;padding:20px;margin-bottom:20px;">
+          <div style="margin-bottom:12px;">
+            <span style="color:#6B7280;font-size:14px;">Valor estimado</span>
+            <p style="margin:4px 0 0;color:#244C87;font-size:24px;font-weight:700;">$${precio}</p>
+          </div>
+          ${budget.estimatedTime ? `
+          <div style="margin-bottom:10px;">
+            <span style="color:#6B7280;font-size:13px;">Tiempo estimado</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${budget.estimatedTime}</p>
+          </div>` : ''}
+          <div style="margin-bottom:${budget.materials ? '10px' : '0'};">
+            <span style="color:#6B7280;font-size:13px;">Descripción del trabajo</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;line-height:1.5;">${budget.details}</p>
+          </div>
+          ${budget.materials ? `
+          <div>
+            <span style="color:#6B7280;font-size:13px;">Materiales incluidos</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${budget.materials}</p>
+          </div>` : ''}
+        </div>
+
+        <p style="color:#6B7280;font-size:13px;line-height:1.5;">Si tenés preguntas, podés contactarte directamente con el profesional.</p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+      `)
+    });
+    console.log(`📧 Presupuesto enviado a ${email}`);
+    return { success: true, method: 'email' };
+  } catch (error) {
+    console.error('❌ Error enviando presupuesto al cliente:', error);
+    return { success: false, method: 'email' };
+  }
 }
 
 export async function sendBudgetToClientWhatsApp(
@@ -127,69 +141,107 @@ export async function sendBudgetToClientWhatsApp(
   budget: BudgetData,
   bookingId: string
 ) {
-  console.log(`📱 Enviando presupuesto por WhatsApp a ${phone}`);
-  
-  // TODO: Implementar envío de presupuesto
-  /*
-  const message = `Hola ${clientName}!
-
-${providerName} ha enviado su presupuesto:
-
-💰 Precio: $${budget.price}
-⏱️ Tiempo: ${budget.estimatedTime}
-
-📝 ${budget.details}
-
-Para ver el presupuesto completo: https://serco.com/bookings/${bookingId}
-
-- Serco`;
-  
-  await whatsappService.send(phone, message);
-  */
-  
+  // TODO: Implementar con Twilio cuando tengamos el número de WhatsApp Business
+  console.log(`📱 [TODO] WhatsApp presupuesto → ${phone}`);
   return { success: true, method: 'whatsapp' };
 }
 
-/**
- * NOTIFICACIONES AL PROFESIONAL
- */
+// ─── Notificación al proveedor: nueva solicitud ───────────────────────────────
 
-// Notificar nueva solicitud al profesional
 export async function sendProviderNewBookingNotification(
   email: string,
   providerName: string,
   booking: BookingData
 ) {
-  console.log(`📧 Notificando nueva solicitud a ${email}`);
-  
-  // TODO: Implementar notificación al profesional
-  /*
-  const emailContent = {
-    to: email,
-    subject: 'Nueva solicitud de presupuesto - Serco',
-    html: `
-      <h1>Hola ${providerName},</h1>
-      <p>Tienes una nueva solicitud de presupuesto:</p>
-      
-      <ul>
-        <li><strong>Cliente:</strong> ${booking.clientName}</li>
-        <li><strong>Servicio:</strong> ${booking.description}</li>
-        <li><strong>Ubicación:</strong> ${booking.location}</li>
-        <li><strong>Urgencia:</strong> ${booking.urgency || 'Media'}</li>
-      </ul>
-      
-      <p>Ingresa a tu panel para ver los detalles y enviar tu presupuesto.</p>
-      <a href="https://serco.com/dashboard/bookings/${booking.id}">Ver solicitud</a>
-      
-      <br><br>
-      <p>Equipo Serco</p>
-    `
-  };
-  
-  await emailService.send(emailContent);
-  */
-  
-  return { success: true };
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Tenés una nueva solicitud — SAHA',
+      html: emailWrapper(`
+        <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${providerName}!</h2>
+        <p style="color:#374151;line-height:1.6;">Recibiste una nueva solicitud de presupuesto:</p>
+
+        <div style="background:#F9FAFB;border-radius:12px;padding:20px;margin:20px 0;">
+          <div style="margin-bottom:10px;">
+            <span style="color:#6B7280;font-size:13px;">Cliente</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;font-weight:600;">${booking.clientName}</p>
+          </div>
+          <div style="margin-bottom:10px;">
+            <span style="color:#6B7280;font-size:13px;">Descripción</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${booking.description}</p>
+          </div>
+          <div style="margin-bottom:10px;">
+            <span style="color:#6B7280;font-size:13px;">Ubicación</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${booking.location}</p>
+          </div>
+          <div>
+            <span style="color:#6B7280;font-size:13px;">Urgencia</span>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${booking.urgency || 'Normal'}</p>
+          </div>
+        </div>
+
+        <a href="${FRONTEND_URL}/solicitudes-trabajo"
+           style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:600;margin-top:8px;">
+          Ver solicitud
+        </a>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+      `)
+    });
+    console.log(`📧 Nueva solicitud notificada a proveedor ${email}`);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error notificando al proveedor:', error);
+    return { success: false };
+  }
+}
+
+// ─── Rechazo al cliente ───────────────────────────────────────────────────────
+
+export async function sendRejectionToClientEmail(
+  email: string,
+  clientName: string,
+  providerName: string,
+  reason: string | null
+) {
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Actualización sobre tu solicitud — SAHA',
+      html: emailWrapper(`
+        <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${clientName}!</h2>
+        <p style="color:#374151;line-height:1.6;">Lamentablemente <strong>${providerName}</strong> no puede tomar tu solicitud en este momento.</p>
+        ${reason ? `
+        <div style="background:#FEF2F2;border-left:3px solid #EF4444;border-radius:0 12px 12px 0;padding:14px 18px;margin:20px 0;">
+          <span style="color:#6B7280;font-size:13px;">Motivo indicado</span>
+          <p style="margin:4px 0 0;color:#374151;font-size:14px;">${reason}</p>
+        </div>` : ''}
+        <p style="color:#374151;line-height:1.6;">Podés buscar otro profesional disponible en nuestra plataforma.</p>
+        <a href="${FRONTEND_URL}/buscar"
+           style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:600;margin-top:8px;">
+          Buscar otro profesional
+        </a>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+      `)
+    });
+    console.log(`📧 Rechazo notificado a ${email}`);
+    return { success: true, method: 'email' };
+  } catch (error) {
+    console.error('❌ Error enviando rechazo al cliente:', error);
+    return { success: false, method: 'email' };
+  }
+}
+
+export async function sendRejectionToClientWhatsApp(
+  phone: string,
+  clientName: string,
+  providerName: string,
+  reason: string | null
+) {
+  // TODO: Implementar con Twilio cuando tengamos el número de WhatsApp Business
+  console.log(`📱 [TODO] WhatsApp rechazo → ${phone}`);
+  return { success: true, method: 'whatsapp' };
 }
 
 export default {
@@ -201,58 +253,3 @@ export default {
   sendRejectionToClientEmail,
   sendRejectionToClientWhatsApp
 };
-
-// TODO: Notificación de rechazo al cliente
-// Implementar cuando tengamos credenciales de email (Nodemailer/Resend) y WhatsApp (Twilio)
-
-export async function sendRejectionToClientEmail(
-  email: string,
-  clientName: string,
-  providerName: string,
-  reason: string | null
-) {
-  console.log(`📧 [TODO] Enviar rechazo por email a ${email}`);
-
-  // TODO: Implementar con Nodemailer o Resend
-  /*
-  const emailContent = {
-    to: email,
-    subject: `Tu solicitud a ${providerName} no pudo ser tomada`,
-    html: `
-      <h1>Hola ${clientName},</h1>
-      <p>${providerName} no puede tomar tu solicitud en este momento.</p>
-      ${reason ? `<p><strong>Motivo:</strong> ${reason}</p>` : ''}
-      <p>Podés buscar otro profesional disponible en nuestra plataforma.</p>
-      <br>
-      <p>Saludos,<br>Equipo SAHA</p>
-    `
-  };
-  await emailService.send(emailContent);
-  */
-
-  return { success: true, method: 'email' };
-}
-
-export async function sendRejectionToClientWhatsApp(
-  phone: string,
-  clientName: string,
-  providerName: string,
-  reason: string | null
-) {
-  console.log(`📱 [TODO] Enviar rechazo por WhatsApp a ${phone}`);
-
-  // TODO: Implementar con Twilio
-  /*
-  const message = `Hola ${clientName}!
-
-Lamentablemente ${providerName} no puede tomar tu solicitud en este momento.
-${reason ? `\nMotivo: ${reason}` : ''}
-
-Podés buscar otro profesional en nuestra plataforma.
-
-- Equipo SAHA`;
-  await whatsappService.send(phone, message);
-  */
-
-  return { success: true, method: 'whatsapp' };
-}

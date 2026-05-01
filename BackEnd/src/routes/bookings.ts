@@ -8,7 +8,9 @@ import {
   sendClientConfirmationWhatsApp,
   sendBudgetToClientEmail,
   sendBudgetToClientWhatsApp,
-  sendProviderNewBookingNotification
+  sendProviderNewBookingNotification,
+  sendRejectionToClientEmail,
+  sendRejectionToClientWhatsApp
 } from '../utils/notifications.js';
 
 const router = express.Router();
@@ -525,22 +527,22 @@ router.patch('/:id/status', authenticateToken, async (req: any, res) => {
       booking: updatedBooking
     });
 
-    // TODO: Notificar al cliente cuando el proveedor rechaza
-    // Cuando tengamos email (Nodemailer/Resend) y WhatsApp (Twilio), implementar aquí:
-    //
-    // if (status === 'REJECTED') {
-    //   const contactEmail = updatedBooking.clientEmail || updatedBooking.client?.email;
-    //   const contactPhone = updatedBooking.clientPhone || updatedBooking.client?.phone;
-    //   const providerName  = updatedBooking.provider.user.name;
-    //   const clientName    = updatedBooking.clientName || updatedBooking.client?.name || 'Cliente';
-    //   const reason        = cancellationReason || null;
-    //
-    //   if (contactEmail) {
-    //     await sendRejectionToClientEmail(contactEmail, clientName, providerName, reason);
-    //   } else if (contactPhone) {
-    //     await sendRejectionToClientWhatsApp(contactPhone, clientName, providerName, reason);
-    //   }
-    // }
+    // Notificar al cliente cuando el proveedor rechaza
+    if (status === 'REJECTED') {
+      try {
+        const contactEmail = (updatedBooking as any).clientEmail || (updatedBooking as any).client?.email;
+        const contactPhone = (updatedBooking as any).clientPhone || (updatedBooking as any).client?.phone;
+        const providerName = (updatedBooking as any).provider.user.name;
+        const clientName = (updatedBooking as any).clientName || (updatedBooking as any).client?.name || 'Cliente';
+        if (contactEmail) {
+          await sendRejectionToClientEmail(contactEmail, clientName, providerName, cancellationReason || null);
+        } else if (contactPhone) {
+          await sendRejectionToClientWhatsApp(contactPhone, clientName, providerName, cancellationReason || null);
+        }
+      } catch (notifError) {
+        console.error('⚠️ Error al notificar rechazo al cliente:', notifError);
+      }
+    }
 
   } catch (error) {
     console.error('Error al actualizar solicitud:', error);
