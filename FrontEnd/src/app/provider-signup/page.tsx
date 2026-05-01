@@ -149,7 +149,31 @@ export default function ProviderSignup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [paso, setPaso] = useState(1); // 1: Datos Personales, 2: Datos Profesionales, 3: Documentación, 4: Extras
+  const [emailPendiente, setEmailPendiente] = useState(false);
   const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
+
+  // Auto-advance to paso 2 when returning from email verification link
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const step = params.get('step');
+    const preId = localStorage.getItem('preRegisterId');
+    if (step === '2' && preId) {
+      // Restore paso 1 values from localStorage so the form is populated for final submit
+      const saved = localStorage.getItem('registroTemporal');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          if (data.nombre) setFieldValue('nombre', data.nombre);
+          if (data.apellido) setFieldValue('apellido', data.apellido);
+          if (data.email) setFieldValue('email', data.email);
+          if (data.telefono) setFieldValue('telefono', data.telefono);
+          if (data.password) setFieldValue('password', data.password);
+          if (data.password) setFieldValue('confirmarPassword', data.password);
+        } catch { /* ignore */ }
+      }
+      setPaso(2);
+    }
+  }, []);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
 
   // Scroll al inicio cuando cambia el paso
@@ -557,6 +581,39 @@ export default function ProviderSignup() {
             {/* PASO 1: Datos Básicos */}
             {paso === 1 && (
               <div className="space-y-4 sm:space-y-6">
+                {/* Waiting-for-verification screen */}
+                {emailPendiente ? (
+                  <div className="flex flex-col items-center text-center py-8 gap-6">
+                    <div style={{
+                      width: 72, height: 72, borderRadius: '50%',
+                      background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <svg width="36" height="36" fill="none" stroke="#244C87" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M4 4h16v16H4z" rx="2" /><polyline points="22,6 12,13 2,6" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.xl, fontWeight: 600, color: colors.primary.main, marginBottom: 8 }}>
+                        Verificá tu email para continuar
+                      </h3>
+                      <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
+                        Te enviamos un enlace a <strong>{values.email}</strong>.<br />
+                        Hacé click en el link del mail para avanzar al paso 2.
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-500" style={{ fontFamily: typography.fontFamily.primary }}>
+                      ¿No te llegó? Revisá tu carpeta de spam o{' '}
+                      <button
+                        type="button"
+                        className="underline text-blue-600 hover:text-blue-800"
+                        onClick={() => setEmailPendiente(false)}
+                      >
+                        volvé a intentarlo
+                      </button>.
+                    </p>
+                  </div>
+                ) : (
+                <>
                 <Input
                   label="Nombre *"
                   placeholder="JOSE"
@@ -671,10 +728,10 @@ export default function ProviderSignup() {
                     )}
                   </button>
                 </div>
+                </>
+                )}
               </div>
             )}
-
-            {/* PASO 2: Datos Profesionales */}
             {paso === 2 && (
               <div className="space-y-6">
                 {/* Profesión Principal */}
@@ -1256,6 +1313,8 @@ export default function ProviderSignup() {
             {/* Botones de navegación - Responsive */}
             <div className="flex justify-end pt-6 sm:pt-8">
               {paso < 4 ? (
+                // Hide the next button while waiting for email verification
+                !emailPendiente && (
                 <button
                   type="button"
                   onClick={handleSiguiente}
@@ -1264,6 +1323,7 @@ export default function ProviderSignup() {
                 >
                   {paso === 1 ? 'Guardar y seguir' : 'Siguiente'}
                 </button>
+                )
               ) : (
                 <button
                   type="submit"
@@ -1296,8 +1356,7 @@ export default function ProviderSignup() {
             <button
               onClick={() => {
                 setMostrarModalEmail(false);
-                // Avanzar al paso 2 para continuar con el registro
-                setPaso(2);
+                setEmailPendiente(true);
               }}
               className="px-8 py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors"
               style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }}
