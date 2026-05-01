@@ -51,10 +51,11 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
       instagram,
       facebook,
       linkedin,
-      dni
+      dni,
+      preRegisterId  // set by frontend when user was pre-registered at paso 1
     } = req.body;
 
-    console.log('📄 Datos recibidos:', { nombre, apellido, email, profesion });
+    console.log('📄 Datos recibidos:', { nombre, apellido, email, profesion, preRegisterId });
     console.log('📎 Archivos recibidos:', Object.keys(files || {}).map(key => `${key}: ${files[key].length} archivo(s)`));
     
     // Debug: Ver qué devuelve Cloudinary
@@ -68,14 +69,15 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
       });
     }
 
-    // Validar que el email no exista
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    // If pre-registered, we UPDATE; otherwise verify email not already in use
+    const existingUser = await prisma.user.findUnique({ where: { email } });
 
-    if (existingUser) {
+    if (existingUser && !preRegisterId) {
       return res.status(400).json({ error: 'El email ya está registrado' });
     }
+
+    // Determine which user record to update/create
+    const targetUserId = preRegisterId || (existingUser?.id ?? null);
 
     // Hashear contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -149,44 +151,74 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
 
     const serviceCategory = categoryMap[profesion] || 'OTRO';
 
-    // Crear usuario y perfil de proveedor en una transacción
-    const newProvider = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name: `${nombre} ${apellido}`,
-        phone: telefono,
-        role: 'PROVIDER',
-        providerProfile: {
-          create: {
-            serviceCategory: serviceCategory as any,
-            specialties: JSON.stringify(especialidadesArray),
-            location: ubicacion,
-            bio: descripcion || '',
-            serviceDescription: descripcion || '',
-            experience: 0,
-            pricePerHour: 0,
-            rating: 0,
-            totalReviews: 0,
-            profilePhoto: fotoPerfil || null,
-            workPhotos: JSON.stringify(fotosTrabajos),
-            portfolioImages: JSON.stringify(fotosTrabajos),
-            dniNumber: dni || '',
-            dniDocument: fotoDniFrente || null,
-            dniPhotoFront: fotoDniFrente || null,
-            dniPhotoBack: fotoDniDorso || null,
-            certifications: JSON.stringify(certificados),
-            serviceRadius: alcanceTrabajo && !isNaN(parseInt(alcanceTrabajo)) ? parseInt(alcanceTrabajo) : null,
-            instagram: instagram || null,
-            facebook: facebook || null,
-            linkedin: linkedin || null,
+    // Crear o actualizar usuario y perfil de proveedor
+    const profileData = {
+      serviceCategory: serviceCategory as any,
+      specialties: JSON.stringify(especialidadesArray),
+      location: ubicacion,
+      bio: descripcion || '',
+      serviceDescription: descripcion || '',
+      experience: 0,
+      pricePerHour: 0,
+      profilePhoto: fotoPerfil || null,
+      workPhotos: JSON.stringify(fotosTrabajos),
+      portfolioImages: JSON.stringify(fotosTrabajos),
+      dniNumber: dni || '',
+      dniDocument: fotoDniFrente || null,
+      dniPhotoFront: fotoDniFrente || null,
+      dniPhotoBack: fotoDniDorso || null,
+      certifications: JSON.stringify(certificados),
+      serviceRadius: alcanceTrabajo && !isNaN(parseInt(alcanceTrabajo)) ? parseInt(alcanceTrabajo) : null,
+      instagram: instagram || null,
+      facebook: facebook || null,
+      linkedin: linkedin || null,
+    };
+
+    let newProvider: any;
+
+    if (targetUserId) {
+      // UPDATE path: user was pre-registered at paso 1
+      await prisma.user.update({
+        where: { id: targetUserId },
+        data: {
+          password: hashedPassword,
+          name: `${nombre} ${apellido}`,
+          phone: telefono,
+          isEmailVerified: true,
+        },
+      });
+
+      await prisma.providerProfile.upsert({
+        where: { userId: targetUserId },
+        update: profileData,
+        create: { userId: targetUserId, ...profileData, rating: 0, totalReviews: 0 },
+      });
+
+      newProvider = await prisma.user.findUnique({
+        where: { id: targetUserId },
+        include: { providerProfile: true },
+      });
+    } else {
+      // CREATE path: classic registration without pre-register
+      newProvider = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          name: `${nombre} ${apellido}`,
+          phone: telefono,
+          role: 'PROVIDER',
+          isEmailVerified: true,
+          providerProfile: {
+            create: {
+              ...profileData,
+              rating: 0,
+              totalReviews: 0,
+            }
           }
-        }
-      },
-      include: {
-        providerProfile: true
-      }
-    });
+        },
+        include: { providerProfile: true }
+      });
+    }
 
     console.log('✅ Proveedor creado exitosamente:', newProvider.id);
 

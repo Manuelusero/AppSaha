@@ -248,6 +248,81 @@ export async function sendRejectionToClientEmail(
   }
 }
 
+// ─── Verificación de email al registrarse ────────────────────────────────────
+
+export async function sendEmailVerification(
+  email: string,
+  name: string,
+  verificationLink: string
+) {
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Verificá tu email para continuar — Serco',
+      html: emailWrapper(`
+        <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${name}!</h2>
+        <p style="color:#374151;line-height:1.6;">Gracias por registrarte en Serco. Para verificar tu dirección de email y continuar completando tu perfil, hacé clic en el botón de abajo:</p>
+
+        <div style="text-align:center;margin:32px 0;">
+          <a href="${verificationLink}"
+             style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:14px 32px;border-radius:999px;font-size:15px;font-weight:600;letter-spacing:0.3px;">
+            ✅ Verificar email y continuar
+          </a>
+        </div>
+
+        <p style="color:#6B7280;font-size:13px;line-height:1.5;">Este enlace es válido por 7 días. Si no creaste una cuenta en Serco, podés ignorar este mensaje.</p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
+      `)
+    });
+    console.log(`📧 Verificación de email enviada a ${email}`);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error enviando verificación de email:', error);
+    return { success: false };
+  }
+}
+
+// ─── Recordatorio de perfil incompleto ───────────────────────────────────────
+
+export async function sendProfileIncompleteReminder(
+  email: string,
+  name: string,
+  continueLink: string
+) {
+  try {
+    await resend.emails.send({
+      from: FROM,
+      to: email,
+      subject: 'Completá tu perfil y empezá a recibir clientes — Serco',
+      html: emailWrapper(`
+        <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${name}!</h2>
+        <p style="color:#374151;line-height:1.6;">Notamos que empezaste a crear tu perfil en Serco pero no lo terminaste de completar.</p>
+
+        <div style="background:#F0F4FF;border-radius:16px;padding:20px;margin:24px 0;">
+          <p style="margin:0 0 8px;color:#244C87;font-size:15px;font-weight:600;">¿Sabías que los proveedores con perfil completo reciben 3 veces más consultas?</p>
+          <p style="margin:0;color:#6B7280;font-size:13px;line-height:1.5;">Solo te faltan unos minutos para empezar a recibir solicitudes de clientes en tu zona.</p>
+        </div>
+
+        <div style="text-align:center;margin:28px 0;">
+          <a href="${continueLink}"
+             style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:14px 32px;border-radius:999px;font-size:15px;font-weight:600;">
+            Completar mi perfil ahora
+          </a>
+        </div>
+
+        <p style="color:#6B7280;font-size:13px;line-height:1.5;">Si ya completaste tu perfil, podés ignorar este mensaje.</p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
+      `)
+    });
+    console.log(`📧 Recordatorio de perfil incompleto enviado a ${email}`);
+    return { success: true };
+  } catch (error) {
+    console.error('❌ Error enviando recordatorio de perfil:', error);
+    return { success: false };
+  }
+}
+
 export async function sendRejectionToClientWhatsApp(
   phone: string,
   clientName: string,

@@ -260,29 +260,43 @@ export default function ProviderSignup() {
       return;
     }
 
-    // Si es el paso 1, guardar los datos básicos
+    // Si es el paso 1, guardar los datos básicos y PRE-REGISTRAR en backend
     if (paso === 1) {
       try {
-        // Guardar en localStorage temporalmente
-        const datosBasicos = {
+        // Guardar en localStorage temporalmente (para rellenar el resto del form)
+        localStorage.setItem('registroTemporal', JSON.stringify({
           nombre: values.nombre,
           apellido: values.apellido,
           email: values.email,
           telefono: values.telefono,
           password: values.password
-        };
-        localStorage.setItem('registroTemporal', JSON.stringify(datosBasicos));
+        }));
 
-        // TODO: Enviar email de verificación con el servicio de email de la empresa
-        console.log('Enviando email de verificación a:', values.email);
-        // await fetch('/api/send-verification-email', { body: JSON.stringify({ email: values.email }) });
-        
+        // Llamar al backend para crear usuario + enviar email de verificación
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${API_URL}/api/auth/pre-register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: values.nombre,
+            apellido: values.apellido,
+            email: values.email,
+            telefono: values.telefono,
+            password: values.password,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al registrar');
+
+        // Guardar userId para el paso 4
+        if (data.userId) localStorage.setItem('preRegisterId', data.userId);
+
         // Mostrar modal
         setMostrarModalEmail(true);
-        
+
       } catch (error) {
-        console.error('Error al guardar datos:', error);
-        alert('Error al guardar los datos. Por favor intentá de nuevo.');
+        console.error('Error en pre-registro:', error);
+        alert(error instanceof Error ? error.message : 'Error al guardar los datos. Por favor intentá de nuevo.');
         return;
       }
     } else {
@@ -369,6 +383,10 @@ export default function ProviderSignup() {
     formData.append('email', values.email);
     formData.append('telefono', values.telefono);
     formData.append('password', values.password);
+
+    // Include pre-register ID if user verified email at paso 1
+    const preRegisterId = localStorage.getItem('preRegisterId');
+    if (preRegisterId) formData.append('preRegisterId', preRegisterId);
     formData.append('profesion', values.profesion);
     formData.append('especialidades', JSON.stringify(values.especialidades));
     formData.append('profesionesAdicionales', JSON.stringify(values.profesionesAdicionales));

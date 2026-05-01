@@ -12,6 +12,12 @@
             "dest": "/api/index.ts"
         }
     ],
+    "crons": [
+        {
+            "path": "/api/cron/remind-incomplete",
+            "schedule": "0 10 * * *"
+        }
+    ],
     "env": {
         "NODE_ENV": "production"
     }

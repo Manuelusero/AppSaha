@@ -11,6 +11,7 @@ import reviewsRouter from './routes/reviews.js';
 import supportRouter from './routes/support.js';
 import messagesRouter from './routes/messages.js';
 import favoritesRouter from './routes/favorites.js';
+import cronRouter from './routes/cron.js';
 
 // Obtener __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -94,6 +95,7 @@ app.use('/api/reviews', reviewsRouter);
 app.use('/api/support', supportRouter);
 app.use('/api/messages', messagesRouter);
 app.use('/api/favorites', favoritesRouter);
+app.use('/api/cron', cronRouter);
 
 // Manejo de errores básico
 app.use((req, res) => {
