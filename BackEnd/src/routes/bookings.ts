@@ -645,7 +645,8 @@ router.post('/:id/send-budget', authenticateToken, async (req: any, res) => {
           booking.clientName || 'Cliente',
           booking.provider.user.name,
           budgetData,
-          booking.id
+          booking.id,
+          booking.provider.user.phone || undefined
         );
       } else if (booking.clientPhone) {
         await sendBudgetToClientWhatsApp(

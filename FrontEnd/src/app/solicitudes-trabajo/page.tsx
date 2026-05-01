@@ -43,6 +43,7 @@ export default function SolicitudesTrabajo() {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [rejectModalSolicitud, setRejectModalSolicitud] = useState<Solicitud | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [zoomedPhoto, setZoomedPhoto] = useState<string | null>(null);
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   const mapStatusToEstado = (status: string): EstadoSolicitud => {
@@ -191,7 +192,8 @@ export default function SolicitudesTrabajo() {
           <img
             src={solicitud.fotos[0]}
             alt="Foto del problema"
-            style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '10px', marginBottom: '10px' }}
+            onClick={() => setZoomedPhoto(solicitud.fotos![0])}
+            style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '10px', marginBottom: '10px', cursor: 'zoom-in' }}
           />
         </>
       )}
@@ -597,6 +599,27 @@ export default function SolicitudesTrabajo() {
           </>
         )}
       </main>
+
+      {/* ── Lightbox foto ── */}
+      {zoomedPhoto && (
+        <div
+          onClick={() => setZoomedPhoto(null)}
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.88)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', cursor: 'zoom-out' }}
+        >
+          <button
+            onClick={() => setZoomedPhoto(null)}
+            style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+          <img
+            src={zoomedPhoto}
+            alt="Foto ampliada"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: '12px', objectFit: 'contain', cursor: 'default' }}
+          />
+        </div>
+      )}
 
       {/* ── Modal Rechazar Solicitud ── */}
       {rejectModalSolicitud && (

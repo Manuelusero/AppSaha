@@ -2,8 +2,8 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Remitente provisional. Cuando haya dominio verificado en Resend cambiar por ej: notificaciones@saha.com.ar
-const FROM = 'SAHA <onboarding@resend.dev>';
+// Remitente provisional. Cuando haya dominio verificado en Resend cambiar por ej: notificaciones@serco.com.ar
+const FROM = 'Serco <onboarding@resend.dev>';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
 
 const emailWrapper = (content: string) => `
@@ -13,7 +13,7 @@ const emailWrapper = (content: string) => `
 <body style="margin:0;padding:0;background:#FFFCF9;font-family:'Georgia',serif;">
   <div style="max-width:560px;margin:40px auto;background:#FFFFFF;border-radius:24px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
     <div style="background:#244C87;padding:28px 32px;">
-      <h1 style="margin:0;color:#FFFFFF;font-size:22px;font-weight:600;letter-spacing:0.5px;">SAHA</h1>
+      <h1 style="margin:0;color:#FFFFFF;font-size:22px;font-weight:600;letter-spacing:0.5px;">Serco</h1>
       <p style="margin:4px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">Servicios del hogar y más</p>
     </div>
     <div style="padding:32px;">
@@ -52,7 +52,7 @@ export async function sendClientConfirmationEmail(
     await resend.emails.send({
       from: FROM,
       to: email,
-      subject: 'Tu solicitud fue enviada — SAHA',
+      subject: 'Tu solicitud fue enviada — Serco',
       html: emailWrapper(`
         <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${clientName}!</h2>
         <p style="color:#374151;line-height:1.6;">Tu solicitud de presupuesto fue enviada exitosamente. El profesional la revisará y te enviará su presupuesto a la brevedad.</p>
@@ -61,7 +61,7 @@ export async function sendClientConfirmationEmail(
           <p style="margin:4px 0 0;color:#374151;font-size:14px;font-weight:600;">${bookingId}</p>
         </div>
         <p style="color:#374151;line-height:1.6;">Te notificaremos cuando el presupuesto esté listo.</p>
-        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
       `)
     });
     console.log(`📧 Confirmación enviada a ${email}`);
@@ -89,14 +89,15 @@ export async function sendBudgetToClientEmail(
   clientName: string,
   providerName: string,
   budget: BudgetData,
-  bookingId: string
+  bookingId: string,
+  providerPhone?: string
 ) {
   try {
     const precio = new Intl.NumberFormat('es-AR').format(budget.price);
     await resend.emails.send({
       from: FROM,
       to: email,
-      subject: `Tu presupuesto de ${providerName} está listo — SAHA`,
+      subject: `Tu presupuesto de ${providerName} está listo — Serco`,
       html: emailWrapper(`
         <h2 style="margin:0 0 8px;color:#244C87;font-size:20px;">Hola, ${clientName}!</h2>
         <p style="color:#374151;line-height:1.6;margin-bottom:24px;"><strong>${providerName}</strong> revisó tu solicitud y te envía el siguiente presupuesto:</p>
@@ -122,8 +123,22 @@ export async function sendBudgetToClientEmail(
           </div>` : ''}
         </div>
 
-        <p style="color:#6B7280;font-size:13px;line-height:1.5;">Si tenés preguntas, podés contactarte directamente con el profesional.</p>
-        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+        ${providerPhone ? `
+        <div style="background:#F0F9F4;border-radius:14px;padding:18px;margin-top:20px;">
+          <p style="margin:0 0 6px;color:#374151;font-size:14px;font-weight:600;">Contactar al profesional</p>
+          <p style="margin:0 0 14px;color:#6B7280;font-size:13px;">${providerName} · ${providerPhone}</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="tel:${providerPhone.replace(/\s/g,'')}"
+               style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:13px;font-weight:600;">
+              📞 Llamar
+            </a>
+            <a href="https://wa.me/${providerPhone.replace(/[^0-9]/g,'')}"
+               style="display:inline-block;background:#25D366;color:#FFFFFF;text-decoration:none;padding:10px 20px;border-radius:999px;font-size:13px;font-weight:600;">
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>` : `<p style="color:#6B7280;font-size:13px;line-height:1.5;">Si tenés preguntas, podés contactarte directamente con el profesional.</p>`}
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
       `)
     });
     console.log(`📧 Presupuesto enviado a ${email}`);
@@ -157,7 +172,7 @@ export async function sendProviderNewBookingNotification(
     await resend.emails.send({
       from: FROM,
       to: email,
-      subject: 'Tenés una nueva solicitud — SAHA',
+      subject: 'Tenés una nueva solicitud — Serco',
       html: emailWrapper(`
         <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${providerName}!</h2>
         <p style="color:#374151;line-height:1.6;">Recibiste una nueva solicitud de presupuesto:</p>
@@ -185,7 +200,7 @@ export async function sendProviderNewBookingNotification(
            style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:600;margin-top:8px;">
           Ver solicitud
         </a>
-        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
       `)
     });
     console.log(`📧 Nueva solicitud notificada a proveedor ${email}`);
@@ -208,7 +223,7 @@ export async function sendRejectionToClientEmail(
     await resend.emails.send({
       from: FROM,
       to: email,
-      subject: 'Actualización sobre tu solicitud — SAHA',
+      subject: 'Actualización sobre tu solicitud — Serco',
       html: emailWrapper(`
         <h2 style="margin:0 0 16px;color:#244C87;font-size:20px;">Hola, ${clientName}!</h2>
         <p style="color:#374151;line-height:1.6;">Lamentablemente <strong>${providerName}</strong> no puede tomar tu solicitud en este momento.</p>
@@ -222,7 +237,7 @@ export async function sendRejectionToClientEmail(
            style="display:inline-block;background:#244C87;color:#FFFFFF;text-decoration:none;padding:12px 28px;border-radius:999px;font-size:14px;font-weight:600;margin-top:8px;">
           Buscar otro profesional
         </a>
-        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo SAHA</strong></p>
+        <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
       `)
     });
     console.log(`📧 Rechazo notificado a ${email}`);
