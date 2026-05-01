@@ -3,11 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import { colors, typography } from '@/styles/tokens';
 import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth } from '@/utils';
 import { getEspecialidades } from '../data/especialidades';
 import { ProviderHeader } from '@/components/layout';
 import { useBookingsStore } from '@/store/bookingsStore';
+
+const WorkZoneMap = dynamic(() => import('@/components/ui/WorkZoneMap'), { ssr: false });
 
 interface ProviderData {
   id: number;
@@ -760,42 +763,10 @@ export default function DashboardProvider() {
               Zona de Trabajo:
             </h2>
             
-            <div 
-              className="w-full rounded-3xl border-2 border-gray-300 bg-gray-50 flex items-center justify-center relative overflow-hidden"
-              style={{ height: '240px' }}
-            >
-              {currentData.ubicacion ? (
-                <div className="relative w-full h-full flex items-center justify-center">
-                  {/* Círculo que representa el radio de alcance */}
-                  <div 
-                    className="border-2 border-dashed border-gray-400 rounded-full flex items-center justify-center"
-                    style={{ 
-                      width: `${Math.min(currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) * 6 : 100, 200)}px`,
-                      height: `${Math.min(currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) * 6 : 100, 200)}px`,
-                      transition: 'width 0.3s ease, height 0.3s ease'
-                    }}
-                  >
-                    {/* Ícono de ubicación */}
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="#244C87" stroke="#244C87" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                      <circle cx="12" cy="10" r="3" fill="white"/>
-                    </svg>
-                  </div>
-                  
-                  {/* Etiqueta con el radio actual */}
-                  <div 
-                    className="absolute bottom-4 bg-white px-4 py-2 rounded-full shadow-md border border-gray-200"
-                    style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral.black }}
-                  >
-                    Radio: {currentData.alcanceTrabajo || '0'} km
-                  </div>
-                </div>
-              ) : (
-                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: '#999999' }}>
-                  No especificado
-                </p>
-              )}
-            </div>
+            <WorkZoneMap
+              location={currentData.ubicacion}
+              radiusKm={currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) : 0}
+            />
             
             {/* Slider para ajustar el radio en modo edición */}
             {editMode && currentData.ubicacion && (

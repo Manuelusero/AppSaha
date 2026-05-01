@@ -26,8 +26,39 @@ interface Provider {
   foto: string;
   rating: number;
   ubicacion: string;
+  serviceRadius: number;
   especialidades: string[];
   reviews: unknown[];
+}
+
+// ── Geocoding + Haversine ────────────────────────────────────────────────────
+const geoCache = new Map<string, { lat: number; lng: number } | null>();
+
+async function geocode(city: string): Promise<{ lat: number; lng: number } | null> {
+  const key = city.toLowerCase().trim();
+  if (geoCache.has(key)) return geoCache.get(key)!;
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city + ', Argentina')}&format=json&limit=1&countrycodes=ar`,
+      { headers: { 'User-Agent': 'SercoApp/1.0' } }
+    );
+    const data = await res.json();
+    const coords = data?.[0] ? { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) } : null;
+    geoCache.set(key, coords);
+    return coords;
+  } catch {
+    geoCache.set(key, null);
+    return null;
+  }
+}
+
+function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLng = (b.lng - a.lng) * Math.PI / 180;
+  const h = Math.sin(dLat / 2) ** 2 +
+    Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(h));
 }
 
 function ProviderStars({ rating }: { rating: number }) {
@@ -78,6 +109,7 @@ function SearchResultsContent() {
             foto: profileImageUrl,
             rating: provider.providerProfile?.rating || 0,
             ubicacion: provider.providerProfile?.location || 'Buenos Aires',
+            serviceRadius: provider.providerProfile?.serviceRadius || 0,
             especialidades: provider.providerProfile?.specialties ? 
               (typeof provider.providerProfile.specialties === 'string' ? 
                 JSON.parse(provider.providerProfile.specialties) : 
@@ -99,7 +131,26 @@ function SearchResultsContent() {
         }
         
         if (ubicacion) {
-          filtrados = filtrados.filter(p => p.ubicacion.toLowerCase().includes(ubicacion.toLowerCase()));
+          // Geocodear la ciudad buscada una sola vez
+          const searchCoords = await geocode(ubicacion);
+
+          // Geocodear cada proveedor en paralelo (cacheadas)
+          const providerCoords = await Promise.all(
+            filtrados.map(p => geocode(p.ubicacion))
+          );
+
+          filtrados = filtrados.filter((p, idx) => {
+            // 1. Coincidencia por nombre de ciudad (como antes)
+            const exactMatch = p.ubicacion.toLowerCase().includes(ubicacion.toLowerCase());
+            if (exactMatch) return true;
+
+            // 2. El proveedor amplió su radio y cubre la ciudad buscada
+            if (p.serviceRadius > 0 && searchCoords && providerCoords[idx]) {
+              const dist = haversineKm(providerCoords[idx]!, searchCoords);
+              return dist <= p.serviceRadius;
+            }
+            return false;
+          });
         }
 
         if (especialidadesParam) {
@@ -304,7 +355,8 @@ function SearchResultsContent() {
                           fontWeight: 500,
                           backgroundColor: '#FFFCF9',
                           color: '#244C87',
-                          borderColor: '#244C87'
+                          borderColor: '#244C87',
+                          cursor: 'pointer'
                         }}
                         onClick={() => router.push(`/providers/${prof.id}`)}
                       >
@@ -318,7 +370,8 @@ function SearchResultsContent() {
                           fontWeight: 500,
                           backgroundColor: selectedProviders.includes(prof.id) ? '#244C87' : '#FFFCF9',
                           color: selectedProviders.includes(prof.id) ? '#FFFFFF' : '#244C87',
-                          borderColor: '#244C87'
+                          borderColor: '#244C87',
+                          cursor: 'pointer'
                         }}
                         onClick={() => {
                           toggleProviderSelection(prof.id);
