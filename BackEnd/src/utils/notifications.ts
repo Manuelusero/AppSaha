@@ -6,6 +6,25 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = 'Serco <onboarding@resend.dev>';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
 
+// ─── Helper: Mapear urgencia numérica a texto ────────────────────────────────
+
+/**
+ * Convierte el valor numérico de urgencia (0-100) a texto legible
+ * @param urgency - Valor numérico (string o number) o null/undefined
+ * @returns "Baja", "Media", "Alta", o "Normal" por defecto
+ */
+function getUrgencyLabel(urgency: string | number | null | undefined): string {
+  if (!urgency) return 'Normal';
+  const num = typeof urgency === 'string' ? parseInt(urgency) : urgency;
+  if (isNaN(num)) return 'Normal';
+  
+  if (num <= 33) return 'Baja';
+  if (num <= 66) return 'Media';
+  return 'Alta';
+}
+
+// ─── Email Wrapper ────────────────────────────────────────────────────────────
+
 const emailWrapper = (content: string) => `
 <!DOCTYPE html>
 <html lang="es">
@@ -192,7 +211,7 @@ export async function sendProviderNewBookingNotification(
           </div>
           <div>
             <span style="color:#6B7280;font-size:13px;">Urgencia</span>
-            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${booking.urgency || 'Normal'}</p>
+            <p style="margin:4px 0 0;color:#374151;font-size:14px;">${getUrgencyLabel(booking.urgency)}</p>
           </div>
         </div>
 

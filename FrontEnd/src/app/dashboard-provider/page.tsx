@@ -763,27 +763,69 @@ export default function DashboardProvider() {
               Zona de Trabajo:
             </h2>
             
-            <WorkZoneMap
-              location={currentData.ubicacion}
-              radiusKm={currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) : 0}
-            />
-            
-            {/* Slider para ajustar el radio en modo edición */}
-            {editMode && currentData.ubicacion && (
-              <div className="mt-4">
-                <input
-                  type="range"
-                  min="0"
-                  max="50"
-                  value={currentData.alcanceTrabajo || 0}
-                  onChange={(e) => handleFieldChange('alcanceTrabajo', e.target.value)}
-                  className="w-full"
-                  style={{
-                    accentColor: '#244C87'
-                  }}
+            {currentData.ubicacion ? (
+              <>
+                <WorkZoneMap
+                  location={currentData.ubicacion}
+                  radiusKm={currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) : 0}
                 />
-                <p className="mt-2 text-xs text-gray-600 text-center" style={{ fontFamily: typography.fontFamily.primary }}>
-                  ¿Hasta dónde estarías dispuesto/a a moverte para trabajar desde {currentData.ubicacion}?
+                
+                {/* Slider para ajustar el radio en modo edición */}
+                {editMode && (
+                  <div className="mt-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max="50"
+                      value={currentData.alcanceTrabajo || 0}
+                      onChange={(e) => handleFieldChange('alcanceTrabajo', e.target.value)}
+                      className="w-full"
+                      style={{
+                        accentColor: '#244C87'
+                      }}
+                    />
+                    <p className="mt-2 text-xs text-gray-600 text-center" style={{ fontFamily: typography.fontFamily.primary }}>
+                      ¿Hasta dónde estarías dispuesto/a a moverte para trabajar desde {currentData.ubicacion}?
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div
+                style={{
+                  padding: '32px',
+                  background: '#F9FAFB',
+                  borderRadius: '20px',
+                  border: '2px dashed #E5E7EB',
+                  textAlign: 'center'
+                }}
+              >
+                <svg
+                  width="48"
+                  height="48"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#9CA3AF"
+                  strokeWidth="2"
+                  style={{ margin: '0 auto 12px' }}
+                >
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                  <circle cx="12" cy="9" r="2.5"/>
+                </svg>
+                <p style={{
+                  fontFamily: 'Maitree, serif',
+                  fontSize: '16px',
+                  color: '#6B7280',
+                  marginBottom: '4px'
+                }}>
+                  No has definido tu zona de trabajo
+                </p>
+                <p style={{
+                  fontFamily: typography.fontFamily.primary,
+                  fontSize: typography.fontSize.sm,
+                  color: '#9CA3AF'
+                }}>
+                  {editMode ? 'Ingresá tu ubicación arriba para ver el mapa' : 'Editá tu perfil para agregar tu ubicación y alcance'}
                 </p>
               </div>
             )}
