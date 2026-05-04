@@ -1,22 +1,8 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import prisma from '../db/prisma.js';
+import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 
 const router = express.Router();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
-
-const authenticateToken = (req: any, res: any, next: any) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Token no proporcionado' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
 
 // GET /api/favorites
 // Returns all favorite providers for the authenticated client

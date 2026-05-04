@@ -1,27 +1,8 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import prisma from '../db/prisma.js';
+import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 
 const router = express.Router();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
-
-// Middleware de autenticación
-const authenticateToken = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-
-  if (!token) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-    (req as any).user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
 
 // POST /api/reviews - Crear una reseña (solo clientes, solo para bookings completados)
 router.post('/', authenticateToken, async (req, res) => {

@@ -98,9 +98,23 @@ export default function Login() {
           <p style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 400, color: 'rgba(255,255,255,0.95)', lineHeight: 1.4, marginBottom: '16px' }}>
             Conectamos personas<br />con profesionales<br />de confianza
           </p>
-          <p style={{ fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 400, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: 'Maitree, serif', fontSize: '15px', fontWeight: 400, color: 'rgba(255,255,255,0.6)', lineHeight: 1.6, marginBottom: '32px' }}>
             Plomeros, electricistas, pintores y más<br />cerca de vos, cuando los necesitás.
           </p>
+          
+          {/* Botón para buscar trabajadores */}
+          <Link 
+            href="/"
+            className="inline-block px-8 py-3 rounded-full text-white font-medium transition-all backdrop-blur-md border-2 border-white/30 shadow-lg hover:border-white/60 hover:shadow-xl hover:scale-105"
+            style={{ 
+              fontFamily: 'Maitree, serif',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
+            }}
+          >
+            Buscar profesionales
+          </Link>
         </div>
       </div>
 
@@ -267,6 +281,22 @@ export default function Login() {
               Regístrate aquí
             </Link>
           </p>
+        </div>
+
+        {/* Link buscar trabajadores - Solo mobile */}
+        <div className="mt-6 text-center lg:hidden">
+          <Link 
+            href="/"
+            className="inline-block w-full px-6 py-3 rounded-full text-white font-medium transition-all backdrop-blur-md border-2 border-white/30 shadow-lg hover:border-white/60 hover:shadow-xl"
+            style={{ 
+              fontFamily: 'Maitree, serif',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)'
+            }}
+          >
+            Buscar profesionales
+          </Link>
         </div>
       </div>
       </div>{/* fin panel derecho */}

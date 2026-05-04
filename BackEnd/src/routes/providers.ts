@@ -2,23 +2,13 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import prisma from '../db/prisma.js';
 import { upload, uploadProviderFiles } from '../middleware/upload.js';
+import { authenticateToken, AuthRequest } from '../middleware/auth.js';
+import { getOptionalFileUrl, getOptionalFileUrls, getFileUrl, getFileUrls } from '../utils/file-helpers.js';
 import bcrypt from 'bcrypt';
 
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
-
-const authenticateToken = (req: any, res: any, next: any) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Token no proporcionado' });
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
 
 // GET /api/providers/test - Endpoint de prueba sin base de datos
 router.get('/test', async (req, res) => {
@@ -102,29 +92,12 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
       profesionesAdicionalesArray = [];
     }
 
-    // Obtener rutas de archivos
-    // En producción con Cloudinary, usar la URL completa; en desarrollo, usar filename
-    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
-    
-    const fotoPerfil = files.fotoPerfil?.[0] 
-      ? (isProduction ? ((files.fotoPerfil[0] as any).path || (files.fotoPerfil[0] as any).url || files.fotoPerfil[0].filename) : files.fotoPerfil[0].filename)
-      : null;
-    
-    const fotoDniFrente = files.fotoDniFrente?.[0]
-      ? (isProduction ? ((files.fotoDniFrente[0] as any).path || (files.fotoDniFrente[0] as any).url || files.fotoDniFrente[0].filename) : files.fotoDniFrente[0].filename)
-      : null;
-    
-    const fotoDniDorso = files.fotoDniDorso?.[0]
-      ? (isProduction ? ((files.fotoDniDorso[0] as any).path || (files.fotoDniDorso[0] as any).url || files.fotoDniDorso[0].filename) : files.fotoDniDorso[0].filename)
-      : null;
-    
-    const certificados = files.certificados?.map(f => 
-      isProduction ? ((f as any).path || (f as any).url || f.filename) : f.filename
-    ) || [];
-    
-    const fotosTrabajos = files.fotosTrabajos?.map(f => 
-      isProduction ? ((f as any).path || (f as any).url || f.filename) : f.filename
-    ) || [];
+    // Obtener rutas de archivos usando helpers
+    const fotoPerfil = getOptionalFileUrl(files, 'fotoPerfil');
+    const fotoDniFrente = getOptionalFileUrl(files, 'fotoDniFrente');
+    const fotoDniDorso = getOptionalFileUrl(files, 'fotoDniDorso');
+    const certificados = getOptionalFileUrls(files, 'certificados');
+    const fotosTrabajos = getOptionalFileUrls(files, 'fotosTrabajos');
 
     console.log('🖼️ Fotos procesadas:', {
       perfil: fotoPerfil,
@@ -260,8 +233,6 @@ router.get('/', async (req, res) => {
   console.log('📥 Request a /api/providers - INICIANDO');
   
   try {
-    console.log('🔍 Prisma client creado, consultando...');
-    
     const { 
       category, 
       location, 
@@ -269,64 +240,85 @@ router.get('/', async (req, res) => {
       order = 'desc'
     } = req.query;
 
-    // Obtener todos los proveedores de forma simple
-    const allUsers = await prisma.user.findMany({
-      where: {
-        role: 'PROVIDER'
-      },
-      include: {
-        providerProfile: true
-      }
-    });
+    // Build where clause para filtrar en la DB, no en memoria
+    const whereClause: any = {
+      role: 'PROVIDER',
+      providerProfile: { isNot: null }
+    };
 
-    console.log(`✅ Encontrados ${allUsers.length} usuarios con role PROVIDER`);
-
-    // Filtrar usuarios que tienen providerProfile
-    let filteredProviders = allUsers.filter((p: any) => p.providerProfile !== null);
-    
-    console.log(`✅ ${filteredProviders.length} tienen providerProfile`);
-
-    // Aplicar filtros manualmente
+    // Aplicar filtros en la query
     if (category) {
-      filteredProviders = filteredProviders.filter((p: any) => 
-        p.providerProfile?.serviceCategory === category
-      );
+      whereClause.providerProfile = {
+        ...whereClause.providerProfile,
+        serviceCategory: category as string
+      };
     }
 
     if (location) {
-      filteredProviders = filteredProviders.filter((p: any) => 
-        p.providerProfile?.location?.toLowerCase().includes((location as string).toLowerCase())
-      );
+      whereClause.providerProfile = {
+        ...whereClause.providerProfile,
+        location: {
+          contains: location as string,
+          mode: 'insensitive'
+        }
+      };
     }
 
-    // Aplicar ordenamiento
+    // Determinar orden
+    let orderByClause: any = {};
     if (sortBy === 'rating') {
-      filteredProviders.sort((a: any, b: any) => {
-        const ratingA = a.providerProfile?.rating || 0;
-        const ratingB = b.providerProfile?.rating || 0;
-        return order === 'desc' ? ratingB - ratingA : ratingA - ratingB;
-      });
+      orderByClause = { providerProfile: { rating: order === 'desc' ? 'desc' : 'asc' } };
     } else if (sortBy === 'price') {
-      filteredProviders.sort((a: any, b: any) => {
-        const priceA = a.providerProfile?.pricePerHour || 0;
-        const priceB = b.providerProfile?.pricePerHour || 0;
-        return order === 'desc' ? priceB - priceA : priceA - priceB;
-      });
+      orderByClause = { providerProfile: { pricePerHour: order === 'desc' ? 'desc' : 'asc' } };
     } else if (sortBy === 'experience') {
-      filteredProviders.sort((a: any, b: any) => {
-        const expA = a.providerProfile?.experience || 0;
-        const expB = b.providerProfile?.experience || 0;
-        return order === 'desc' ? expB - expA : expA - expB;
-      });
+      orderByClause = { providerProfile: { experience: order === 'desc' ? 'desc' : 'asc' } };
+    } else {
+      orderByClause = { createdAt: 'desc' };
     }
 
-    // No devolver contraseñas
-    const providersWithoutPassword = filteredProviders.map((provider: any) => {
-      const { password, ...userWithoutPassword } = provider;
-      return userWithoutPassword;
+    // Query optimizada: select solo campos necesarios, sin password
+    const providers = await prisma.user.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        providerProfile: {
+          select: {
+            userId: true,
+            serviceCategory: true,
+            specialties: true,
+            location: true,
+            bio: true,
+            serviceDescription: true,
+            experience: true,
+            pricePerHour: true,
+            rating: true,
+            totalReviews: true,
+            completedBookings: true,
+            profilePhoto: true,
+            portfolioImages: true,
+            workPhotos: true,
+            serviceRadius: true,
+            instagram: true,
+            facebook: true,
+            linkedin: true,
+            dniNumber: true
+            // No incluir: dniDocument, dniPhotoFront, dniPhotoBack, certifications (privados)
+          }
+        }
+      },
+      orderBy: orderByClause
     });
 
-    res.json(providersWithoutPassword);
+    console.log(`✅ Encontrados ${providers.length} proveedores`);
+
+    res.json(providers);
 
   } catch (error) {
     console.error('❌ Error al obtener proveedores:', error);
@@ -334,42 +326,8 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/providers/:id - Obtener un proveedor específico
-router.get('/:id', async (req, res) => {
-  
-  try {
-    const { id } = req.params;
-
-    const provider = await prisma.user.findUnique({
-      where: { 
-        id,
-        role: 'PROVIDER'
-      },
-      include: {
-        providerProfile: {
-          include: {
-            references: true // Incluir referencias del profesional
-          }
-        }
-      }
-    });
-
-    if (!provider || !provider.providerProfile) {
-      return res.status(404).json({ error: 'Proveedor no encontrado' });
-    }
-
-    // No devolver contraseña
-    const { password, ...providerWithoutPassword } = provider;
-
-    res.json(providerWithoutPassword);
-
-  } catch (error) {
-    console.error('Error al obtener proveedor:', error);
-    res.status(500).json({ error: 'Error al obtener proveedor' });
-  }
-});
-
 // GET /api/providers/categories/list - Obtener lista de categorías con conteo
+// IMPORTANTE: Esta ruta debe estar ANTES de GET /:id para que no sea capturada por el parámetro dinámico
 router.get('/categories/list', async (req, res) => {
   
   try {
@@ -385,6 +343,77 @@ router.get('/categories/list', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener categorías:', error);
     res.status(500).json({ error: 'Error al obtener categorías' });
+  }
+});
+
+// GET /api/providers/:id - Obtener un proveedor específico
+router.get('/:id', async (req, res) => {
+  
+  try {
+    const { id } = req.params;
+
+    const provider = await prisma.user.findUnique({
+      where: { 
+        id,
+        role: 'PROVIDER'
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        providerProfile: {
+          select: {
+            userId: true,
+            serviceCategory: true,
+            specialties: true,
+            location: true,
+            bio: true,
+            serviceDescription: true,
+            experience: true,
+            pricePerHour: true,
+            rating: true,
+            totalReviews: true,
+            completedBookings: true,
+            profilePhoto: true,
+            portfolioImages: true,
+            workPhotos: true,
+            serviceRadius: true,
+            instagram: true,
+            facebook: true,
+            linkedin: true,
+            dniNumber: true,
+            certifications: true,
+            references: {
+              select: {
+                id: true,
+                clientName: true,
+                relationship: true,
+                phone: true,
+                email: true,
+                yearsKnown: true,
+                comments: true,
+                createdAt: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (!provider || !provider.providerProfile) {
+      return res.status(404).json({ error: 'Proveedor no encontrado' });
+    }
+
+    res.json(provider);
+
+  } catch (error) {
+    console.error('Error al obtener proveedor:', error);
+    res.status(500).json({ error: 'Error al obtener proveedor' });
   }
 });
 
@@ -440,15 +469,12 @@ router.post('/:id/profile-photo', authenticateToken, upload.single('fotoPerfil')
   try {
     const { id } = req.params;
     const file = req.file as any;
-    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
 
     if (!file) {
       return res.status(400).json({ error: 'No se envió ninguna foto' });
     }
 
-    const photoUrl = isProduction
-      ? (file.path || file.url || file.filename)
-      : file.filename;
+    const photoUrl = getFileUrl(file);
 
     await prisma.providerProfile.update({
       where: { userId: id },
@@ -468,7 +494,6 @@ router.post('/:id/portfolio', authenticateToken, upload.array('fotosTrabajos', 1
   try {
     const { id } = req.params;
     const files = req.files as Express.Multer.File[];
-    const isProduction = process.env.VERCEL || process.env.NODE_ENV === 'production';
 
     if (!files || files.length === 0) {
       return res.status(400).json({ error: 'No se enviaron fotos' });
@@ -495,10 +520,8 @@ router.post('/:id/portfolio', authenticateToken, upload.array('fotosTrabajos', 1
       existingImages = [];
     }
 
-    // Extraer URLs de las nuevas fotos
-    const newPhotos = files.map((f: any) =>
-      isProduction ? (f.path || f.url || f.filename) : f.filename
-    );
+    // Extraer URLs de las nuevas fotos usando helper
+    const newPhotos = getFileUrls(files);
 
     const updatedImages = [...existingImages, ...newPhotos];
 

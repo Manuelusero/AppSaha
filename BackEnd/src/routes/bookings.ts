@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import prisma from '../db/prisma.js';
 import { uploadProblemPhoto } from '../middleware/upload.js';
+import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 import {
   sendClientConfirmationEmail,
   sendClientConfirmationWhatsApp,
@@ -16,23 +17,6 @@ import {
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
-
-// Middleware para verificar autenticación
-const authenticateToken = (req: any, res: any, next: any) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-
-  if (!token) {
-    return res.status(401).json({ error: 'Token no proporcionado' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: string };
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Token inválido' });
-  }
-};
 
 // POST /api/bookings/guest - Crear solicitud sin autenticación (clientes invitados)
 router.post('/guest', uploadProblemPhoto, async (req: any, res) => {
