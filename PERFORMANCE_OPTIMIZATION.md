@@ -5,6 +5,7 @@
 ### 1. **Backend Query Optimization**
 
 #### Antes:
+
 ```typescript
 // ❌ Traía todos los usuarios con password incluido
 const allUsers = await prisma.user.findMany({
@@ -18,21 +19,25 @@ filteredProviders.sort((a, b) => ...);
 ```
 
 #### Después:
+
 ```typescript
 // ✅ Select solo campos necesarios (sin password)
 // ✅ Filtra en la DB con where clause
 // ✅ Ordena en la DB con orderBy
 const providers = await prisma.user.findMany({
   where: {
-    role: 'PROVIDER',
-    providerProfile: { isNot: null }
+    role: "PROVIDER",
+    providerProfile: { isNot: null },
   },
-  select: { /* solo campos públicos */ },
-  orderBy: { providerProfile: { rating: 'desc' } }
+  select: {
+    /* solo campos públicos */
+  },
+  orderBy: { providerProfile: { rating: "desc" } },
 });
 ```
 
 **Beneficios:**
+
 - ✅ **75% menos datos** transferidos (no envía passwords, DNI, certificados)
 - ✅ **50% más rápido** (filtrado y orden en DB, no en memoria)
 - ✅ **Más seguro** (no expone datos privados)
@@ -46,7 +51,7 @@ Se agregaron índices en Prisma schema para optimizar queries frecuentes:
 ```prisma
 model ProviderProfile {
   // ... campos
-  
+
   @@index([serviceCategory])  // Búsqueda por categoría
   @@index([location])          // Búsqueda por ubicación
   @@index([rating])            // Ordenar por rating
@@ -55,7 +60,7 @@ model ProviderProfile {
 
 model Booking {
   // ... campos
-  
+
   @@index([clientId])
   @@index([providerId])
   @@index([status])
@@ -82,6 +87,7 @@ model User {
 ```
 
 **Beneficios:**
+
 - ✅ **10x más rápido** en búsquedas por categoría
 - ✅ **5x más rápido** en listado de bookings
 - ✅ **Queries optimizadas** automáticamente por PostgreSQL
@@ -114,15 +120,16 @@ Nuevo hook `useIntersectionObserver` para cargar imágenes cuando entran al view
 import { LazyImage } from '@/hooks';
 
 // ✅ Carga solo cuando la imagen es visible
-<LazyImage 
-  src="/profile.jpg" 
-  alt="Profile" 
-  width={200} 
+<LazyImage
+  src="/profile.jpg"
+  alt="Profile"
+  width={200}
   height={200}
 />
 ```
 
 **Beneficios:**
+
 - ✅ **Initial bundle 30% más pequeño**
 - ✅ **Faster page load** (componentes pesados se cargan bajo demanda)
 - ✅ **Ahorro de ancho de banda** (imágenes solo cuando son visibles)
@@ -132,6 +139,7 @@ import { LazyImage } from '@/hooks';
 ### 4. **Next.js Image Optimization**
 
 Ya se está usando `next/image` en 12 páginas:
+
 - ✅ Optimización automática de imágenes
 - ✅ Lazy loading nativo
 - ✅ Responsive images
@@ -173,6 +181,7 @@ const providers = await prisma.user.findMany({
 ### 3. **Component Splitting**
 
 Dividir `provider-signup/page.tsx` (1,451 líneas) en:
+
 - `components/provider-signup/StepPersonalData.tsx`
 - `components/provider-signup/StepProfessionalData.tsx`
 - `components/provider-signup/StepDocumentation.tsx`
@@ -195,12 +204,14 @@ const ProviderCard = memo(({ provider }) => {
 ### Lighthouse Score Target
 
 **Current (estimate):**
+
 - Performance: 60-70
 - Accessibility: 85-90
 - Best Practices: 80-85
 - SEO: 75-80
 
 **After optimizations (target):**
+
 - Performance: 85-95 ✅
 - Accessibility: 90-95
 - Best Practices: 90-95
