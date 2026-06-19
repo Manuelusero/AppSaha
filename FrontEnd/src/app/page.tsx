@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { colors, typography } from '@/styles/tokens';
 import { useAuth } from '@/contexts';
 import { apiPost } from '@/utils/api';
@@ -277,9 +278,21 @@ function LoginContent({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleSocialLogin = (provider: 'google' | 'facebook' | 'apple') => {
-    console.log(`Iniciando login con ${provider}`);
-    alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} será implementado próximamente.`);
+  const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
+    try {
+      if (provider === 'google') {
+        await signIn('google', { 
+          callbackUrl: '/dashboard-provider',
+          redirect: true
+        });
+      } else {
+        // Facebook y Apple pendientes de configurar
+        alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} estará disponible próximamente.\n\nPor ahora solo Google está habilitado.`);
+      }
+    } catch (error) {
+      console.error(`Error al iniciar sesión con ${provider}:`, error);
+      setError(`Error al conectar con ${provider}. Por favor intenta de nuevo.`);
+    }
   };
 
   return (

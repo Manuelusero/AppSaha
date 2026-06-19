@@ -391,7 +391,7 @@ router.get('/:id', async (req, res) => {
             references: {
               select: {
                 id: true,
-                clientName: true,
+                name: true,
                 relationship: true,
                 phone: true,
                 email: true,
@@ -405,7 +405,7 @@ router.get('/:id', async (req, res) => {
       }
     });
 
-    if (!provider || !provider.providerProfile) {
+    if (!provider) {
       return res.status(404).json({ error: 'Proveedor no encontrado' });
     }
 

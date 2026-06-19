@@ -3,6 +3,7 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
 import { useAuth } from '@/contexts';
 import { useRedirectIfAuthenticated, useForm } from '@/hooks';
 import { apiPost } from '@/utils/api';
@@ -54,27 +55,22 @@ export default function Login() {
     }
   };
 
-  const handleSocialLogin = (provider: 'google' | 'facebook' | 'apple') => {
-    // TODO: Implementar OAuth flow
-    // Por ahora, mostrar mensaje informativo
-    console.log(`Iniciando login con ${provider}`);
-    
-    // Futura implementación:
-    // 1. Redirigir a la URL de OAuth del proveedor
-    // 2. Manejar el callback con el token
-    // 3. Llamar al endpoint del backend para validar y crear sesión
-    
-    const urls = {
-      google: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_URL || '/api/auth/google',
-      facebook: process.env.NEXT_PUBLIC_FACEBOOK_OAUTH_URL || '/api/auth/facebook',
-      apple: process.env.NEXT_PUBLIC_APPLE_OAUTH_URL || '/api/auth/apple'
-    };
-    
-    // Descomentar cuando estén configurados los endpoints:
-    // window.location.href = urls[provider];
-    
-    // Temporal - remover cuando se implemente OAuth:
-    alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} será implementado próximamente.\n\nEndpoint: ${urls[provider]}`);
+  const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
+    try {
+      // Si es Google, usar NextAuth (implementado)
+      if (provider === 'google') {
+        await signIn('google', { 
+          callbackUrl: '/',
+          redirect: true
+        });
+      } else {
+        // Facebook y Apple pendientes de configurar
+        alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} estará disponible próximamente.\n\nPor ahora solo Google está habilitado.`);
+      }
+    } catch (error) {
+      console.error(`Error al iniciar sesión con ${provider}:`, error);
+      setError(`Error al conectar con ${provider}. Por favor intenta de nuevo.`);
+    }
   };
 
   return (

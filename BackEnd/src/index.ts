@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import usersRouter from './routes/users.js';
 import authRouter from './routes/auth.js';
+import oauthRouter from './routes/oauth.js';
 import providersRouter from './routes/providers.js';
 import bookingsRouter from './routes/bookings.js';
 import reviewsRouter from './routes/reviews.js';
@@ -88,6 +89,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Rutas de API
+app.use('/api/auth', oauthRouter); // OAuth routes (Google, Facebook, Apple)
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/providers', providersRouter);

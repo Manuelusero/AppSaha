@@ -47,7 +47,7 @@ export default function SpecialtyChips({
               }`}
               style={{
                 fontFamily: typography.fontFamily.primary,
-                fontSize: typography.fontSize.small
+                fontSize: typography.fontSize.sm
               }}
             >
               {specialty}

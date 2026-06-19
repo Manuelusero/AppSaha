@@ -142,7 +142,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     /**
      * JWT Callback - Se ejecuta cuando se crea/actualiza el token
-     * Aquí agregamos el rol del usuario al token
+     * Aquí agregamos el rol del usuario al token y sincronizamos con backend
      */
     async jwt({ token, user, account }) {
       // En el primer login, user estará disponible
@@ -152,28 +152,46 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
       }
 
-      // Si es OAuth, crear/obtener usuario en nuestra DB
-      if (account?.provider && account?.provider !== 'credentials') {
+      // Si es OAuth (Google, Facebook, Apple), sincronizar con nuestra DB
+      if (account?.provider && account?.provider !== 'credentials' && token.email) {
         token.provider = account.provider;
         
-        // TODO: Aquí deberías hacer una llamada a tu API para:
-        // 1. Buscar si el usuario ya existe (por email o provider account ID)
-        // 2. Si no existe, crearlo
-        // 3. Retornar el role del usuario desde tu DB
-        
-        // Ejemplo (implementar en tu backend):
-        // const apiResponse = await fetch(`${apiUrl}/api/auth/oauth`, {
-        //   method: 'POST',
-        //   body: JSON.stringify({
-        //     provider: account.provider,
-        //     email: token.email,
-        //     name: token.name,
-        //     image: token.picture
-        //   })
-        // });
-        // const userData = await apiResponse.json();
-        // token.id = userData.user.id;
-        // token.role = userData.user.role;
+        try {
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          
+          // Llamar a nuestro backend para crear/obtener el usuario de OAuth
+          const response = await fetch(`${apiUrl}/api/auth/oauth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              provider: account.provider,
+              providerId: account.providerAccountId,
+              email: token.email,
+              name: token.name || '',
+              image: token.picture || ''
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            
+            // Actualizar token con datos del backend
+            token.id = data.user.id;
+            token.role = data.user.role;
+            token.accessToken = data.token;
+            token.isNewUser = data.isNewUser;
+            
+            console.log('✅ Usuario OAuth sincronizado con backend:', {
+              email: data.user.email,
+              role: data.user.role,
+              isNew: data.isNewUser
+            });
+          } else {
+            console.error('❌ Error al sincronizar usuario OAuth con backend');
+          }
+        } catch (error) {
+          console.error('❌ Error en llamada a /api/auth/oauth:', error);
+        }
       }
 
       return token;
@@ -186,7 +204,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        session.user.role = (token.role as string) as 'CLIENT' | 'PROVIDER' | 'ADMIN';
         session.user.accessToken = token.accessToken as string;
         session.user.provider = token.provider as string;
       }
