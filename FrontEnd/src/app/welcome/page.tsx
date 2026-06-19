@@ -33,7 +33,7 @@ export default function Welcome() {
 
   return (
     <div 
-      className="min-h-screen flex flex-col items-center justify-between p-6 relative overflow-hidden"
+      className="min-h-screen flex flex-col items-center justify-between p-6 pb-56 sm:pb-32 relative overflow-hidden"
       style={{ 
         background: 'linear-gradient(180deg, #FFFFFF 0%, #3A5FA0 100%)',
       }}

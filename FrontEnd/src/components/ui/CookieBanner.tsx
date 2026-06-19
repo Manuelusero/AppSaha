@@ -211,30 +211,30 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed bottom-0 left-0 right-0 z-[9999] flex justify-center px-3 pb-3 sm:px-4 sm:pb-4 pointer-events-none"
+      className="fixed bottom-16 sm:bottom-0 left-0 right-0 z-[9999] flex justify-center px-3 pb-3 sm:px-4 sm:pb-4 pointer-events-none"
     >
       <div
         className="w-full sm:max-w-2xl pointer-events-auto"
         style={{
           backgroundColor: colors.secondary.light,
           borderRadius: '16px',
-          padding: '20px',
+          padding: '14px 16px',
           boxShadow: '0 4px 30px rgba(0,0,0,0.15)',
           border: `1px solid ${colors.secondary.dark}`,
           fontFamily: typography.fontFamily.primary,
         }}
       >
         {/* Encabezado */}
-        <div className="flex items-start gap-3 mb-4">
-          <span className="text-2xl leading-none mt-0.5 flex-shrink-0">🍪</span>
+        <div className="flex items-start gap-2 mb-3">
+          <span className="text-xl sm:text-2xl leading-none mt-0.5 flex-shrink-0">🍪</span>
           <div>
             <h2
-              className="text-base font-semibold mb-1"
+              className="text-sm sm:text-base font-semibold mb-1"
               style={{ color: colors.primary.main }}
             >
               Usamos cookies
             </h2>
-            <p className="text-sm leading-relaxed" style={{ color: textSecondary }}>
+            <p className="text-xs sm:text-sm leading-relaxed" style={{ color: textSecondary }}>
               Usamos cookies para mejorar tu experiencia y mostrarte contenido relevante.{' '}
               <a
                 href="/privacidad"
@@ -251,7 +251,7 @@ export function CookieBanner() {
         <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
           <button
             onClick={() => setShowPreferences(true)}
-            className="w-full sm:w-auto py-2.5 px-4 text-sm font-medium transition-opacity hover:opacity-70"
+            className="w-full sm:w-auto py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-opacity hover:opacity-70"
             style={{
               borderRadius: borderRadius.full,
               backgroundColor: 'transparent',
@@ -265,7 +265,7 @@ export function CookieBanner() {
           </button>
           <button
             onClick={rejectAll}
-            className="w-full sm:w-auto py-2.5 px-4 text-sm font-medium transition-opacity hover:opacity-70"
+            className="w-full sm:w-auto py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-opacity hover:opacity-70"
             style={{
               borderRadius: borderRadius.full,
               backgroundColor: 'transparent',
@@ -279,7 +279,7 @@ export function CookieBanner() {
           </button>
           <button
             onClick={acceptAll}
-            className="w-full sm:w-auto py-2.5 px-4 text-sm font-medium transition-opacity hover:opacity-90"
+            className="w-full sm:w-auto py-2 sm:py-2.5 px-3 sm:px-4 text-xs sm:text-sm font-medium transition-opacity hover:opacity-90"
             style={{
               borderRadius: borderRadius.full,
               backgroundColor: colors.primary.main,
