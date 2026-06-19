@@ -352,7 +352,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    const provider = await prisma.user.findUnique({
+    const provider = await prisma.user.findFirst({
       where: { 
         id,
         role: 'PROVIDER'
@@ -394,8 +394,6 @@ router.get('/:id', async (req, res) => {
                 name: true,
                 relationship: true,
                 phone: true,
-                yearsKnown: true,
-                comments: true,
                 createdAt: true
               }
             }
@@ -499,7 +497,7 @@ router.post('/:id/portfolio', authenticateToken, upload.array('fotosTrabajos', 1
     }
 
     // Obtener el provider actual
-    const provider = await prisma.user.findUnique({
+    const provider = await prisma.user.findFirst({
       where: { id, role: 'PROVIDER' },
       include: { providerProfile: true }
     });
@@ -554,7 +552,7 @@ router.delete('/:id/portfolio', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ error: 'Se requiere photoUrl' });
     }
 
-    const provider = await prisma.user.findUnique({
+    const provider = await prisma.user.findFirst({
       where: { id, role: 'PROVIDER' },
       include: { providerProfile: true }
     });
