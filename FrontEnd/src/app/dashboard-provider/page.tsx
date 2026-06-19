@@ -47,7 +47,6 @@ export default function DashboardProvider() {
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
   const profesionInputRef = useRef<HTMLInputElement>(null);
   const [showProfesionDropdown, setShowProfesionDropdown] = useState(false);
-  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const profesionOpciones = [
     { value: 'PLOMERIA', label: 'Plomeros' },
@@ -70,13 +69,7 @@ export default function DashboardProvider() {
     return acc;
   }, {} as Record<string, string>);
 
-  const openProfesionDropdown = () => {
-    const rect = profesionInputRef.current?.getBoundingClientRect();
-    if (rect) {
-      setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-    }
-    setShowProfesionDropdown(true);
-  };
+
 
   const { bookings, fetchBookings } = useBookingsStore();
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -559,20 +552,22 @@ export default function DashboardProvider() {
                     {currentData.nombre} {currentData.apellido}
                   </h1>
                   
-                  <div className="relative w-full">
-                    <input
-                      ref={profesionInputRef}
-                      type="text"
-                      readOnly
-                      value={profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? ''}
-                      onFocus={openProfesionDropdown}
-                      onClick={openProfesionDropdown}
-                      onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 150)}
-                      placeholder="Profesión"
-                      className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer"
-                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}
-                    />
-                  </div>
+                  <select
+                    value={currentData.serviceCategory}
+                    onChange={(e) => {
+                      handleFieldChange('serviceCategory', e.target.value);
+                      handleFieldChange('specialties', []);
+                    }}
+                    className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 cursor-pointer"
+                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', backgroundColor: 'white' }}
+                  >
+                    <option value="">Seleccionar profesión...</option>
+                    {profesionOpciones
+                      .filter((op, idx, self) => self.findIndex(o => o.label === op.label) === idx)
+                      .map((op) => (
+                        <option key={op.value} value={op.value}>{op.label}</option>
+                      ))}
+                  </select>
 
                   <input
                     type="text"
@@ -1047,38 +1042,7 @@ export default function DashboardProvider() {
           </div>{/* fin wrapper */}
         </div>
       </main>
-      {showProfesionDropdown && dropdownRect && (
-        <div
-          style={{
-            position: 'fixed',
-            top: dropdownRect.top - window.scrollY + 4,
-            left: dropdownRect.left - window.scrollX,
-            width: dropdownRect.width,
-            zIndex: 9999,
-            backgroundColor: 'white',
-            border: '2px solid #E5E7EB',
-            borderRadius: '16px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-            maxHeight: '240px',
-            overflowY: 'auto',
-          }}
-        >
-          {profesionOpciones.map((op) => (
-            <div
-              key={op.value}
-              onMouseDown={() => {
-                handleFieldChange('serviceCategory', op.value);
-                handleFieldChange('specialties', []);
-                setShowProfesionDropdown(false);
-              }}
-              className="px-5 py-3 hover:bg-indigo-50 cursor-pointer text-gray-700 text-base transition-colors"
-              style={{ fontFamily: 'Maitree, serif', backgroundColor: currentData.serviceCategory === op.value ? '#EEF2FF' : undefined }}
-            >
-              {op.label}
-            </div>
-          ))}
-        </div>
-      )}
+
     </div>
   );
 }
