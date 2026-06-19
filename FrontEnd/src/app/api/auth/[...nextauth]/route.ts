@@ -17,6 +17,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import FacebookProvider from 'next-auth/providers/facebook';
 import AppleProvider from 'next-auth/providers/apple';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { createHash } from 'crypto';
 
 const getApiBaseUrl = (): string => {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
@@ -30,6 +31,21 @@ const getApiBaseUrl = (): string => {
   }
 
   throw new Error('Configuración faltante: NEXT_PUBLIC_API_URL no está definida en producción.');
+};
+
+const getNextAuthSecret = (): string => {
+  const configuredSecret = process.env.NEXTAUTH_SECRET?.trim() || process.env.AUTH_SECRET?.trim();
+
+  if (configuredSecret) {
+    return configuredSecret;
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return 'dev-nextauth-secret';
+  }
+
+  const seed = process.env.NEXTAUTH_URL?.trim() || process.env.VERCEL_URL?.trim() || 'saha-nextauth-default';
+  return createHash('sha256').update(seed).digest('hex');
 };
 
 export const authOptions: NextAuthOptions = {
@@ -219,7 +235,7 @@ export const authOptions: NextAuthOptions = {
    * JWT configuration
    */
   jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: getNextAuthSecret(),
     maxAge: 7 * 24 * 60 * 60, // 7 días
   },
 
