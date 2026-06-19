@@ -394,7 +394,6 @@ router.get('/:id', async (req, res) => {
                 name: true,
                 relationship: true,
                 phone: true,
-                email: true,
                 yearsKnown: true,
                 comments: true,
                 createdAt: true

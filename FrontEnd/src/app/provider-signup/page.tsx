@@ -101,6 +101,19 @@ export default function ProviderSignup() {
   // NextAuth session para OAuth
   const { data: session } = useSession();
 
+  const getPasswordStrengthError = (password: string): string => {
+    if (!password) return '';
+    if (password.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+    if (!/[A-Z]/.test(password)) return 'La contraseña debe contener al menos una letra mayúscula';
+    if (!/[0-9]/.test(password)) return 'La contraseña debe contener al menos un número';
+    return '';
+  };
+
+  const getPasswordMismatchError = (password: string, confirmPassword: string): string => {
+    if (!password || !confirmPassword) return '';
+    return password === confirmPassword ? '' : 'Las contraseñas no coinciden';
+  };
+
   // Función para capitalizar cada palabra
   const capitalizeName = (text: string): string => {
     return text
@@ -215,6 +228,17 @@ export default function ProviderSignup() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [paso]);
 
+  const passwordStrengthError = getPasswordStrengthError(values.password);
+  const passwordMismatchError = getPasswordMismatchError(values.password, values.confirmarPassword);
+  const isStep1Complete = Boolean(
+    values.nombre &&
+    values.apellido &&
+    values.email &&
+    values.telefono &&
+    values.password &&
+    values.confirmarPassword
+  );
+
   // Función para filtrar ubicaciones mientras escribe
   const handleUbicacionChange = (valor: string) => {
     setFieldValue('ubicacion', valor);
@@ -274,37 +298,16 @@ export default function ProviderSignup() {
 
   // Validación para el paso 1
   const validarPaso1 = () => {
-    // Verificar que todos los campos estén llenos
-    if (!values.nombre || !values.apellido || !values.email || !values.telefono || !values.password || !values.confirmarPassword) {
-      alert('Por favor completa todos los campos');
-      return false;
-    }
-
-    // Verificar que las contraseñas coincidan
-    if (values.password !== values.confirmarPassword) {
-      alert('Las contraseñas no coinciden');
-      return false;
-    }
-
-    // Verificar longitud mínima
-    if (values.password.length < 6) {
-      alert('La contraseña debe tener al menos 6 caracteres');
-      return false;
-    }
-
-    // Verificar mayúscula
-    if (!/[A-Z]/.test(values.password)) {
-      alert('La contraseña debe contener al menos una letra mayúscula');
-      return false;
-    }
-
-    // Verificar número
-    if (!/[0-9]/.test(values.password)) {
-      alert('La contraseña debe contener al menos un número');
-      return false;
-    }
-
-    return true;
+    return Boolean(
+      values.nombre &&
+      values.apellido &&
+      values.email &&
+      values.telefono &&
+      values.password &&
+      values.confirmarPassword &&
+      !getPasswordStrengthError(values.password) &&
+      !getPasswordMismatchError(values.password, values.confirmarPassword)
+    );
   };
 
   // Validar tamaño de archivos (máx 1.5MB por archivo para evitar error 413)
@@ -810,8 +813,8 @@ export default function ProviderSignup() {
                       </svg>
                     )}
                   </button>
-                  <p className="mt-1 text-xs text-gray-500" style={{ fontFamily: typography.fontFamily.primary }}>
-                    Mínimo 6 dígitos. Debe contener al menos una mayúscula y un número
+                  <p className={`mt-1 text-xs ${passwordStrengthError ? 'text-red-600' : 'text-gray-500'}`} style={{ fontFamily: typography.fontFamily.primary }}>
+                    {passwordStrengthError || 'Mínimo 6 dígitos. Debe contener al menos una mayúscula y un número'}
                   </p>
                 </div>
 
@@ -846,6 +849,11 @@ export default function ProviderSignup() {
                       </svg>
                     )}
                   </button>
+                  {passwordMismatchError && (
+                    <p className="mt-1 text-xs text-red-600" style={{ fontFamily: typography.fontFamily.primary }}>
+                      {passwordMismatchError}
+                    </p>
+                  )}
                 </div>
                 </>
                 )}
@@ -917,6 +925,7 @@ export default function ProviderSignup() {
                         </button>
                       ))}
                     </div>
+                          disabled={paso === 1 && (!isStep1Complete || !!passwordStrengthError || !!passwordMismatchError)}
                   </div>
                 )}
 
