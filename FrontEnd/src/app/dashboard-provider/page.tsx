@@ -54,6 +54,7 @@ export default function DashboardProvider() {
     { value: 'ELECTRICIDAD', label: 'Electricistas' },
     { value: 'PINTURA', label: 'Pintores' },
     { value: 'ALBANILERIA', label: 'Albañiles' },
+    { value: 'CONSTRUCCION', label: 'Albañiles' },
     { value: 'CARPINTERIA', label: 'Carpinteros' },
     { value: 'HERRERIA', label: 'Herreros' },
     { value: 'LIMPIEZA', label: 'Limpiadores' },
@@ -61,7 +62,21 @@ export default function DashboardProvider() {
     { value: 'MASAJES', label: 'Masajistas' },
     { value: 'CLASES', label: 'Profesores' },
     { value: 'COSTURA', label: 'Modistas' },
+    { value: 'OTRO', label: 'Otro' },
   ];
+
+  const serviceCategoryLabelMap = profesionOpciones.reduce((acc, option) => {
+    acc[option.value] = option.label;
+    return acc;
+  }, {} as Record<string, string>);
+
+  const openProfesionDropdown = () => {
+    const rect = profesionInputRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+    }
+    setShowProfesionDropdown(true);
+  };
 
   const { bookings, fetchBookings } = useBookingsStore();
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -550,13 +565,8 @@ export default function DashboardProvider() {
                       type="text"
                       readOnly
                       value={profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? ''}
-                      onFocus={() => {
-                        const rect = profesionInputRef.current?.getBoundingClientRect();
-                        if (rect) {
-                          setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-                        }
-                        setShowProfesionDropdown(true);
-                      }}
+                      onFocus={openProfesionDropdown}
+                      onClick={openProfesionDropdown}
                       onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 150)}
                       placeholder="Profesión"
                       className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer"
@@ -601,7 +611,7 @@ export default function DashboardProvider() {
 
                   <div className="flex items-center justify-center gap-2 text-gray-600">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                     serviceCategoryLabelMap[currentData.serviceCategory] ||  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                       <circle cx="12" cy="10" r="3" fill="white"/>
                     </svg>
                     <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>
