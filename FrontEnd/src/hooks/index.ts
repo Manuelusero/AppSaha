@@ -8,5 +8,5 @@ export { useForm } from './useForm';
 export { useDebounce } from './useDebounce';
 export { useLocalStorage } from './useLocalStorage';
 export { useToggle } from './useToggle';
-export { useIntersectionObserver, LazyImage } from './useIntersectionObserver';
+export { useIntersectionObserver } from './useIntersectionObserver';
 export { useCookieConsent } from './useCookieConsent';
