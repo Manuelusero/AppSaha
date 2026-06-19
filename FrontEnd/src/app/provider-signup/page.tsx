@@ -238,6 +238,7 @@ export default function ProviderSignup() {
     values.password &&
     values.confirmarPassword
   );
+  const isNextStepDisabled = paso === 1 && (!isStep1Complete || !!passwordStrengthError || !!passwordMismatchError);
 
   // Función para filtrar ubicaciones mientras escribe
   const handleUbicacionChange = (valor: string) => {
@@ -925,7 +926,6 @@ export default function ProviderSignup() {
                         </button>
                       ))}
                     </div>
-                          disabled={paso === 1 && (!isStep1Complete || !!passwordStrengthError || !!passwordMismatchError)}
                   </div>
                 )}
 
@@ -1442,6 +1442,7 @@ export default function ProviderSignup() {
                 <button
                   type="button"
                   onClick={handleSiguiente}
+                  disabled={isNextStepDisabled}
                   className="px-6 sm:px-8 py-2.5 sm:py-3 rounded-full bg-[#244C87] text-white hover:bg-[#1a3a6b] transition-colors cursor-pointer text-base sm:text-lg"
                   style={{ fontFamily: typography.fontFamily.primary }}
                 >
