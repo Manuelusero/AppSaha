@@ -13,14 +13,14 @@ export default function SobreNosotros() {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-6 py-16">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 md:py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 
             className="mb-6"
             style={{ 
               fontFamily: typography.fontFamily.primary, 
-              fontSize: '48px', 
+              fontSize: 'clamp(28px, 6vw, 48px)', 
               fontWeight: 700, 
               color: colors.primary.main,
               lineHeight: '1.2'
@@ -32,7 +32,7 @@ export default function SobreNosotros() {
             className="max-w-3xl mx-auto"
             style={{ 
               fontFamily: typography.fontFamily.primary, 
-              fontSize: '20px', 
+              fontSize: 'clamp(16px, 2.5vw, 20px)', 
               color: '#666',
               lineHeight: '1.8'
             }}

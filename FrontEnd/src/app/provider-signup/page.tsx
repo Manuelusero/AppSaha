@@ -1052,7 +1052,7 @@ export default function ProviderSignup() {
                   {values.ubicacion ? (
                     <WorkZoneMap
                       location={values.ubicacion}
-                      radius={parseInt(values.alcanceTrabajo) || 0}
+                      radiusKm={parseInt(values.alcanceTrabajo) || 0}
                       onRadiusChange={(newRadius) => setFieldValue('alcanceTrabajo', newRadius.toString())}
                     />
                   ) : (

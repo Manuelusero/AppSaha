@@ -91,7 +91,7 @@ export default function RecomendacionPage({ params }: { params: Promise<{ provid
       </header>
 
       {/* Contenido principal */}
-      <main style={{ paddingTop: 'calc(4rem + 48px)', paddingLeft: '24px', paddingRight: '24px', paddingBottom: '48px' }}>
+      <main className="px-4 sm:px-6" style={{ paddingTop: 'calc(4rem + 48px)', paddingBottom: '48px' }}>
         <div className="max-w-md mx-auto">
           {/* Perfil del proveedor */}
           <div className="flex items-center gap-4 mb-8">

@@ -69,15 +69,15 @@ export default function PoliticaPrivacidad() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FFFCF9' }}>
       <Header />
 
-      <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-16">
+      <main className="flex-1 w-full max-w-3xl mx-auto px-4 sm:px-6 py-10 md:py-16">
         {/* Encabezado */}
-        <div className="mb-12">
+        <div className="mb-8 md:mb-12">
           <BackButton />
           <h1
             className="mb-3"
             style={{
               fontFamily: typography.fontFamily.primary,
-              fontSize: '40px',
+              fontSize: 'clamp(26px, 5vw, 40px)',
               fontWeight: 700,
               color: colors.primary.main,
               lineHeight: '1.2',

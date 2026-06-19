@@ -189,8 +189,8 @@ export default function ProviderProfile() {
         {/* Título Perfil Profesional */}
         <div className="rounded-full" style={{ 
           border: '1px solid #000000',
-          width: '311px',
-          maxWidth: '100%',
+          maxWidth: '311px',
+          width: 'calc(100% - 80px)',
           height: '47px',
           display: 'flex',
           alignItems: 'center',
@@ -246,7 +246,7 @@ export default function ProviderProfile() {
                   fontFamily: 'Maitree',
                   fontWeight: 400,
                   fontStyle: 'normal',
-                  fontSize: '40px',
+                  fontSize: 'clamp(28px, 5vw, 40px)',
                   lineHeight: '100%',
                   letterSpacing: '0%',
                   textAlign: 'center',

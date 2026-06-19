@@ -52,12 +52,12 @@ export default function Contacto() {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10 md:py-16">
         <h1 
           className="text-center mb-6"
           style={{ 
             fontFamily: 'Maitree, serif', 
-            fontSize: '48px', 
+            fontSize: 'clamp(28px, 6vw, 48px)', 
             fontWeight: 700, 
             color: '#244C87',
             lineHeight: '1.2'
@@ -67,10 +67,10 @@ export default function Contacto() {
         </h1>
 
         <p 
-          className="text-center mb-12"
+          className="text-center mb-8 md:mb-12"
           style={{ 
             fontFamily: 'Maitree, serif', 
-            fontSize: '18px', 
+            fontSize: 'clamp(15px, 2.5vw, 18px)', 
             color: '#666',
             lineHeight: '1.6'
           }}
@@ -181,7 +181,7 @@ export default function Contacto() {
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-3xl border-2 border-gray-200 p-8 shadow-lg">
+        <div className="bg-white rounded-3xl border-2 border-gray-200 p-5 sm:p-8 shadow-lg">
           <h2 
             className="mb-6 text-center"
             style={{ 

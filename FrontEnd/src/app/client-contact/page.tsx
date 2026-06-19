@@ -118,7 +118,7 @@ function ClientContactContent() {
         </div>
 
         {/* Card del Presupuesto */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
+        <div className="bg-white rounded-3xl shadow-xl p-5 sm:p-8 mb-8">
           <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 600, color: '#244C87', marginBottom: '24px', textAlign: 'center' }}>
             ¡Tenés un presupuesto!
           </h1>
@@ -185,7 +185,7 @@ function ClientContactContent() {
         </div>
 
         {/* Formulario de Contacto */}
-        <div className="bg-white rounded-3xl shadow-xl p-8">
+        <div className="bg-white rounded-3xl shadow-xl p-5 sm:p-8">
           <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, color: '#244C87', marginBottom: '16px' }}>
             ¿Cómo querés que te contactemos?
           </h2>

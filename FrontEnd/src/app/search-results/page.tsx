@@ -235,7 +235,8 @@ function SearchResultsContent() {
         {/* Título dinámico */}
         <div className="text-center rounded-full" style={{ 
           border: '1px solid #000000',
-          width: '311px',
+          maxWidth: '311px',
+          width: 'calc(100% - 48px)',
           height: '47px',
           display: 'flex',
           alignItems: 'center',

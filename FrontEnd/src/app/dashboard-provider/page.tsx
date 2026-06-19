@@ -337,7 +337,7 @@ export default function DashboardProvider() {
   if (!currentData) return null;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Header del proveedor */}
       <ProviderHeader
         activePage="perfil"
@@ -438,7 +438,7 @@ export default function DashboardProvider() {
       )}
 
       {/* Contenido principal - con padding-top para compensar header fixed */}
-      <main style={{ paddingTop: 'calc(6rem + 48px)', paddingLeft: '24px', paddingRight: '24px' }}>
+      <main className="px-4 sm:px-6" style={{ paddingTop: 'calc(6rem + 48px)', paddingBottom: '2rem' }}>
         <div className="max-w-xl mx-auto">
           {/* Layout: una columna centrada (mobile y desktop iguales) */}
           <div>
