@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { apiGet, apiPost, apiPut } from '@/utils/api';
+import { getRequiredApiBaseUrl } from '@/utils/constants';
 
 export interface Booking {
   id: string;
@@ -66,7 +67,7 @@ export const useBookingsStore = create<BookingsState>((set, get) => ({
         let problemPhotoUrl = null;
         if (booking.problemPhoto) {
           if (!booking.problemPhoto.startsWith('http') && !booking.problemPhoto.startsWith('data:')) {
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const apiUrl = getRequiredApiBaseUrl();
             problemPhotoUrl = `${apiUrl}/uploads/problems/${booking.problemPhoto}`;
           } else {
             problemPhotoUrl = booking.problemPhoto;

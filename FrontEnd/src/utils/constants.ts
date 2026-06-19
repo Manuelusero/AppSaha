@@ -3,9 +3,20 @@
  */
 
 // URLs del backend
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-export const API_URL = `${API_BASE_URL}/api`;
-export const UPLOADS_URL = `${API_BASE_URL}/uploads`;
+const configuredApiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+const isProduction = process.env.NODE_ENV === 'production';
+
+export const API_BASE_URL = configuredApiBaseUrl || (!isProduction ? 'http://localhost:8000' : '');
+export const API_URL = API_BASE_URL ? `${API_BASE_URL}/api` : '';
+export const UPLOADS_URL = API_BASE_URL ? `${API_BASE_URL}/uploads` : '';
+
+export function getRequiredApiBaseUrl(): string {
+  if (API_BASE_URL) {
+    return API_BASE_URL;
+  }
+
+  throw new Error('Configuración faltante: NEXT_PUBLIC_API_URL no está definida en producción.');
+}
 
 // Log para debugging en desarrollo
 if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {

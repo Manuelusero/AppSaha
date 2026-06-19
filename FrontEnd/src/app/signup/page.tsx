@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { getRequiredApiBaseUrl } from '@/utils/constants';
 
 interface LocationSuggestion {
   display_name: string;
@@ -62,7 +63,8 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/signup`, {
+      const apiBaseUrl = getRequiredApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

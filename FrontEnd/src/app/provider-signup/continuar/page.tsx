@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { getRequiredApiBaseUrl } from '@/utils/constants';
 
 function ContinuarContent() {
   const searchParams = useSearchParams();
@@ -15,8 +16,8 @@ function ContinuarContent() {
 
     const verify = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/api/auth/verify-email/${token}`);
+        const apiBaseUrl = getRequiredApiBaseUrl();
+        const res = await fetch(`${apiBaseUrl}/api/auth/verify-email/${token}`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error);

@@ -18,68 +18,54 @@ import FacebookProvider from 'next-auth/providers/facebook';
 import AppleProvider from 'next-auth/providers/apple';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+const getApiBaseUrl = (): string => {
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+
+  if (configuredUrl) {
+    return configuredUrl;
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    return 'http://localhost:8000';
+  }
+
+  throw new Error('Configuración faltante: NEXT_PUBLIC_API_URL no está definida en producción.');
+};
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    /**
-     * GOOGLE OAuth
-     * Docs: https://next-auth.js.org/providers/google
-     * 
-     * Setup:
-     * 1. Go to https://console.cloud.google.com/
-     * 2. Create a new project or select existing
-     * 3. Enable Google+ API
-     * 4. Create OAuth 2.0 credentials
-     * 5. Add authorized redirect URI:
-     *    - Development: http://localhost:3000/api/auth/callback/google
-     *    - Production: https://saha.vercel.app/api/auth/callback/google
-     */
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
-      authorization: {
-        params: {
-          prompt: 'consent',
-          access_type: 'offline',
-          response_type: 'code'
-        }
-      }
-    }),
+    // Google OAuth — solo se habilita si las credenciales están configuradas
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [GoogleProvider({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          authorization: {
+            params: {
+              prompt: 'consent',
+              access_type: 'offline',
+              response_type: 'code'
+            }
+          }
+        })]
+      : []),
 
-    /**
-     * FACEBOOK OAuth
-     * Docs: https://next-auth.js.org/providers/facebook
-     * 
-     * Setup:
-     * 1. Go to https://developers.facebook.com/
-     * 2. Create a new app
-     * 3. Add Facebook Login product
-     * 4. Add valid OAuth redirect URIs:
-     *    - Development: http://localhost:3000/api/auth/callback/facebook
-     *    - Production: https://saha.vercel.app/api/auth/callback/facebook
-     */
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID || '',
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
-    }),
+    // Facebook OAuth — solo se habilita si las credenciales están configuradas
+    ...(process.env.FACEBOOK_CLIENT_ID && process.env.FACEBOOK_CLIENT_SECRET &&
+        process.env.FACEBOOK_CLIENT_ID !== 'your-facebook-app-id'
+      ? [FacebookProvider({
+          clientId: process.env.FACEBOOK_CLIENT_ID,
+          clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+        })]
+      : []),
 
-    /**
-     * APPLE OAuth
-     * Docs: https://next-auth.js.org/providers/apple
-     * 
-     * Setup:
-     * 1. Go to https://developer.apple.com/account/resources/identifiers/list/serviceId
-     * 2. Create a new Service ID
-     * 3. Configure Sign in with Apple
-     * 4. Add return URLs:
-     *    - Development: http://localhost:3000/api/auth/callback/apple
-     *    - Production: https://saha.vercel.app/api/auth/callback/apple
-     * 
-     * Note: Apple OAuth requires additional setup (private key, team ID, key ID)
-     */
-    AppleProvider({
-      clientId: process.env.APPLE_CLIENT_ID || '',
-      clientSecret: process.env.APPLE_CLIENT_SECRET || '',
-    }),
+    // Apple OAuth — solo se habilita si las credenciales están configuradas
+    ...(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET &&
+        process.env.APPLE_CLIENT_ID !== 'com.yourdomain.services'
+      ? [AppleProvider({
+          clientId: process.env.APPLE_CLIENT_ID,
+          clientSecret: process.env.APPLE_CLIENT_SECRET,
+        })]
+      : []),
 
     /**
      * CREDENTIALS (Email + Password)
@@ -99,7 +85,7 @@ export const authOptions: NextAuthOptions = {
 
         try {
           // Llamar a la API de SAHA para validar credenciales
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          const apiUrl = getApiBaseUrl();
           const response = await fetch(`${apiUrl}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -157,7 +143,7 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider;
         
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          const apiUrl = getApiBaseUrl();
           
           // Llamar a nuestro backend para crear/obtener el usuario de OAuth
           const response = await fetch(`${apiUrl}/api/auth/oauth`, {

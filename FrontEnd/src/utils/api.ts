@@ -30,12 +30,21 @@ export async function fetchWithAuth(
     ...headers,
   };
 
+  if (!endpoint.startsWith('http') && !API_URL) {
+    throw new Error('Configuración faltante: NEXT_PUBLIC_API_URL no está definida en producción.');
+  }
+
   const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
 
-  return fetch(url, {
-    ...restOptions,
-    headers: finalHeaders,
-  });
+  try {
+    return await fetch(url, {
+      ...restOptions,
+      headers: finalHeaders,
+    });
+  } catch (error) {
+    console.error('❌ Error de red al conectar con la API:', error);
+    throw new Error('No se pudo conectar con el servidor. Verificá que el backend esté iniciado e intentá nuevamente.');
+  }
 }
 
 /**

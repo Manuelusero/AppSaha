@@ -24,6 +24,37 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+const normalizeOrigin = (origin: string): string | null => {
+  try {
+    const parsed = new URL(origin);
+    return parsed.origin;
+  } catch {
+    return null;
+  }
+};
+
+const isAllowedOrigin = (origin: string, configuredOrigins: string[]): boolean => {
+  const normalizedOrigin = normalizeOrigin(origin);
+  if (!normalizedOrigin) {
+    return false;
+  }
+
+  const parsed = new URL(normalizedOrigin);
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Local development (any local port)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return true;
+  }
+
+  // Vercel production/preview deployments
+  if (hostname.endsWith('.vercel.app')) {
+    return true;
+  }
+
+  return configuredOrigins.includes(normalizedOrigin);
+};
+
 // Middlewares CORS - Configuración para desarrollo y producción
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
@@ -31,20 +62,20 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
       process.env.FRONTEND_URL,
       'https://serco-eosin.vercel.app',
       'https://app-saha.vercel.app',
-    ].filter(Boolean); // Eliminar valores undefined/null
+    ]
+      .filter(Boolean)
+      .map((item) => normalizeOrigin(String(item)))
+      .filter((item): item is string => item !== null);
     
-    if (allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin, allowedOrigins)) {
       callback(null, true);
     } else {
       console.log('CORS: Origin no permitido:', origin);
-      callback(new Error('Not allowed by CORS'), false);
+      // No devolver 500 por CORS; el navegador bloqueará por falta de headers
+      callback(null, false);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],

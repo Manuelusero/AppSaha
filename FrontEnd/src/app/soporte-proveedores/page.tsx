@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Header, Footer } from '@/components/layout';
+import { getRequiredApiBaseUrl } from '@/utils/constants';
 
 export default function SoporteProveedores() {
   const router = useRouter();
@@ -33,7 +34,8 @@ export default function SoporteProveedores() {
     setEnviando(true);
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/support/contact`, {
+      const apiBaseUrl = getRequiredApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/support/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

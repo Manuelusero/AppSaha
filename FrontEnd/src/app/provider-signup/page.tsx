@@ -9,6 +9,7 @@ import { Input, Button } from '@/components/ui';
 import WorkZoneMap from '@/components/ui/WorkZoneMap';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useForm } from '@/hooks';
+import { getRequiredApiBaseUrl } from '@/utils/constants';
 
 const servicios = [
   'Plomeros',
@@ -340,8 +341,8 @@ export default function ProviderSignup() {
         }));
 
         // Llamar al backend para crear usuario + enviar email de verificación
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        const res = await fetch(`${API_URL}/api/auth/pre-register`, {
+        const apiBaseUrl = getRequiredApiBaseUrl();
+        const res = await fetch(`${apiBaseUrl}/api/auth/pre-register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -495,7 +496,8 @@ export default function ProviderSignup() {
     console.log('Enviando registro al backend...');
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/providers/register`, {
+      const apiBaseUrl = getRequiredApiBaseUrl();
+      const response = await fetch(`${apiBaseUrl}/api/providers/register`, {
         method: 'POST',
         body: formData
         // No establecer Content-Type, el navegador lo hará automáticamente con boundary
