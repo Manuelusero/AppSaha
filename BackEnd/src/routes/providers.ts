@@ -111,14 +111,14 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
     const categoryMap: { [key: string]: string } = {
       'Plomeros': 'PLOMERIA',
       'Pintores': 'PINTURA',
-      'Herreros': 'HERRERIA',
-      'Modistas': 'COSTURA',
+      'Herreros': 'OTRO',
+      'Modistas': 'OTRO',
       'Jardineros': 'JARDINERIA',
       'Limpiadores': 'LIMPIEZA',
-      'Profesores': 'CLASES',
+      'Profesores': 'OTRO',
       'Electricistas': 'ELECTRICIDAD',
-      'Masajistas': 'MASAJES',
-      'Albañiles': 'ALBANILERIA',
+      'Masajistas': 'OTRO',
+      'Albañiles': 'CONSTRUCCION',
       'Carpinteros': 'CARPINTERIA'
     };
 

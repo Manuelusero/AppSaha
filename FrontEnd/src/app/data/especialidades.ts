@@ -129,7 +129,6 @@ const servicioMapping: Record<string, string> = {
   'ELECTRICIDAD': 'Electricistas',
   'PINTURA': 'Pintores',
   'ALBANILERIA': 'Albañiles',
-  'CONSTRUCCION': 'Albañiles',
   'CARPINTERIA': 'Carpinteros',
   'HERRERIA': 'Herreros',
   'LIMPIEZA': 'Limpiadores',
@@ -137,7 +136,6 @@ const servicioMapping: Record<string, string> = {
   'MASAJES': 'Masajistas',
   'CLASES': 'Profesores',
   'COSTURA': 'Modistas',
-  'OTRO': '',
   // También aceptar las claves directamente
   'Plomeros': 'Plomeros',
   'Electricistas': 'Electricistas',

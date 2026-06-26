@@ -47,13 +47,13 @@ export default function DashboardProvider() {
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
   const profesionInputRef = useRef<HTMLInputElement>(null);
   const [showProfesionDropdown, setShowProfesionDropdown] = useState(false);
+  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const profesionOpciones = [
     { value: 'PLOMERIA', label: 'Plomeros' },
     { value: 'ELECTRICIDAD', label: 'Electricistas' },
     { value: 'PINTURA', label: 'Pintores' },
     { value: 'ALBANILERIA', label: 'Albañiles' },
-    { value: 'CONSTRUCCION', label: 'Albañiles' },
     { value: 'CARPINTERIA', label: 'Carpinteros' },
     { value: 'HERRERIA', label: 'Herreros' },
     { value: 'LIMPIEZA', label: 'Limpiadores' },
@@ -61,15 +61,7 @@ export default function DashboardProvider() {
     { value: 'MASAJES', label: 'Masajistas' },
     { value: 'CLASES', label: 'Profesores' },
     { value: 'COSTURA', label: 'Modistas' },
-    { value: 'OTRO', label: 'Otro' },
   ];
-
-  const serviceCategoryLabelMap = profesionOpciones.reduce((acc, option) => {
-    acc[option.value] = option.label;
-    return acc;
-  }, {} as Record<string, string>);
-
-
 
   const { bookings, fetchBookings } = useBookingsStore();
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
@@ -552,22 +544,25 @@ export default function DashboardProvider() {
                     {currentData.nombre} {currentData.apellido}
                   </h1>
                   
-                  <select
-                    value={currentData.serviceCategory}
-                    onChange={(e) => {
-                      handleFieldChange('serviceCategory', e.target.value);
-                      handleFieldChange('specialties', []);
-                    }}
-                    className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 cursor-pointer"
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '16px', backgroundColor: 'white' }}
-                  >
-                    <option value="">Seleccionar profesión...</option>
-                    {profesionOpciones
-                      .filter((op, idx, self) => self.findIndex(o => o.label === op.label) === idx)
-                      .map((op) => (
-                        <option key={op.value} value={op.value}>{op.label}</option>
-                      ))}
-                  </select>
+                  <div className="relative w-full">
+                    <input
+                      ref={profesionInputRef}
+                      type="text"
+                      readOnly
+                      value={profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? ''}
+                      onFocus={() => {
+                        const rect = profesionInputRef.current?.getBoundingClientRect();
+                        if (rect) {
+                          setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
+                        }
+                        setShowProfesionDropdown(true);
+                      }}
+                      onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 150)}
+                      placeholder="Profesión"
+                      className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer"
+                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}
+                    />
+                  </div>
 
                   <input
                     type="text"
@@ -606,7 +601,7 @@ export default function DashboardProvider() {
 
                   <div className="flex items-center justify-center gap-2 text-gray-600">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                     serviceCategoryLabelMap[currentData.serviceCategory] ||  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
                       <circle cx="12" cy="10" r="3" fill="white"/>
                     </svg>
                     <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>
@@ -1042,7 +1037,39 @@ export default function DashboardProvider() {
           </div>{/* fin wrapper */}
         </div>
       </main>
-
+      {showProfesionDropdown && dropdownRect && (
+        <div
+          style={{
+            position: 'fixed',
+            top: dropdownRect.top - window.scrollY + 4,
+            left: dropdownRect.left - window.scrollX,
+            width: dropdownRect.width,
+            zIndex: 9999,
+            backgroundColor: 'white',
+            border: '2px solid #E5E7EB',
+            borderRadius: '16px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+            maxHeight: '240px',
+            overflowY: 'auto',
+          }}
+        >
+          {profesionOpciones.map((op) => (
+            <div
+              key={op.value}
+              onClick={() => {
+                // Update the selected profession and reset specialties
+                handleFieldChange('serviceCategory', op.value);
+                handleFieldChange('specialties', []);
+                setShowProfesionDropdown(false);
+              }}
+              className="px-5 py-3 hover:bg-indigo-50 cursor-pointer text-gray-700 text-base transition-colors"
+              style={{ fontFamily: 'Maitree, serif', backgroundColor: currentData.serviceCategory === op.value ? '#EEF2FF' : undefined }}
+            >
+              {op.label}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
