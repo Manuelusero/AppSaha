@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { colors, typography } from '@/styles/tokens';
-import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth } from '@/utils';
+import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth, serviceCategoryLabels } from '@/utils';
 import { getEspecialidades } from '../data/especialidades';
 import { ProviderHeader } from '@/components/layout';
 import { useBookingsStore } from '@/store/bookingsStore';
@@ -245,9 +245,7 @@ export default function DashboardProvider() {
   };
 
   const handleFieldChange = (field: keyof ProviderData, value: any) => {
-    if (editedData) {
-      setEditedData({ ...editedData, [field]: value });
-    }
+    setEditedData(prev => prev ? { ...prev, [field]: value } : prev);
   };
 
   const handleProfilePhotoUpload = async (files: FileList | null) => {
@@ -334,6 +332,8 @@ export default function DashboardProvider() {
   const currentData = editMode ? editedData : providerData;
   if (!currentData) return null;
 
+  const profesionLabel = serviceCategoryLabels[currentData.serviceCategory] || currentData.serviceCategory;
+
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <ProviderHeader
@@ -347,261 +347,324 @@ export default function DashboardProvider() {
           }
         }}
       />
+
+      {/* Modal cambios sin guardar */}
       {showUnsavedModal && (
-        <>
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowUnsavedModal(false)}>
-            <div className="bg-white rounded-3xl shadow-2xl p-8 mx-4" style={{ maxWidth: '400px', width: '100%', backgroundColor: '#FFF8F0' }} onClick={e => e.stopPropagation()}>
-              <div className="flex justify-end mb-4">
-                <button onClick={() => setShowUnsavedModal(false)} style={{ cursor: 'pointer' }}>
-                  <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-              </div>
-              <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, color: '#B45B39', textAlign: 'center', marginBottom: '32px' }}>¿Querés guardar los cambios?</h2>
-              <div className="space-y-3">
-                <button onClick={() => { setShowUnsavedModal(false); handleSaveEdit(); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>Guardar Cambios</button>
-                <button onClick={() => { setShowUnsavedModal(false); setEditMode(false); setEditedData(null); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>No, seguir sin guardar</button>
-              </div>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowUnsavedModal(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 mx-4" style={{ maxWidth: '400px', width: '100%', backgroundColor: '#FFF8F0' }} onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-4">
+              <button onClick={() => setShowUnsavedModal(false)} style={{ cursor: 'pointer' }}>
+                <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, color: '#B45B39', textAlign: 'center', marginBottom: '32px' }}>¿Querés guardar los cambios?</h2>
+            <div className="space-y-3">
+              <button onClick={() => { setShowUnsavedModal(false); handleSaveEdit(); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>Guardar Cambios</button>
+              <button onClick={() => { setShowUnsavedModal(false); setEditMode(false); setEditedData(null); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>No, seguir sin guardar</button>
             </div>
           </div>
-        </>
+        </div>
       )}
-      <main className="px-4 sm:px-6" style={{ paddingTop: 'calc(6rem + 48px)', paddingBottom: '2rem' }}>
-        <div className="max-w-xl mx-auto space-y-6">
 
-          {/* Botones Editar / Guardar / Cancelar */}
-          {!editMode ? (
-            <div className="flex justify-center">
-              <button onClick={handleEditClick} className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, border: '2px solid #000000', cursor: 'pointer' }}>Editar Perfil</button>
-            </div>
-          ) : (
-            <div className="flex gap-3 justify-center">
-              <button onClick={handleSaveEdit} className="px-6 py-2 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#244C87', border: 'none', cursor: 'pointer' }}>Guardar</button>
-              <button onClick={handleCancelEdit} className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, border: '2px solid #000000', cursor: 'pointer' }}>Cancelar</button>
-            </div>
-          )}
+      {editMode && editedData ? (
+        /* ═══════════════════════════════════════════
+           MODO EDICIÓN
+        ═══════════════════════════════════════════ */
+        <main className="px-4 sm:px-6" style={{ paddingTop: 'calc(6rem + 48px)', paddingBottom: '6rem' }}>
+          <div className="max-w-xl mx-auto space-y-6">
 
-          {/* ── Tarjeta 1: Foto + Nombre + Profesión + Ubicación ── */}
-          <div className="rounded-3xl overflow-hidden" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
-              {currentData.profileImage ? (
-                <Image src={currentData.profileImage} alt="Foto de perfil" fill sizes="(max-width: 768px) 100vw, 400px" style={{ objectFit: 'cover' }} />
+            {/* Foto de perfil */}
+            <div style={{ height: '200px', position: 'relative', overflow: 'hidden', borderRadius: '24px' }}>
+              {editedData.profileImage ? (
+                <Image src={editedData.profileImage} alt="Foto de perfil" fill sizes="(max-width: 768px) 100vw, 400px" style={{ objectFit: 'cover' }} />
               ) : (
                 <div style={{ width: '100%', height: '100%', backgroundColor: '#E5E7EB' }} />
               )}
-              {editMode && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                  <input ref={profilePhotoInputRef} type="file" accept="image/jpeg,image/jpg,image/png" style={{ display: 'none' }} onChange={e => handleProfilePhotoUpload(e.target.files)} />
-                  <button onClick={() => !uploadingProfilePhoto && profilePhotoInputRef.current?.click()} className="px-4 py-2 rounded-full bg-white hover:bg-gray-100 transition-colors flex items-center gap-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, cursor: uploadingProfilePhoto ? 'wait' : 'pointer', opacity: uploadingProfilePhoto ? 0.8 : 1 }}>
-                    {uploadingProfilePhoto ? (<><div style={{ width: '14px', height: '14px', border: '2px solid #D1D5DB', borderTopColor: '#244C87', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />Subiendo...</>) : (<><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#244C87" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Cambiar foto</>)}
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="p-6 text-center">
-              <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 600, color: '#244C87', marginBottom: '8px' }}>{currentData.nombre} {currentData.apellido}</h1>
-              {editMode ? (
-                <div className="space-y-4 mt-4">
-                  {/* Profesión */}
-                  <div className="relative w-full">
-                    <input ref={profesionInputRef} type="text" readOnly value={profesionOpciones.find(o => o.value === (editedData?.serviceCategory ?? ''))?.label ?? ''} onFocus={() => { const rect = profesionInputRef.current?.getBoundingClientRect(); if (rect) { setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width }); } setShowProfesionDropdown(true); }} onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 150)} placeholder="Profesión" className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }} />
-                    {showProfesionDropdown && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
-                        {profesionOpciones.map((opcion) => (
-                          <div key={opcion.value} onMouseDown={() => { handleFieldChange('serviceCategory', opcion.value); handleFieldChange('specialties', []); setShowProfesionDropdown(false); }} className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#000' }}>{opcion.label}</div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {/* Especialidades */}
-                  {editedData?.serviceCategory && getEspecialidades(editedData.serviceCategory).length > 0 && (
-                    <div className="text-left">
-                      <SpecialtyChips label="Especialidades" specialties={getEspecialidades(editedData.serviceCategory)} selectedSpecialties={editedData.specialties || []} onToggle={(specialty) => { const current = editedData.specialties || []; handleFieldChange('specialties', current.includes(specialty) ? current.filter(s => s !== specialty) : [...current, specialty]); }} required={false} />
-                    </div>
-                  )}
-                  {/* Ubicación */}
-                  <input type="text" value={editedData?.ubicacion ?? ''} onChange={e => handleFieldChange('ubicacion', e.target.value)} placeholder="Ubicación" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }} />
-                  {/* Teléfono */}
-                  <input type="tel" value={editedData?.telefono ?? ''} onChange={e => handleFieldChange('telefono', e.target.value)} placeholder="Teléfono" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }} />
-                </div>
-              ) : (
-                <div className="space-y-2 mt-2">
-                  <p style={{ fontFamily: 'Maitree, serif', fontSize: '18px', fontWeight: 400, color: colors.neutral.black }}>{profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? currentData.serviceCategory}</p>
-                  {currentData.specialties?.length > 0 && (
-                    <div className="flex flex-wrap gap-2 justify-center mt-2">
-                      {currentData.specialties.map(s => (
-                        <span key={s} className="px-3 py-1 rounded-full text-sm border-2 border-[#244C87] text-[#244C87]" style={{ fontFamily: typography.fontFamily.primary }}>{s}</span>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex items-center justify-center gap-2 text-gray-600">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="white"/></svg>
-                    <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>{currentData.ubicacion}</span>
-                  </div>
-                  {currentData.telefono && (
-                    <div className="flex items-center justify-center gap-2 text-gray-600">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.77-.77a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                      <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>{currentData.telefono}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ── Tarjeta 2: Descripción y Experiencia ── */}
-          <div className="rounded-3xl p-6" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#244C87', marginBottom: '16px' }}>Sobre mí</h2>
-            {editMode ? (
-              <div className="space-y-4">
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-600" style={{ fontFamily: typography.fontFamily.primary }}>Descripción</label>
-                  <textarea value={editedData?.descripcion ?? ''} onChange={e => handleFieldChange('descripcion', e.target.value)} placeholder="Contá tu experiencia y servicios..." rows={4} className="w-full px-4 py-3 rounded-2xl border-2 border-gray-300 focus:border-[#244C87] focus:outline-none resize-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block mb-1 text-sm font-medium text-gray-600" style={{ fontFamily: typography.fontFamily.primary }}>Años de experiencia</label>
-                    <input type="number" min={0} value={editedData?.experiencia ?? ''} onChange={e => handleFieldChange('experiencia', Number(e.target.value))} placeholder="0" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                  </div>
-                  <div className="flex-1">
-                    <label className="block mb-1 text-sm font-medium text-gray-600" style={{ fontFamily: typography.fontFamily.primary }}>Radio de trabajo (km)</label>
-                    <input type="number" min={0} value={editedData?.alcanceTrabajo ?? ''} onChange={e => handleFieldChange('alcanceTrabajo', e.target.value)} placeholder="0" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                  </div>
-                </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                <input ref={profilePhotoInputRef} type="file" accept="image/jpeg,image/jpg,image/png" style={{ display: 'none' }} onChange={e => handleProfilePhotoUpload(e.target.files)} />
+                <button onClick={() => !uploadingProfilePhoto && profilePhotoInputRef.current?.click()} className="px-5 py-2 rounded-full hover:opacity-90 transition-opacity flex items-center gap-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, backgroundColor: '#B45B39', color: '#fff', border: 'none', cursor: uploadingProfilePhoto ? 'wait' : 'pointer' }}>
+                  {uploadingProfilePhoto ? 'Subiendo...' : 'Cambiar Foto'}
+                </button>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {currentData.descripcion ? (
-                  <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], lineHeight: '1.6' }}>{currentData.descripcion}</p>
-                ) : (
-                  <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: '#9CA3AF' }}>Sin descripción</p>
+            </div>
+
+            {/* Nombre (solo lectura en edición) */}
+            <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 600, color: '#244C87', textAlign: 'center' }}>{editedData.nombre} {editedData.apellido}</h1>
+
+            {/* Teléfono */}
+            <div>
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Teléfono laboral</label>
+              <input type="tel" value={editedData.telefono} onChange={e => handleFieldChange('telefono', e.target.value)} className="w-full px-4 py-3 rounded-full border border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }} />
+            </div>
+
+            {/* Email (solo lectura) */}
+            <div>
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Email</label>
+              <input type="email" value={editedData.email} readOnly className="w-full px-4 py-3 rounded-full border border-gray-200 bg-gray-50" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral[600] }} />
+            </div>
+
+            {/* Oficio principal (dropdown) */}
+            <div>
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Oficio principal</label>
+              <div className="relative">
+                <input
+                  ref={profesionInputRef}
+                  type="text"
+                  readOnly
+                  value={profesionOpciones.find(o => o.value === editedData.serviceCategory)?.label ?? ''}
+                  onMouseDown={() => setShowProfesionDropdown(v => !v)}
+                  placeholder="Seleccionar oficio"
+                  className="w-full px-4 py-3 rounded-full border border-gray-300 focus:border-[#244C87] focus:outline-none cursor-pointer"
+                  style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }}
+                />
+                <svg className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                {showProfesionDropdown && (
+                  <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                    {profesionOpciones.map((opcion) => (
+                      <div
+                        key={opcion.value}
+                        onMouseDown={() => {
+                          setEditedData(prev => prev ? { ...prev, serviceCategory: opcion.value, specialties: [] } : prev);
+                          setShowProfesionDropdown(false);
+                        }}
+                        className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
+                        style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#000' }}
+                      >
+                        {opcion.label}
+                      </div>
+                    ))}
+                  </div>
                 )}
-                <div className="flex gap-6 mt-4">
-                  {currentData.experiencia > 0 && (
-                    <div className="text-center">
-                      <p style={{ fontFamily: 'Maitree, serif', fontSize: '28px', fontWeight: 600, color: '#244C87' }}>{currentData.experiencia}</p>
-                      <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.xs, color: colors.neutral[600] }}>años de exp.</p>
-                    </div>
-                  )}
-                  {currentData.alcanceTrabajo && (
-                    <div className="text-center">
-                      <p style={{ fontFamily: 'Maitree, serif', fontSize: '28px', fontWeight: 600, color: '#244C87' }}>{currentData.alcanceTrabajo} km</p>
-                      <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.xs, color: colors.neutral[600] }}>radio de trabajo</p>
-                    </div>
-                  )}
-                </div>
+              </div>
+            </div>
+
+            {/* Años de experiencia */}
+            <div className="flex items-center gap-4">
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, whiteSpace: 'nowrap' }}>Años de experiencia</label>
+              <input type="number" min={0} value={editedData.experiencia} onChange={e => handleFieldChange('experiencia', Number(e.target.value))} className="w-24 px-3 py-2 rounded-full border border-gray-300 focus:border-[#244C87] focus:outline-none text-center" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }} />
+            </div>
+
+            {/* Servicios ofrecidos (especialidades) */}
+            {editedData.serviceCategory && getEspecialidades(editedData.serviceCategory).length > 0 && (
+              <div>
+                <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, marginBottom: '10px' }}>Servicios ofrecidos:</p>
+                <SpecialtyChips
+                  label=""
+                  specialties={getEspecialidades(editedData.serviceCategory)}
+                  selectedSpecialties={editedData.specialties || []}
+                  onToggle={(specialty) => {
+                    setEditedData(prev => {
+                      if (!prev) return prev;
+                      const current = prev.specialties || [];
+                      return { ...prev, specialties: current.includes(specialty) ? current.filter(s => s !== specialty) : [...current, specialty] };
+                    });
+                  }}
+                  required={false}
+                />
               </div>
             )}
-          </div>
 
-          {/* ── Tarjeta 3: Fotos de trabajos ── */}
-          <div className="rounded-3xl p-6" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#244C87', marginBottom: '16px' }}>Fotos de trabajos</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {(currentData.portfolioImages ?? []).map((img, i) => (
-                <div key={img} className="relative aspect-square rounded-xl overflow-hidden">
-                  <Image src={img} alt={`Trabajo ${i + 1}`} fill sizes="150px" style={{ objectFit: 'cover' }} />
-                  {editMode && (
-                    <button onClick={() => handleDeletePhoto(img)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors" style={{ cursor: 'pointer' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            {/* Agregar otra profesión (placeholder) */}
+            <button type="button" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#9CA3AF', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              Agregar otra Profesión +
+            </button>
+
+            {/* Ubicación */}
+            <div>
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Ubicación</label>
+              <input type="text" value={editedData.ubicacion} onChange={e => handleFieldChange('ubicacion', e.target.value)} placeholder="Autocompleta" className="w-full px-4 py-3 rounded-full border border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }} />
+            </div>
+
+            {/* Radio de trabajo */}
+            <div>
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Zonas de Trabajo:</label>
+              <WorkZoneMap
+                location={editedData.ubicacion || ''}
+                radiusKm={editedData.alcanceTrabajo ? Number(editedData.alcanceTrabajo) : 10}
+              />
+            </div>
+
+            {/* Galería */}
+            <div>
+              <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#000', marginBottom: '12px' }}>Galería</h2>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {(editedData.portfolioImages ?? []).map((img) => (
+                  <div key={img} className="relative flex-shrink-0" style={{ width: '160px', height: '120px', borderRadius: '16px', overflow: 'hidden' }}>
+                    <Image src={img} alt="foto trabajo" fill sizes="160px" style={{ objectFit: 'cover' }} />
+                    <button onClick={() => handleDeletePhoto(img)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center" style={{ cursor: 'pointer', border: 'none' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
-                  )}
-                </div>
-              ))}
-              {editMode && (
-                <div className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[#244C87] transition-colors" onClick={() => fileInputRef.current?.click()}>
+                  </div>
+                ))}
+                <div
+                  className="flex-shrink-0 flex items-center justify-center border-2 border-dashed border-gray-300 hover:border-[#244C87] transition-colors cursor-pointer"
+                  style={{ width: '160px', height: '120px', borderRadius: '16px' }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/jpg,image/png" multiple style={{ display: 'none' }} onChange={e => handlePhotoUpload(e.target.files)} />
                   {uploadingPhoto ? (
                     <div style={{ width: '20px', height: '20px', border: '2px solid #D1D5DB', borderTopColor: '#244C87', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                   ) : (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
                   )}
                 </div>
-              )}
+              </div>
             </div>
-            {!editMode && (currentData.portfolioImages ?? []).length === 0 && (
-              <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: '#9CA3AF' }}>Sin fotos de trabajos</p>
-            )}
+
+            {/* Descripción */}
+            <div>
+              <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Descripción:</label>
+              <textarea value={editedData.descripcion} onChange={e => handleFieldChange('descripcion', e.target.value)} rows={6} className="w-full px-4 py-3 rounded-2xl border border-gray-300 focus:border-[#244C87] focus:outline-none resize-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }} />
+            </div>
+
           </div>
 
-          {/* ── Tarjeta 4: Redes sociales ── */}
-          <div className="rounded-3xl p-6" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#244C87', marginBottom: '16px' }}>Redes sociales</h2>
-            {editMode ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#E1306C"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                  <input type="text" value={editedData?.instagram ?? ''} onChange={e => handleFieldChange('instagram', e.target.value)} placeholder="Instagram (usuario)" className="flex-1 px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                </div>
-                <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  <input type="text" value={editedData?.facebook ?? ''} onChange={e => handleFieldChange('facebook', e.target.value)} placeholder="Facebook (usuario o URL)" className="flex-1 px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                </div>
-                <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                  <input type="text" value={editedData?.linkedin ?? ''} onChange={e => handleFieldChange('linkedin', e.target.value)} placeholder="LinkedIn (usuario o URL)" className="flex-1 px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {!currentData.instagram && !currentData.facebook && !currentData.linkedin && (
-                  <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: '#9CA3AF' }}>Sin redes sociales</p>
-                )}
-                {currentData.instagram && (
-                  <div className="flex items-center gap-3">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#E1306C"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                    <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }}>{currentData.instagram}</span>
-                  </div>
-                )}
-                {currentData.facebook && (
-                  <div className="flex items-center gap-3">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }}>{currentData.facebook}</span>
-                  </div>
-                )}
-                {currentData.linkedin && (
-                  <div className="flex items-center gap-3">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                    <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }}>{currentData.linkedin}</span>
-                  </div>
-                )}
-              </div>
-            )}
+          {/* Botón Guardar fijo al fondo */}
+          <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white border-t border-gray-100 flex justify-end max-w-xl mx-auto" style={{ boxShadow: '0 -2px 8px rgba(0,0,0,0.06)' }}>
+            <button onClick={handleSaveEdit} className="px-6 py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#fff', backgroundColor: '#B45B39', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+              Guardar Cambios
+            </button>
           </div>
+        </main>
 
-          {/* ── Tarjeta 5: Referencia ── */}
-          <div className="rounded-3xl p-6" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#244C87', marginBottom: '16px' }}>Referencia</h2>
-            {editMode ? (
-              <div className="space-y-3">
-                <input type="text" value={editedData?.referenciaNombre ?? ''} onChange={e => handleFieldChange('referenciaNombre', e.target.value)} placeholder="Nombre de la referencia" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                <input type="email" value={editedData?.referenciaEmail ?? ''} onChange={e => handleFieldChange('referenciaEmail', e.target.value)} placeholder="Email de la referencia" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-                <input type="tel" value={editedData?.referenciaTelefono ?? ''} onChange={e => handleFieldChange('referenciaTelefono', e.target.value)} placeholder="Teléfono de la referencia" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }} />
-              </div>
-            ) : (
-              <div>
-                {!currentData.referenciaNombre && !currentData.referenciaEmail && !currentData.referenciaTelefono ? (
-                  <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: '#9CA3AF' }}>Sin referencia cargada</p>
+      ) : (
+        /* ═══════════════════════════════════════════
+           MODO VISTA (igual que providers/[id])
+        ═══════════════════════════════════════════ */
+        <main className="flex-1" style={{ paddingTop: 'calc(6rem + 29px)' }}>
+          <div className="w-full px-0 md:max-w-4xl md:mx-auto md:px-6">
+
+            {/* Botón editar */}
+            <div className="flex justify-center mb-4 px-4">
+              <button onClick={handleEditClick} className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, border: '2px solid #000000', cursor: 'pointer' }}>
+                Editar Perfil
+              </button>
+            </div>
+
+            <div className="bg-white md:rounded-3xl overflow-hidden md:border md:shadow-lg mb-8">
+              {/* Foto principal */}
+              <div className="relative overflow-hidden" style={{ width: '100%', height: '269px', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', backgroundColor: '#E5E7EB' }}>
+                {currentData.profileImage ? (
+                  <Image src={currentData.profileImage} alt={`${currentData.nombre} ${currentData.apellido}`} fill sizes="(max-width: 768px) 100vw, 480px" style={{ objectFit: 'cover', borderTopLeftRadius: '24px', borderTopRightRadius: '24px' }} />
                 ) : (
-                  <div className="space-y-2">
-                    {currentData.referenciaNombre && <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }}><strong>Nombre:</strong> {currentData.referenciaNombre}</p>}
-                    {currentData.referenciaEmail && <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }}><strong>Email:</strong> {currentData.referenciaEmail}</p>}
-                    {currentData.referenciaTelefono && <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }}><strong>Teléfono:</strong> {currentData.referenciaTelefono}</p>}
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="#9CA3AF"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Botón guardar al final (modo edición) */}
-          {editMode && (
-            <div className="flex gap-3 justify-center pb-4">
-              <button onClick={handleSaveEdit} className="px-6 py-2 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#244C87', border: 'none', cursor: 'pointer' }}>Guardar cambios</button>
-              <button onClick={handleCancelEdit} className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, border: '2px solid #000000', cursor: 'pointer' }}>Cancelar</button>
+              <div className="p-4 md:p-8" style={{ paddingTop: '32px' }}>
+                {/* Nombre */}
+                <h1 className="text-center" style={{ fontFamily: 'Maitree, serif', fontWeight: 400, fontSize: 'clamp(28px, 5vw, 40px)', color: '#244C87', marginBottom: '32px', textTransform: 'capitalize' }}>
+                  {currentData.nombre} {currentData.apellido}
+                </h1>
+
+                {/* Categoría y Ubicación */}
+                <div style={{ paddingLeft: '10px', paddingRight: '32px' }}>
+                  <p style={{ fontFamily: 'Maitree, serif', fontSize: '16px', fontWeight: 400, color: '#000000', marginBottom: '16px' }}>
+                    {profesionLabel} profesional - {currentData.ubicacion || 'Ubicación no especificada'}
+                  </p>
+                </div>
+
+                {/* Estrellas */}
+                <div className="flex items-center gap-1" style={{ paddingLeft: '10px', marginBottom: '24px' }}>
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} style={{ color: '#DC5F00', fontSize: '24px' }}>★</span>
+                  ))}
+                </div>
+
+                {/* Botón Pedir Presupuesto */}
+                <div className="flex justify-end" style={{ marginBottom: '24px' }}>
+                  <button
+                    onClick={() => {
+                      const p = new URLSearchParams();
+                      p.append('servicio', profesionLabel);
+                      p.append('ubicacion', currentData.ubicacion || '');
+                      p.append('professionals', currentData.id.toString());
+                      router.push(`/job-request?${p.toString()}`);
+                    }}
+                    style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 400, backgroundColor: '#244C87', color: '#FFFFFF', border: 'none', minWidth: '160px', height: '46px', borderRadius: '24px', cursor: 'pointer', padding: '10px 16px' }}
+                  >
+                    Pedir presupuesto
+                  </button>
+                </div>
+
+                <div className="border-t border-gray-300 mb-6"></div>
+
+                {/* Sellos */}
+                <div className="flex items-center justify-center gap-6 mb-8">
+                  <Image src="/ProfesionalTop.png" alt="Profesional Top" width={80} height={80} className="object-contain" />
+                  <div className="relative w-20 h-20 rounded-full border-4 border-gray-300 flex items-center justify-center">
+                    <span style={{ fontFamily: 'Maitree, serif', fontSize: '10px', fontWeight: 600, color: '#000', textAlign: 'center' }}>n°{String(currentData.id).padStart(6, '0')}</span>
+                  </div>
+                </div>
+
+                {/* Experiencia */}
+                <div className="mb-6" style={{ paddingLeft: '10px' }}>
+                  <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#000', marginBottom: '12px' }}>Experiencia profesional:</h2>
+                  <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 400, color: currentData.experiencia ? '#000' : '#999' }}>
+                    {currentData.experiencia ? `${currentData.experiencia} años` : 'No agregó información aún'}
+                  </p>
+                </div>
+
+                {/* Servicios */}
+                <div className="mb-6" style={{ paddingLeft: '10px' }}>
+                  <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#000', marginBottom: '12px' }}>Servicios ofrecidos:</h2>
+                  {currentData.specialties?.length > 0 ? (
+                    <ul className="space-y-2">
+                      {currentData.specialties.map(s => (
+                        <li key={s} style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 400, color: '#000' }}>• {s}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#999' }}>No agregó información aún</p>
+                  )}
+                </div>
+
+                {/* Zona de trabajo */}
+                <div className="mb-6" style={{ paddingLeft: '10px' }}>
+                  <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#000', marginBottom: '12px' }}>Zonas de Trabajo:</h2>
+                  {currentData.ubicacion ? (
+                    <div>
+                      <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#000', marginBottom: '12px' }}>
+                        • {currentData.ubicacion}{currentData.alcanceTrabajo ? ` (Radio de ${currentData.alcanceTrabajo} km)` : ''}
+                      </p>
+                      <WorkZoneMap location={currentData.ubicacion || ''} radiusKm={currentData.alcanceTrabajo ? Number(currentData.alcanceTrabajo) : 10} />
+                    </div>
+                  ) : (
+                    <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#999' }}>No agregó información aún</p>
+                  )}
+                </div>
+
+                {/* Galería */}
+                <div className="mb-6" style={{ paddingLeft: '10px' }}>
+                  <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#000', marginBottom: '16px' }}>Galería</h2>
+                  {(currentData.portfolioImages ?? []).length > 0 ? (
+                    <div className="flex gap-4 overflow-x-auto pb-4">
+                      {currentData.portfolioImages!.map((photo, i) => (
+                        <div key={photo} className="relative flex-shrink-0" style={{ width: '342px', height: '237px', borderRadius: '24px', overflow: 'hidden' }}>
+                          <Image src={photo} alt={`Trabajo ${i + 1}`} fill sizes="342px" style={{ objectFit: 'cover', borderRadius: '24px' }} />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', color: '#999' }}>No agregó fotos aún</p>
+                  )}
+                </div>
+
+                {/* Descripción */}
+                {currentData.descripcion && (
+                  <div className="mb-6" style={{ paddingLeft: '10px' }}>
+                    <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 600, color: '#000', marginBottom: '12px' }}>Descripción:</h2>
+                    <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 400, color: '#000', lineHeight: '1.5' }}>{currentData.descripcion}</p>
+                  </div>
+                )}
+
+              </div>
             </div>
-          )}
-
-        </div>
-      </main>
+          </div>
+        </main>
+      )}
     </div>
   );
 }
