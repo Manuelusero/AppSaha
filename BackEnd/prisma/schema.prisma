@@ -103,6 +103,8 @@ model ProviderProfile {
   pricePerHour       Float?
   location           String?
   serviceRadius      Int? // Radio de servicio en km
+  latitude           Float?
+  longitude          Float?
   isAvailable        Boolean         @default(true)
   isVerified         Boolean         @default(false) // Verificado por la plataforma
   rating             Float           @default(0)
@@ -144,6 +146,7 @@ model ProviderProfile {
   // Índices para optimizar búsquedas
   @@index([serviceCategory])
   @@index([location])
+  @@index([latitude, longitude])
   @@index([rating])
   @@index([isAvailable])
 }

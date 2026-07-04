@@ -51,6 +51,7 @@ export default function DashboardProvider() {
   const profesionInputRef = useRef<HTMLInputElement>(null);
   const [showProfesionDropdown, setShowProfesionDropdown] = useState(false);
   const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [viewerIsOwner, setViewerIsOwner] = useState(false);
 
   const profesionOpciones = [
     { value: 'PLOMERIA', label: 'Plomeros' },
@@ -236,6 +237,11 @@ export default function DashboardProvider() {
           referenciaEmail: '',
           referenciaTelefono: ''
         });
+        // establecer si el viewer es el dueño del perfil
+        try {
+          const viewerRaw = localStorage.getItem(PROVIDER_ID_KEY);
+          setViewerIsOwner(!!viewerRaw && Number(viewerRaw) === parseInt(providerId));
+        } catch { /* ignore */ }
       })
       .catch(err => {
         // Usar warn para no disparar el overlay de Next.js
@@ -591,6 +597,32 @@ export default function DashboardProvider() {
             {/* Radio de trabajo */}
             <div>
               <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Zonas de Trabajo:</label>
+              <div className="mb-3">
+                <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Radio (km):</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={1}
+                    max={200}
+                    value={editedData.alcanceTrabajo ? Number(editedData.alcanceTrabajo) : 10}
+                    onChange={e => handleFieldChange('alcanceTrabajo', String(Number(e.target.value)))}
+                    className="w-full"
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={editedData.alcanceTrabajo ? Number(editedData.alcanceTrabajo) : 10}
+                    onChange={e => {
+                      const v = Number(e.target.value) || 0;
+                      handleFieldChange('alcanceTrabajo', String(v));
+                    }}
+                    style={{ width: '72px' }}
+                    className="px-3 py-2 rounded-full border border-gray-300"
+                  />
+                </div>
+              </div>
+
               <WorkZoneMap
                 location={editedData.ubicacion || ''}
                 radiusKm={editedData.alcanceTrabajo ? Number(editedData.alcanceTrabajo) : 10}
@@ -688,30 +720,20 @@ export default function DashboardProvider() {
 
                 {/* Botón Pedir Presupuesto */}
                 <div className="flex justify-end" style={{ marginBottom: '24px' }}>
-                  {(() => {
-                    try {
-                      const viewerIdRaw = localStorage.getItem(PROVIDER_ID_KEY);
-                      const viewerId = viewerIdRaw ? Number(viewerIdRaw) : null;
-                      const isOwnerView = viewerId !== null && currentData && viewerId === currentData.id;
-                      if (isOwnerView) return null;
-                    } catch (e) {
-                      // If any error, default to showing the button
-                    }
-                    return (
-                      <button
-                        onClick={() => {
-                          const p = new URLSearchParams();
-                          p.append('servicio', profesionLabel);
-                          p.append('ubicacion', currentData.ubicacion || '');
-                          p.append('professionals', currentData.id.toString());
-                          router.push(`/job-request?${p.toString()}`);
-                        }}
-                        style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 400, backgroundColor: '#244C87', color: '#FFFFFF', border: 'none', minWidth: '160px', height: '46px', borderRadius: '24px', cursor: 'pointer', padding: '10px 16px' }}
-                      >
-                        Pedir presupuesto
-                      </button>
-                    );
-                  })()}
+                  {!viewerIsOwner && (
+                    <button
+                      onClick={() => {
+                        const p = new URLSearchParams();
+                        p.append('servicio', profesionLabel);
+                        p.append('ubicacion', currentData.ubicacion || '');
+                        p.append('professionals', currentData.id.toString());
+                        router.push(`/job-request?${p.toString()}`);
+                      }}
+                      style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 400, backgroundColor: '#244C87', color: '#FFFFFF', border: 'none', minWidth: '160px', height: '46px', borderRadius: '24px', cursor: 'pointer', padding: '10px 16px' }}
+                    >
+                      Pedir presupuesto
+                    </button>
+                  )}
                 </div>
 
                 <div className="border-t border-gray-300 mb-6"></div>

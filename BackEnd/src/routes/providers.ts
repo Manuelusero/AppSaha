@@ -6,6 +6,31 @@ import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 import { getOptionalFileUrl, getOptionalFileUrls, getFileUrl, getFileUrls } from '../utils/file-helpers.js';
 import bcrypt from 'bcrypt';
 
+// Server-side geocoding using Nominatim (no API key)
+async function geocodeLocation(place) {
+  try {
+    const query = place && place.toString().includes('Argentina') ? place : `${place}, Argentina`;
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=ar`, {
+      headers: { 'User-Agent': 'SercoApp/1.0 (backend)' }
+    });
+    const data = await res.json();
+    if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch (e) {
+    console.warn('Geocoding failed for', place, e?.message || e);
+  }
+  return null;
+}
+
+function haversineDistanceKm(lat1, lon1, lat2, lon2) {
+  const toRad = v => (v * Math.PI) / 180;
+  const R = 6371; // km
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 const router = express.Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_change_this';
@@ -125,6 +150,8 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
     const serviceCategory = categoryMap[profesion] || 'OTRO';
 
     // Crear o actualizar usuario y perfil de proveedor
+    const coords = ubicacion ? await geocodeLocation(ubicacion) : null;
+
     const profileData = {
       serviceCategory: serviceCategory as any,
       specialties: JSON.stringify(especialidadesArray),
@@ -142,6 +169,8 @@ router.post('/register', uploadProviderFiles, async (req, res) => {
       dniPhotoBack: fotoDniDorso || null,
       certifications: JSON.stringify(certificados),
       serviceRadius: alcanceTrabajo && !isNaN(parseInt(alcanceTrabajo)) ? parseInt(alcanceTrabajo) : null,
+      latitude: coords ? coords.lat : null,
+      longitude: coords ? coords.lng : null,
       instagram: instagram || null,
       facebook: facebook || null,
       linkedin: linkedin || null,
@@ -235,7 +264,10 @@ router.get('/', async (req, res) => {
   try {
     const { 
       category, 
-      location, 
+      location,
+      lat, 
+      lng, 
+      radius, 
       sortBy = 'rating',
       order = 'desc'
     } = req.query;
@@ -317,6 +349,24 @@ router.get('/', async (req, res) => {
     });
 
     console.log(`✅ Encontrados ${providers.length} proveedores`);
+
+    // Si se recibió lat/lng/radius, filtrar por distancia usando haversine
+    if (lat && lng && radius) {
+      const latNum = Number(lat);
+      const lngNum = Number(lng);
+      const radiusNum = Number(radius);
+      const filtered = providers.filter(p => {
+        const prof = p.providerProfile;
+        if (!prof) return false;
+        const plat = prof.latitude;
+        const plng = prof.longitude;
+        if (plat === null || plng === null || plat === undefined || plng === undefined) return false;
+        const d = haversineDistanceKm(latNum, lngNum, Number(plat), Number(plng));
+        return d <= radiusNum;
+      });
+      console.log(`🔎 Aplicado filtro por distancia, quedan ${filtered.length}`);
+      return res.json(filtered);
+    }
 
     res.json(providers);
 
@@ -437,6 +487,15 @@ router.put('/:id', authenticateToken, async (req: any, res) => {
       facebook,
       linkedin
     } = req.body;
+    // If location changed, try to geocode and store lat/lng
+    let coords = null;
+    if (location !== undefined && location) {
+      try {
+        coords = await geocodeLocation(location);
+      } catch (e) {
+        coords = null;
+      }
+    }
 
     const updated = await prisma.providerProfile.update({
       where: { userId: id },
@@ -451,6 +510,7 @@ router.put('/:id', authenticateToken, async (req: any, res) => {
         ...(instagram !== undefined && { instagram }),
         ...(facebook !== undefined && { facebook }),
         ...(linkedin !== undefined && { linkedin }),
+        ...(coords && { latitude: coords.lat, longitude: coords.lng })
       }
     });
 
