@@ -7,22 +7,25 @@ import { getOptionalFileUrl, getOptionalFileUrls, getFileUrl, getFileUrls } from
 import bcrypt from 'bcrypt';
 
 // Server-side geocoding using Nominatim (no API key)
-async function geocodeLocation(place) {
+async function geocodeLocation(place: string | null | undefined): Promise<{ lat: number; lng: number } | null> {
+  if (!place) return null;
   try {
-    const query = place && place.toString().includes('Argentina') ? place : `${place}, Argentina`;
+    const query = place.toString().includes('Argentina') ? place : `${place}, Argentina`;
     const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=ar`, {
       headers: { 'User-Agent': 'SercoApp/1.0 (backend)' }
     });
-    const data = await res.json();
-    if (data?.[0]) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-  } catch (e) {
-    console.warn('Geocoding failed for', place, e?.message || e);
+    const data: any = await res.json();
+    if (Array.isArray(data) && data.length > 0 && data[0]) {
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    }
+  } catch (err: any) {
+    console.warn('Geocoding failed for', place, err?.message || err);
   }
   return null;
 }
 
-function haversineDistanceKm(lat1, lon1, lat2, lon2) {
-  const toRad = v => (v * Math.PI) / 180;
+function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const toRad = (v: number) => (v * Math.PI) / 180;
   const R = 6371; // km
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -337,6 +340,8 @@ router.get('/', async (req, res) => {
             portfolioImages: true,
             workPhotos: true,
             serviceRadius: true,
+            latitude: true,
+            longitude: true,
             instagram: true,
             facebook: true,
             linkedin: true,
@@ -432,7 +437,9 @@ router.get('/:id', async (req, res) => {
             profilePhoto: true,
             portfolioImages: true,
             workPhotos: true,
-            serviceRadius: true,
+                serviceRadius: true,
+                latitude: true,
+                longitude: true,
             instagram: true,
             facebook: true,
             linkedin: true,
