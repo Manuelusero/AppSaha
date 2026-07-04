@@ -1,3 +1,4 @@
+// Original content from attachment
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -9,6 +10,7 @@ import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PR
 import { getEspecialidades } from '../data/especialidades';
 import { ProviderHeader } from '@/components/layout';
 import { useBookingsStore } from '@/store/bookingsStore';
+import ProfessionSelector from '@/components/provider-signup/ProfessionSelector';
 
 const WorkZoneMap = dynamic(() => import('@/components/ui/WorkZoneMap'), { ssr: false });
 
@@ -292,10 +294,8 @@ export default function DashboardProvider() {
       );
 
       if (result.success) {
-        // Las URLs que devuelve el backend son los filenames/paths; convertirlas a URLs de display
         const newDisplayUrls = result.portfolioImages.map(img => getPortfolioImageUrl(img));
         handleFieldChange('portfolioImages', newDisplayUrls);
-        // Sincronizar providerData también para que no se pierda al cancelar y volver
         setProviderData(prev => prev ? { ...prev, portfolioImages: newDisplayUrls } : prev);
       }
     } catch (error) {
@@ -303,7 +303,6 @@ export default function DashboardProvider() {
       alert('Error al subir las fotos. Inténtalo de nuevo.');
     } finally {
       setUploadingPhoto(false);
-      // Limpiar el input para poder subir la misma foto otra vez si se quiere
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -313,7 +312,6 @@ export default function DashboardProvider() {
     const providerId = localStorage.getItem(PROVIDER_ID_KEY);
     if (!providerId) return;
 
-    // Optimistic update: quitar del estado inmediatamente
     const newImages = editedData.portfolioImages?.filter(url => url !== imgUrl) || [];
     handleFieldChange('portfolioImages', newImages);
 
@@ -328,7 +326,6 @@ export default function DashboardProvider() {
       }
     } catch (error) {
       console.error('Error eliminando foto:', error);
-      // Revertir si falla
       handleFieldChange('portfolioImages', editedData.portfolioImages || []);
     }
   };
@@ -338,7 +335,6 @@ export default function DashboardProvider() {
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* Header del proveedor */}
       <ProviderHeader
         activePage="perfil"
         pendingCount={pendingCount}
@@ -350,726 +346,89 @@ export default function DashboardProvider() {
           }
         }}
       />
-
-      {/* Modal de confirmación de cambios sin guardar */}
       {showUnsavedModal && (
         <>
-          <div 
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
-            onClick={() => setShowUnsavedModal(false)}
-          >
-            <div 
-              className="bg-white rounded-3xl shadow-2xl p-8 mx-4"
-              style={{ 
-                maxWidth: '400px',
-                width: '100%',
-                backgroundColor: '#FFF8F0'
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Botón X para cerrar */}
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowUnsavedModal(false)}>
+            <div className="bg-white rounded-3xl shadow-2xl p-8 mx-4" style={{ maxWidth: '400px', width: '100%', backgroundColor: '#FFF8F0' }} onClick={e => e.stopPropagation()}>
               <div className="flex justify-end mb-4">
-                <button
-                  onClick={() => setShowUnsavedModal(false)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                  </svg>
+                <button onClick={() => setShowUnsavedModal(false)} style={{ cursor: 'pointer' }}>
+                  <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
               </div>
-
-              {/* Título */}
-              <h2 style={{
-                fontFamily: 'Maitree, serif',
-                fontSize: '24px',
-                fontWeight: 600,
-                color: '#B45B39',
-                textAlign: 'center',
-                marginBottom: '32px'
-              }}>
-                ¿Querés guardar los cambios?
-              </h2>
-
-              {/* Botones */}
+              <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, color: '#B45B39', textAlign: 'center', marginBottom: '32px' }}>¿Querés guardar los cambios?</h2>
               <div className="space-y-3">
-                <button
-                  onClick={() => {
-                    setShowUnsavedModal(false);
-                    handleSaveEdit();
-                    router.back();
-                  }}
-                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#FFFFFF',
-                    backgroundColor: '#B45B39',
-                    cursor: 'pointer',
-                    border: 'none'
-                  }}
-                >
-                  Guardar Cambios
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setShowUnsavedModal(false);
-                    setEditMode(false);
-                    setEditedData(null);
-                    router.back();
-                  }}
-                  className="w-full py-3 rounded-full hover:opacity-90 transition-opacity"
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: '#FFFFFF',
-                    backgroundColor: '#B45B39',
-                    cursor: 'pointer',
-                    border: 'none'
-                  }}
-                >
-                  No, seguir sin guardar
-                </button>
+                <button onClick={() => { setShowUnsavedModal(false); handleSaveEdit(); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>Guardar Cambios</button>
+                <button onClick={() => { setShowUnsavedModal(false); setEditMode(false); setEditedData(null); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>No, seguir sin guardar</button>
               </div>
             </div>
           </div>
         </>
       )}
-
-      {/* Contenido principal - con padding-top para compensar header fixed */}
       <main className="px-4 sm:px-6" style={{ paddingTop: 'calc(6rem + 48px)', paddingBottom: '2rem' }}>
         <div className="max-w-xl mx-auto">
-          {/* Layout: una columna centrada (mobile y desktop iguales) */}
           <div>
-          {/* Perfil: foto + nombre */}
-          <div>
-          {/* Botón Editar Perfil - Solo mostrar cuando NO está en modo edición */}
-          {!editMode && (
-            <div className="flex justify-center mb-6">
-              <button
-                onClick={handleEditClick}
-                className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors"
-                style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: colors.neutral.black,
-                  border: '2px solid #000000',
-                  cursor: 'pointer'
-                }}
-              >
-                Editar Perfil
-              </button>
-            </div>
-          )}
-          {/* Card de perfil con imagen */}
-          <div 
-            className="rounded-3xl overflow-hidden mb-6"
-            style={{ 
-              backgroundColor: '#FFFFFF',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-          >
-            {/* Imagen de fondo/header */}
-            <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
-              {currentData.profileImage ? (
-                <Image
-                  src={currentData.profileImage}
-                  alt="Foto de perfil"
-                  fill
-                  sizes="(max-width: 768px) 100vw, 400px"
-                  style={{ objectFit: 'cover' }}
-                />
-              ) : (
-                <div style={{ width: '100%', height: '100%', backgroundColor: '#E5E7EB' }} />
-              )}
-              {editMode && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                  <input
-                    ref={profilePhotoInputRef}
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png"
-                    style={{ display: 'none' }}
-                    onChange={(e) => handleProfilePhotoUpload(e.target.files)}
-                  />
-                  <button
-                    onClick={() => !uploadingProfilePhoto && profilePhotoInputRef.current?.click()}
-                    className="px-4 py-2 rounded-full bg-white hover:bg-gray-100 transition-colors flex items-center gap-2"
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.sm,
-                      cursor: uploadingProfilePhoto ? 'wait' : 'pointer',
-                      opacity: uploadingProfilePhoto ? 0.8 : 1
-                    }}
-                  >
-                    {uploadingProfilePhoto ? (
-                      <>
-                        <div style={{
-                          width: '14px',
-                          height: '14px',
-                          border: '2px solid #D1D5DB',
-                          borderTopColor: '#244C87',
-                          borderRadius: '50%',
-                          animation: 'spin 0.8s linear infinite',
-                          flexShrink: 0
-                        }} />
-                        Subiendo...
-                      </>
-                    ) : (
-                      <>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#244C87" strokeWidth="2">
-                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                          <circle cx="12" cy="13" r="4"/>
-                        </svg>
-                        Cambiar foto
-                      </>
-                    )}
-                  </button>
+            <div>
+              {!editMode && (
+                <div className="flex justify-center mb-6">
+                  <button onClick={handleEditClick} className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, border: '2px solid #000000', cursor: 'pointer' }}>Editar Perfil</button>
                 </div>
               )}
-            </div>
-
-            {/* Información del perfil */}
-            <div className="p-6 text-center">
-              {editMode ? (
-                <div className="space-y-4">
-                  {/* Nombre completo no editable (se valida con DNI) */}
-                  <h1 style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '32px',
-                    fontWeight: 600,
-                    color: '#244C87',
-                    marginBottom: '8px'
-                  }}>
-                    {currentData.nombre} {currentData.apellido}
-                  </h1>
-                  
-                  <div className="relative w-full">
-                    <input
-                      ref={profesionInputRef}
-                      type="text"
-                      readOnly
-                      value={profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? ''}
-                      onFocus={() => {
-                        const rect = profesionInputRef.current?.getBoundingClientRect();
-                        if (rect) {
-                          setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-                        }
-                        setShowProfesionDropdown(true);
-                      }}
-                      onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 150)}
-                      placeholder="Profesión"
-                      className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer"
-                      style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }}
-                    />
-                  </div>
-
-                  <input
-                    type="text"
-                    value={currentData.ubicacion}
-                    onChange={(e) => handleFieldChange('ubicacion', e.target.value)}
-                    placeholder="Ubicación"
-                    className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.sm,
-                      color: colors.neutral[600]
-                    }}
-                  />
-                </div>
-              ) : (
-                <>
-                  <h1 style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '32px',
-                    fontWeight: 600,
-                    color: '#244C87',
-                    marginBottom: '8px'
-                  }}>
-                    {currentData.nombre} {currentData.apellido}
-                  </h1>
-                  
-                  <p style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '18px',
-                    fontWeight: 400,
-                    color: colors.neutral.black,
-                    marginBottom: '4px'
-                  }}>
-                    {currentData.serviceCategory}
-                  </p>
-
-                  <div className="flex items-center justify-center gap-2 text-gray-600">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                      <circle cx="12" cy="10" r="3" fill="white"/>
-                    </svg>
-                    <span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>
-                      {currentData.ubicacion}
-                    </span>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-
-          </div>{/* fin col perfil */}
-
-          {/* Detalles: experiencia, servicios, zona, galeria, descripcion */}
-          <div>
-          {/* Experiencia profesional */}
-          {(currentData.experiencia > 0 || editMode) && (
-            <div className="mb-6">
-              {editMode ? (
-                <div className="flex items-center gap-4">
-                  <label style={{
-                    fontFamily: 'Maitree, serif',
-                    fontSize: '18px',
-                    fontWeight: 600,
-                    color: colors.neutral.black
-                  }}>
-                    Años de experiencia:
-                  </label>
-                  <input
-                    type="number"
-                    value={currentData.experiencia}
-                    onChange={(e) => handleFieldChange('experiencia', parseInt(e.target.value) || 0)}
-                    className="w-32 px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
-                    style={{
-                      fontFamily: typography.fontFamily.primary,
-                      fontSize: typography.fontSize.base
-                    }}
-                  />
-                </div>
-              ) : (
-                <p style={{
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '18px',
-                  fontWeight: 600,
-                  color: colors.neutral.black
-                }}>
-                  Experiencia profesional: {currentData.experiencia} años
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Servicios ofrecidos */}
-          <div className="mb-6">
-            <h2 style={{
-              fontFamily: 'Maitree, serif',
-              fontSize: '20px',
-              fontWeight: 600,
-              color: colors.neutral.black,
-              marginBottom: '12px'
-            }}>
-              Servicios ofrecidos:
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {(() => {
-                console.log('=== RENDERIZANDO SERVICIOS ===');
-                console.log('editMode:', editMode);
-                console.log('currentData:', currentData);
-                
-                if (editMode) {
-                  // Modo edición: mostrar especialidades según la profesión
-                  const especialidadesDisponibles = getEspecialidades(currentData.serviceCategory);
-                  console.log('Especialidades disponibles:', especialidadesDisponibles);
-                  console.log('Especialidades seleccionadas:', currentData.specialties);
-                  
-                  if (especialidadesDisponibles.length === 0) {
-                    return (
-                      <p style={{
-                        fontFamily: typography.fontFamily.primary,
-                        fontSize: typography.fontSize.sm,
-                        color: colors.neutral[400]
-                      }}>
-                        No hay especialidades disponibles para esta profesión
-                      </p>
-                    );
-                  }
-                  return especialidadesDisponibles.map((specialty) => {
-                    const isSelected = currentData.specialties?.includes(specialty);
-                    console.log(`${specialty}: ${isSelected ? 'SELECCIONADO' : 'NO seleccionado'}`);
-                    return (
-                      <button
-                        key={specialty}
-                        type="button"
-                        onClick={() => {
-                          const current = currentData.specialties || [];
-                          if (isSelected) {
-                            handleFieldChange('specialties', current.filter(s => s !== specialty));
-                          } else {
-                            handleFieldChange('specialties', [...current, specialty]);
-                          }
-                        }}
-                        className="px-4 py-2 rounded-full border-2 transition-colors"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.sm,
-                          color: isSelected ? '#FFFFFF' : colors.neutral.black,
-                          borderColor: isSelected ? '#244C87' : '#000000',
-                          backgroundColor: isSelected ? '#244C87' : '#FFFFFF',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        {specialty}
-                      </button>
-                    );
-                  });
-                } else {
-                  // Modo vista: mostrar solo los seleccionados
-                  if (currentData.specialties && currentData.specialties.length > 0) {
-                    return currentData.specialties.map((specialty) => (
-                      <div
-                        key={specialty}
-                        className="px-4 py-2 rounded-full border-2"
-                        style={{
-                          fontFamily: typography.fontFamily.primary,
-                          fontSize: typography.fontSize.sm,
-                          color: colors.neutral.black,
-                          borderColor: '#000000',
-                          backgroundColor: '#FFFFFF'
-                        }}
-                      >
-                        {specialty}
-                      </div>
-                    ));
-                  } else {
-                    return (
-                      <p style={{
-                        fontFamily: typography.fontFamily.primary,
-                        fontSize: typography.fontSize.sm,
-                        color: colors.neutral[400]
-                      }}>
-                        No hay servicios seleccionados
-                      </p>
-                    );
-                  }
-                }
-              })()}
-            </div>
-          </div>
-
-          {/* Zona de Trabajo */}
-          <div className="mb-6">
-            <h2 style={{
-              fontFamily: 'Maitree, serif',
-              fontSize: '20px',
-              fontWeight: 600,
-              color: colors.neutral.black,
-              marginBottom: '12px'
-            }}>
-              Zona de Trabajo:
-            </h2>
-            
-            {currentData.ubicacion ? (
-              <>
-                <WorkZoneMap
-                  location={currentData.ubicacion}
-                  radiusKm={currentData.alcanceTrabajo ? parseInt(currentData.alcanceTrabajo) : 0}
-                />
-                
-                {/* Slider para ajustar el radio en modo edición */}
-                {editMode && (
-                  <div className="mt-4">
-                    <input
-                      type="range"
-                      min="0"
-                      max="50"
-                      value={currentData.alcanceTrabajo || 0}
-                      onChange={(e) => handleFieldChange('alcanceTrabajo', e.target.value)}
-                      className="w-full"
-                      style={{
-                        accentColor: '#244C87'
-                      }}
-                    />
-                    <p className="mt-2 text-xs text-gray-600 text-center" style={{ fontFamily: typography.fontFamily.primary }}>
-                      ¿Hasta dónde estarías dispuesto/a a moverte para trabajar desde {currentData.ubicacion}?
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div
-                style={{
-                  padding: '32px',
-                  background: '#F9FAFB',
-                  borderRadius: '20px',
-                  border: '2px dashed #E5E7EB',
-                  textAlign: 'center'
-                }}
-              >
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#9CA3AF"
-                  strokeWidth="2"
-                  style={{ margin: '0 auto 12px' }}
-                >
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                  <circle cx="12" cy="9" r="2.5"/>
-                </svg>
-                <p style={{
-                  fontFamily: 'Maitree, serif',
-                  fontSize: '16px',
-                  color: '#6B7280',
-                  marginBottom: '4px'
-                }}>
-                  No has definido tu zona de trabajo
-                </p>
-                <p style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.sm,
-                  color: '#9CA3AF'
-                }}>
-                  {editMode ? 'Ingresá tu ubicación arriba para ver el mapa' : 'Editá tu perfil para agregar tu ubicación y alcance'}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Galería */}
-          {((currentData.portfolioImages && currentData.portfolioImages.length > 0) || editMode) && (
-            <div className="mb-6">
-              <h2 style={{
-                fontFamily: 'Maitree, serif',
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.neutral.black,
-                marginBottom: '12px'
-              }}>
-                Galeria
-              </h2>
-              
-              <div 
-                className="flex gap-4 pb-4"
-                style={{ 
-                  overflowX: currentData.portfolioImages && currentData.portfolioImages.length > 0 ? 'auto' : 'visible',
-                  flexWrap: currentData.portfolioImages && currentData.portfolioImages.length > 0 ? 'nowrap' : 'wrap',
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#244C87 #E5E7EB'
-                }}
-              >
-                {currentData.portfolioImages && currentData.portfolioImages.length > 0 ? (
-                  currentData.portfolioImages.map((img) => (
-                    <div 
-                      key={img}
-                      className="flex-shrink-0 rounded-2xl overflow-hidden"
-                      style={{ width: '300px', height: '200px', position: 'relative' }}
-                    >
-                      <Image
-                        src={img}
-                        alt={`Trabajo ${currentData.portfolioImages?.indexOf(img)! + 1}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 300px"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      {editMode && (
-                        <button
-                          onClick={() => handleDeletePhoto(img)}
-                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center transition-colors"
-                          style={{
-                            fontSize: '20px',
-                            fontWeight: 'bold',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          ×
-                        </button>
-                      )}
-                    </div>
-                  ))
-                ) : null}
-                
-                {/* Botón agregar foto en modo edición */}
-                {editMode && (
-                  <>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/gif"
-                      multiple
-                      style={{ display: 'none' }}
-                      onChange={(e) => handlePhotoUpload(e.target.files)}
-                    />
-                    <div 
-                      className="flex-shrink-0 rounded-2xl border-2 border-dashed transition-colors flex items-center justify-center"
-                      style={{
-                        width: currentData.portfolioImages && currentData.portfolioImages.length > 0 ? '300px' : '100%',
-                        height: '200px',
-                        borderColor: uploadingPhoto ? '#244C87' : '#D1D5DB',
-                        backgroundColor: uploadingPhoto ? '#F0F4FF' : 'transparent',
-                        cursor: uploadingPhoto ? 'wait' : 'pointer'
-                      }}
-                      onClick={() => !uploadingPhoto && fileInputRef.current?.click()}
-                    >
-                      <div className="text-center">
-                        {uploadingPhoto ? (
+              <div className="rounded-3xl overflow-hidden mb-6" style={{ backgroundColor: '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
+                  {currentData.profileImage ? (
+                    <Image src={currentData.profileImage} alt="Foto de perfil" fill sizes="(max-width: 768px) 100vw, 400px" style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', backgroundColor: '#E5E7EB' }} />
+                  )}
+                  {editMode && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <input ref={profilePhotoInputRef} type="file" accept="image/jpeg,image/jpg,image/png" style={{ display: 'none' }} onChange={e => handleProfilePhotoUpload(e.target.files)} />
+                      <button onClick={() => !uploadingProfilePhoto && profilePhotoInputRef.current?.click()} className="px-4 py-2 rounded-full bg-white hover:bg-gray-100 transition-colors flex items-center gap-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, cursor: uploadingProfilePhoto ? 'wait' : 'pointer', opacity: uploadingProfilePhoto ? 0.8 : 1 }}>
+                        {uploadingProfilePhoto ? (
                           <>
-                            <div style={{
-                              width: '36px',
-                              height: '36px',
-                              border: '3px solid #E5E7EB',
-                              borderTopColor: '#244C87',
-                              borderRadius: '50%',
-                              animation: 'spin 0.8s linear infinite',
-                              margin: '0 auto'
-                            }} />
-                            <p style={{
-                              fontFamily: typography.fontFamily.primary,
-                              fontSize: typography.fontSize.sm,
-                              color: '#244C87',
-                              marginTop: '10px'
-                            }}>
-                              Subiendo...
-                            </p>
+                            <div style={{ width: '14px', height: '14px', border: '2px solid #D1D5DB', borderTopColor: '#244C87', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+                            Subiendo...
                           </>
                         ) : (
                           <>
-                            <span style={{
-                              fontSize: '40px',
-                              color: '#244C87',
-                              lineHeight: 1
-                            }}>+</span>
-                            <p style={{
-                              fontFamily: typography.fontFamily.primary,
-                              fontSize: typography.fontSize.sm,
-                              color: colors.neutral[600],
-                              marginTop: '8px'
-                            }}>
-                              Agregar foto
-                            </p>
-                            {(!currentData.portfolioImages || currentData.portfolioImages.length === 0) && (
-                              <p style={{
-                                fontFamily: typography.fontFamily.primary,
-                                fontSize: typography.fontSize.xs,
-                                color: colors.neutral[400],
-                                marginTop: '4px'
-                              }}>
-                                No hay fotos en la galería
-                              </p>
-                            )}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#244C87" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            Cambiar foto
                           </>
                         )}
-                      </div>
+                      </button>
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
+                <div className="p-6 text-center">
+                  {editMode ? (
+                    <div className="space-y-4">
+                      <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 600, color: '#244C87', marginBottom: '8px' }}>{currentData.nombre} {currentData.apellido}</h1>
+                     <ProfessionSelector
+                        label="Profesión"
+                        value={currentData.serviceCategory}
+                        options={profesionOpciones}
+                        onChange={(value) => {
+                          handleFieldChange('serviceCategory', value);
+
+                          // Limpia las especialidades anteriores
+                          handleFieldChange('specialties', []);
+                            }}
+                          />    
+                      <input type="text" value={currentData.ubicacion} onChange={e => handleFieldChange('ubicacion', e.target.value)} placeholder="Ubicación" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }} />
+                    </div>
+                  ) : (
+                    <>
+                      <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 600, color: '#244C87', marginBottom: '8px' }}>{currentData.nombre} {currentData.apellido}</h1>
+                      <p style={{ fontFamily: 'Maitree, serif', fontSize: '18px', fontWeight: 400, color: colors.neutral.black, marginBottom: '4px' }}>{currentData.serviceCategory}</p>
+                      <div className="flex items-center justify-center gap-2 text-gray-600"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="white"/></svg><span style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm }}>{currentData.ubicacion}</span></div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-          )}
-
-          {/* Descripción */}
-          <div className="mb-6">
-              <h2 style={{
-                fontFamily: 'Maitree, serif',
-                fontSize: '20px',
-                fontWeight: 600,
-                color: colors.neutral.black,
-                marginBottom: '12px'
-              }}>
-                Descripción:
-              </h2>
-              {editMode ? (
-                <textarea
-                  value={currentData.descripcion}
-                  onChange={(e) => handleFieldChange('descripcion', e.target.value)}
-                  placeholder="Describe tu experiencia y servicios..."
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-3xl border-2 border-gray-300 focus:border-[#244C87] focus:outline-none resize-none"
-                  style={{
-                    fontFamily: typography.fontFamily.primary,
-                    fontSize: typography.fontSize.base,
-                    color: colors.neutral.black,
-                    lineHeight: '1.6'
-                  }}
-                />
-              ) : (
-                <p style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: currentData.descripcion ? colors.neutral.black : colors.neutral[400],
-                  lineHeight: '1.6'
-                }}>
-                  {currentData.descripcion || 'Aún no hay descripción.'}
-                </p>
-              )}
-            </div>
-
-          {/* Referencias eliminadas por petición del usuario */}
-
-          {/* Botones Cancelar/Guardar Cambios - Mostrar al final en modo edición */}
-          {editMode && (
-            <div className="flex justify-center gap-4 mt-8 mb-8">
-              <button
-                onClick={handleCancelEdit}
-                className="px-6 py-2 rounded-full bg-white hover:bg-gray-50 transition-colors"
-                style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: colors.neutral.black,
-                  border: '2px solid #000000',
-                  cursor: 'pointer'
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                className="px-6 py-2 rounded-full hover:opacity-90 transition-opacity"
-                style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: '#FFFFFF',
-                  backgroundColor: '#244C87',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                Guardar Cambios
-              </button>
-            </div>
-          )}
-          </div>{/* fin col detalles */}
-          </div>{/* fin wrapper */}
+          </div>
         </div>
       </main>
-      {showProfesionDropdown && dropdownRect && (
-        <div
-          style={{
-            position: 'fixed',
-            top: dropdownRect.top - window.scrollY + 4,
-            left: dropdownRect.left - window.scrollX,
-            width: dropdownRect.width,
-            zIndex: 9999,
-            backgroundColor: 'white',
-            border: '2px solid #E5E7EB',
-            borderRadius: '16px',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-            maxHeight: '240px',
-            overflowY: 'auto',
-          }}
-        >
-          {profesionOpciones.map((op) => (
-            <div
-              key={op.value}
-              onClick={() => {
-                // Update the selected profession and reset specialties
-                handleFieldChange('serviceCategory', op.value);
-                handleFieldChange('specialties', []);
-                setShowProfesionDropdown(false);
-              }}
-              className="px-5 py-3 hover:bg-indigo-50 cursor-pointer text-gray-700 text-base transition-colors"
-              style={{ fontFamily: 'Maitree, serif', backgroundColor: currentData.serviceCategory === op.value ? '#EEF2FF' : undefined }}
-            >
-              {op.label}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

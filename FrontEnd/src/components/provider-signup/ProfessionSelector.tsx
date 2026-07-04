@@ -3,18 +3,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { colors, typography } from '@/styles/tokens';
 
+interface ProfessionOption {
+  value: string;
+  label: string;
+}
+
 interface ProfessionSelectorProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: ProfessionOption[];
   placeholder?: string;
   required?: boolean;
 }
 
-/**
- * Selector de profesión con dropdown personalizado
- */
 export default function ProfessionSelector({
   label,
   value,
@@ -26,25 +28,28 @@ export default function ProfessionSelector({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar dropdown cuando se hace click afuera
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (option: string) => {
-    onChange(option);
-    setIsOpen(false);
-  };
+  const selectedOption = options.find(
+    option => option.value === value
+  );
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative w-full" ref={containerRef}>
       <label
         className="block mb-2"
         style={{
@@ -53,42 +58,52 @@ export default function ProfessionSelector({
           color: colors.neutral.black
         }}
       >
-        {label} {required && '*'}
+        {label}
+        {required && ' *'}
       </label>
-      <div className="relative">
-        <input
-          type="text"
-          value={value}
-          onClick={() => setIsOpen(!isOpen)}
-          readOnly
-          required={required}
-          className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none cursor-pointer"
-          style={{
-            fontFamily: typography.fontFamily.primary,
-            fontSize: typography.fontSize.base,
-            color: colors.neutral.black
-          }}
-          placeholder={placeholder}
-        />
-        {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
-            {options.map((option) => (
-              <div
-                key={option}
-                onClick={() => handleSelect(option)}
-                className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
-                style={{
-                  fontFamily: typography.fontFamily.primary,
-                  fontSize: typography.fontSize.base,
-                  color: colors.neutral.black
-                }}
-              >
-                {option}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+
+      <input
+        type="text"
+        readOnly
+        value={selectedOption?.label ?? ''}
+        placeholder={placeholder}
+        onClick={() => setIsOpen(prev => !prev)}
+        className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none cursor-pointer"
+        style={{
+          fontFamily: typography.fontFamily.primary,
+          fontSize: typography.fontSize.base,
+          color: colors.neutral.black
+        }}
+      />
+
+      {isOpen && (
+        <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-64 overflow-y-auto z-50">
+
+          {options.map(option => (
+            <button
+              key={option.value}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+              className={`w-full text-left px-4 py-3 transition-colors hover:bg-gray-100 ${
+                option.value === value
+                  ? 'bg-blue-50 font-semibold'
+                  : ''
+              }`}
+              style={{
+                fontFamily: typography.fontFamily.primary,
+                fontSize: typography.fontSize.base,
+                color: colors.neutral.black
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
