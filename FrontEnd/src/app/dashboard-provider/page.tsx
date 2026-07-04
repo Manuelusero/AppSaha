@@ -66,6 +66,97 @@ export default function DashboardProvider() {
     { value: 'COSTURA', label: 'Modistas' },
   ];
 
+  // Simple list reused from provider-signup for location autocomplete
+  const ciudadesArgentina = [
+    'Buenos Aires, Buenos Aires',
+    'La Plata, Buenos Aires',
+    'Mar del Plata, Buenos Aires',
+    'Córdoba, Córdoba',
+    'Rosario, Santa Fe',
+    'Mendoza, Mendoza',
+    'San Miguel de Tucumán, Tucumán',
+    'Salta, Salta',
+    'Santa Fe, Santa Fe',
+    'San Juan, San Juan',
+    'Resistencia, Chaco',
+    'Neuquén, Neuquén',
+    'Posadas, Misiones',
+    'Bahía Blanca, Buenos Aires',
+    'Paraná, Entre Ríos',
+    'San Salvador de Jujuy, Jujuy',
+    'Corrientes, Corrientes',
+    'Santiago del Estero, Santiago del Estero',
+    'San Fernando del Valle de Catamarca, Catamarca',
+    'Formosa, Formosa',
+    'San Luis, San Luis',
+    'La Rioja, La Rioja',
+    'Río Cuarto, Córdoba',
+    'Comodoro Rivadavia, Chubut',
+    'Quilmes, Buenos Aires',
+    'San Isidro, Buenos Aires',
+    'Vicente López, Buenos Aires',
+    'Lomas de Zamora, Buenos Aires',
+    'Banfield, Buenos Aires',
+    'Pergamino, Buenos Aires',
+    'Tandil, Buenos Aires',
+    'Olavarría, Buenos Aires',
+    'Zárate, Buenos Aires',
+    'Campana, Buenos Aires',
+    'Luján, Buenos Aires',
+    'San Nicolás de los Arroyos, Buenos Aires',
+    'Junín, Buenos Aires',
+    'Necochea, Buenos Aires',
+    'Chivilcoy, Buenos Aires',
+    'Mercedes, Buenos Aires',
+    'Villa María, Córdoba',
+    'San Francisco, Córdoba',
+    'Villa Carlos Paz, Córdoba',
+    'Rafaela, Santa Fe',
+    'Venado Tuerto, Santa Fe',
+    'Reconquista, Santa Fe',
+    'Godoy Cruz, Mendoza',
+    'San Rafael, Mendoza',
+    'Maipú, Mendoza',
+    'Ushuaia, Tierra del Fuego',
+    'Río Grande, Tierra del Fuego',
+    'San Carlos de Bariloche, Río Negro',
+    'Cipolletti, Río Negro',
+    'Trelew, Chubut',
+    'Puerto Madryn, Chubut',
+    'Concordia, Entre Ríos',
+    'Gualeguaychú, Entre Ríos',
+    'Oberá, Misiones',
+    'Eldorado, Misiones',
+    'Goya, Corrientes',
+    'Paso de los Libres, Corrientes',
+    'Tartagal, Salta',
+    'Orán, Salta',
+    'Yerba Buena, Tucumán',
+    'Concepción, Tucumán',
+    'La Banda, Santiago del Estero',
+    'Termas de Río Hondo, Santiago del Estero'
+  ];
+
+  const [mostrarUbicaciones, setMostrarUbicaciones] = useState(false);
+  const [ubicacionesFiltradas, setUbicacionesFiltradas] = useState<string[]>([]);
+
+  const handleUbicacionChange = (valor: string) => {
+    handleFieldChange('ubicacion', valor);
+    if (valor.length > 0) {
+      const filtradas = ciudadesArgentina.filter(ciudad => ciudad.toLowerCase().includes(valor.toLowerCase()));
+      setUbicacionesFiltradas(filtradas.slice(0, 5));
+      setMostrarUbicaciones(true);
+    } else {
+      setUbicacionesFiltradas([]);
+      setMostrarUbicaciones(false);
+    }
+  };
+
+  const seleccionarUbicacion = (ciudad: string) => {
+    handleFieldChange('ubicacion', ciudad);
+    setMostrarUbicaciones(false);
+  };
+
   const { bookings, fetchBookings } = useBookingsStore();
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
@@ -470,9 +561,31 @@ export default function DashboardProvider() {
             </button>
 
             {/* Ubicación */}
-            <div>
+            <div style={{ position: 'relative' }}>
               <label style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600], display: 'block', marginBottom: '6px' }}>Ubicación</label>
-              <input type="text" value={editedData.ubicacion} onChange={e => handleFieldChange('ubicacion', e.target.value)} placeholder="Autocompleta" className="w-full px-4 py-3 rounded-full border border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }} />
+              <input
+                type="text"
+                value={editedData.ubicacion}
+                onChange={e => handleUbicacionChange(e.target.value)}
+                onFocus={() => { if (editedData.ubicacion) setMostrarUbicaciones(true); }}
+                placeholder="Autocompleta"
+                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:border-[#244C87] focus:outline-none"
+                style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }}
+              />
+              {mostrarUbicaciones && ubicacionesFiltradas.length > 0 && (
+                <div className="absolute z-30 w-full mt-1 bg-white border border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                  {ubicacionesFiltradas.map(u => (
+                    <div
+                      key={u}
+                      onMouseDown={() => seleccionarUbicacion(u)}
+                      className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors"
+                      style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base }}
+                    >
+                      {u}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Radio de trabajo */}
@@ -575,18 +688,30 @@ export default function DashboardProvider() {
 
                 {/* Botón Pedir Presupuesto */}
                 <div className="flex justify-end" style={{ marginBottom: '24px' }}>
-                  <button
-                    onClick={() => {
-                      const p = new URLSearchParams();
-                      p.append('servicio', profesionLabel);
-                      p.append('ubicacion', currentData.ubicacion || '');
-                      p.append('professionals', currentData.id.toString());
-                      router.push(`/job-request?${p.toString()}`);
-                    }}
-                    style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 400, backgroundColor: '#244C87', color: '#FFFFFF', border: 'none', minWidth: '160px', height: '46px', borderRadius: '24px', cursor: 'pointer', padding: '10px 16px' }}
-                  >
-                    Pedir presupuesto
-                  </button>
+                  {(() => {
+                    try {
+                      const viewerIdRaw = localStorage.getItem(PROVIDER_ID_KEY);
+                      const viewerId = viewerIdRaw ? Number(viewerIdRaw) : null;
+                      const isOwnerView = viewerId !== null && currentData && viewerId === currentData.id;
+                      if (isOwnerView) return null;
+                    } catch (e) {
+                      // If any error, default to showing the button
+                    }
+                    return (
+                      <button
+                        onClick={() => {
+                          const p = new URLSearchParams();
+                          p.append('servicio', profesionLabel);
+                          p.append('ubicacion', currentData.ubicacion || '');
+                          p.append('professionals', currentData.id.toString());
+                          router.push(`/job-request?${p.toString()}`);
+                        }}
+                        style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 400, backgroundColor: '#244C87', color: '#FFFFFF', border: 'none', minWidth: '160px', height: '46px', borderRadius: '24px', cursor: 'pointer', padding: '10px 16px' }}
+                      >
+                        Pedir presupuesto
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 <div className="border-t border-gray-300 mb-6"></div>

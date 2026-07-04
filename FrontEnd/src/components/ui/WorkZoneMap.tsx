@@ -27,6 +27,7 @@ export default function WorkZoneMap({ location, radiusKm }: WorkZoneMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const circleRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -77,7 +78,7 @@ export default function WorkZoneMap({ location, radiusKm }: WorkZoneMapProps) {
           iconSize: [28, 28],
           iconAnchor: [14, 28]
         });
-        L.marker([coords.lat, coords.lng], { icon: pinIcon }).addTo(map);
+        markerRef.current = L.marker([coords.lat, coords.lng], { icon: pinIcon }).addTo(map);
 
         // Radius circle
         if (radiusKm > 0) {
@@ -108,6 +109,24 @@ export default function WorkZoneMap({ location, radiusKm }: WorkZoneMapProps) {
     if (!mapRef.current || !circleRef.current) return;
     circleRef.current.setRadius(radiusKm * 1000);
   }, [radiusKm]);
+
+  // Recenter map and marker when "location" prop changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    let mounted = true;
+    (async () => {
+      const coords = await geocodeLocation(location);
+      if (!coords || !mounted) return;
+      try {
+        mapRef.current.setView([coords.lat, coords.lng], mapRef.current.getZoom() || 11);
+        if (markerRef.current) markerRef.current.setLatLng([coords.lat, coords.lng]);
+        if (circleRef.current) circleRef.current.setLatLng([coords.lat, coords.lng]);
+      } catch (e) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [location]);
 
   // Invalidate map size when container resizes (expand/collapse)
   useEffect(() => {
