@@ -80,15 +80,15 @@ export default function WorkZoneMap({ location, radiusKm }: WorkZoneMapProps) {
         });
         markerRef.current = L.marker([coords.lat, coords.lng], { icon: pinIcon }).addTo(map);
 
-        // Radius circle
+        // Radius circle (create only if radius > 0)
         if (radiusKm > 0) {
           circleRef.current = L.circle([coords.lat, coords.lng], {
             radius: radiusKm * 1000,
             color: '#244C87',
             fillColor: '#244C87',
-            fillOpacity: 0.1,
+            fillOpacity: 0.08,
             weight: 2,
-            dashArray: '8 5'
+            dashArray: '1 8'
           }).addTo(map);
         }
 
@@ -106,8 +106,34 @@ export default function WorkZoneMap({ location, radiusKm }: WorkZoneMapProps) {
 
   // Update circle radius when prop changes
   useEffect(() => {
-    if (!mapRef.current || !circleRef.current) return;
-    circleRef.current.setRadius(radiusKm * 1000);
+    if (!mapRef.current) return;
+    (async () => {
+      try {
+        // If circle exists, update radius
+        if (circleRef.current) {
+          circleRef.current.setRadius(radiusKm * 1000);
+          // keep circle centered around marker
+          if (markerRef.current) circleRef.current.setLatLng(markerRef.current.getLatLng());
+        } else if (radiusKm > 0 && markerRef.current) {
+          // create circle if it didn't exist and radius > 0
+          const L = (await import('leaflet')).default; // dynamic import to reuse leaflet
+          circleRef.current = L.circle(markerRef.current.getLatLng(), {
+            radius: radiusKm * 1000,
+            color: '#244C87',
+            fillColor: '#244C87',
+            fillOpacity: 0.08,
+            weight: 2,
+            dashArray: '1 8'
+          }).addTo(mapRef.current);
+        } else if (radiusKm === 0 && circleRef.current) {
+          // remove circle if radius becomes 0
+          try { mapRef.current.removeLayer(circleRef.current); } catch {}
+          circleRef.current = null;
+        }
+      } catch (e) {
+        // ignore errors updating circle
+      }
+    })();
   }, [radiusKm]);
 
   // Recenter map and marker when "location" prop changes
