@@ -403,17 +403,9 @@ export default function DashboardProvider() {
                   {editMode ? (
                     <div className="space-y-4">
                       <h1 style={{ fontFamily: 'Maitree, serif', fontSize: '32px', fontWeight: 600, color: '#244C87', marginBottom: '8px' }}>{currentData.nombre} {currentData.apellido}</h1>
-                     <ProfessionSelector
-                        label="Profesión"
-                        value={currentData.serviceCategory}
-                        options={profesionOpciones}
-                        onChange={(value) => {
-                          handleFieldChange('serviceCategory', value);
-
-                          // Limpia las especialidades anteriores
-                          handleFieldChange('specialties', []);
-                            }}
-                          />    
+                      <div className="relative w-full">
+                        <input ref={profesionInputRef} type="text" readOnly value={profesionOpciones.find(o => o.value === currentData.serviceCategory)?.label ?? ''} onFocus={() => { const rect = profesionInputRef.current?.getBoundingClientRect(); if (rect) { setDropdownRect({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width }); } setShowProfesionDropdown(true); }} onBlur={() => setTimeout(() => setShowProfesionDropdown(false), 150)} placeholder="Profesión" className="w-full px-4 py-2 rounded-full border-2 border-gray-200 focus:border-[#244C87] focus:outline-none text-gray-700 placeholder-gray-400 transition-all cursor-pointer" style={{ fontFamily: 'Maitree, serif', fontSize: '16px' }} />
+                      </div>
                       <input type="text" value={currentData.ubicacion} onChange={e => handleFieldChange('ubicacion', e.target.value)} placeholder="Ubicación" className="w-full px-4 py-2 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.sm, color: colors.neutral[600] }} />
                     </div>
                   ) : (
