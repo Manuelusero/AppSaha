@@ -51,7 +51,7 @@ export default function Welcome() {
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
           }}
         >
-            <img src="/Logo.png" alt="SaHa - Conecta Servicios" className="max-w-[80%] max-h-[80%] object-contain" />
+              <img src="/LogoSerco.jpeg" alt="SaHa - Conecta Servicios" className="w-full h-full object-cover" />
         </div>
 
         {/* Título */}
