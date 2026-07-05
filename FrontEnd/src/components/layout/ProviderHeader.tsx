@@ -52,8 +52,29 @@ export default function ProviderHeader({ onBack, activePage, pendingCount = 0 }:
   const handleBack = () => {
     if (onBack) {
       onBack();
-    } else {
-      router.back();
+      return;
+    }
+
+    try {
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const referrer = typeof document !== 'undefined' ? document.referrer : '';
+
+      // If the referrer is from our origin, it's safe to go back in history.
+      if (referrer && origin && referrer.startsWith(origin)) {
+        router.back();
+        return;
+      }
+
+      // Fallback: if there is a browser history length, try to go back.
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        router.back();
+        return;
+      }
+
+      // Otherwise navigate to the provider dashboard (perfil) as a safe default.
+      router.push('/dashboard-provider');
+    } catch (err) {
+      router.push('/dashboard-provider');
     }
   };
 
