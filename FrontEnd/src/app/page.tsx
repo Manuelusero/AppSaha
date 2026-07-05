@@ -51,16 +51,7 @@ export default function Welcome() {
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
           }}
         >
-          <span 
-            style={{
-              fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.sm,
-              color: colors.neutral[400],
-              textAlign: 'center'
-            }}
-          >
-            [Logo aquí]
-          </span>
+            <img src="/Logo.png" alt="SaHa - Conecta Servicios" className="max-w-[80%] max-h-[80%] object-contain" />
         </div>
 
         {/* Título */}
