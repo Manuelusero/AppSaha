@@ -151,13 +151,14 @@ Para más detalles, ver [`BackEnd/DATABASE.md`](BackEnd/DATABASE.md)
 Plataforma marketplace que conecta proveedores de servicios del hogar con clientes en Argentina.
 
 Resumen rápido
+
 - Frontend: Next.js + React + TypeScript
 - Backend: Express + Node.js + TypeScript + Prisma
 - Deploy: Vercel (Front + Back) / DB en PostgreSQL
 
 Quickstart
 
-1) Backend
+1. Backend
 
 ```bash
 cd BackEnd
@@ -171,7 +172,7 @@ npm run dev
 
 Servidor en http://localhost:8000
 
-2) Frontend
+2. Frontend
 
 ```bash
 cd FrontEnd
@@ -184,6 +185,7 @@ npm run dev
 Frontend en http://localhost:3000
 
 Estructura y documentación importante
+
 - `FrontEnd/` - código y guías específicas (Design tokens, testing, guides)
 - `BackEnd/` - API, migrations y guías (DATABASE_COMPLETE.md, TESTING.md)
 - `RELEASE.md` - estrategia de versionado (semantic-release)
@@ -191,9 +193,10 @@ Estructura y documentación importante
 - `docs/archive/` - documentación archivada (moved old README variants)
 
 Contribuir
+
 - Usa conventional commits para releases automáticas (see `RELEASE.md`).
 - Abrí PRs contra `main`; usamos GitHub Actions para CI and semantic-release for releases.
 
 Contacto
-- Repo: https://github.com/Manuelusero/AppSaha
 
+- Repo: https://github.com/Manuelusero/AppSaha
