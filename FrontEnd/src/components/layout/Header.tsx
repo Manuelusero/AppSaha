@@ -85,20 +85,17 @@ export default function Header({
         height: 'auto'
       }}
     >
-      {/* Logo - Espacio reservado para nuevo logo */}
-      <div 
+      {/* Logo */}
+      <div
         className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
         onClick={() => router.push('/')}
       >
-        <div style={{ 
-          width: '100px', 
-          height: '45px',
-          opacity: 0,
-          borderRadius: borderRadius.xl,
-          transform: 'rotate(0deg)'
-        }} 
-        className="sm:w-[145px] sm:h-[66px]"
-        aria-label="Logo placeholder"
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/Logo.png"
+          alt="SaHa - Conecta Servicios"
+          style={{ width: '140px', height: 'auto', objectFit: 'contain' }}
+          className="sm:w-[180px]"
         />
       </div>
       

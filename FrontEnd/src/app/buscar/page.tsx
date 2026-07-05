@@ -93,9 +93,9 @@ export default function Home() {
         paddingTop: '20px',
         paddingBottom: '20px'
       }}>
-        {/* Logo placeholder */}
-        <div className="text-gray-400 text-sm font-medium" style={{ fontFamily: typography.fontFamily.primary }}>
-          LOGO
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Image src="/Logo.png" alt="SaHa - Conecta Servicios" width={140} height={48} />
         </div>
         
         {/* Botón Ofrezco servicios - Glass effect */}

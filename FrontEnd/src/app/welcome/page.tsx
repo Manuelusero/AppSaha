@@ -56,24 +56,10 @@ export default function Welcome() {
 
       {/* Contenido Central */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md space-y-8">
-        {/* Logo Placeholder */}
-        <div 
-          className="w-48 h-48 rounded-full flex items-center justify-center"
-          style={{
-            backgroundColor: colors.neutral[100],
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-          }}
-        >
-          <span 
-            style={{
-              fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.sm,
-              color: colors.neutral[400],
-              textAlign: 'center'
-            }}
-          >
-            [Logo aquí]
-          </span>
+        {/* Logo */}
+        <div className="w-48 h-48 rounded-full flex items-center justify-center" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/Logo.png" alt="SaHa - Conecta Servicios" style={{ maxWidth: '80%', maxHeight: '80%', objectFit: 'contain' }} />
         </div>
 
         {/* Título */}
