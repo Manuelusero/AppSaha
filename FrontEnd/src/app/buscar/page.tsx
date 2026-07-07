@@ -124,39 +124,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <main id="buscar-servicios" className="flex-1 flex flex-col items-center justify-center px-4 py-6 sm:px-6 sm:py-12" style={{ paddingTop: '60px' }}>
-        {/* Label SERVICIOS CONFIABLES con línea punteada */}
-        <div className="mb-8 flex flex-col items-center">
-          <p className="text-center whitespace-nowrap" style={{
-            fontFamily: 'Avenir, sans-serif',
-            fontSize: '15px',
-            fontWeight: 800,
-            color: '#5E83AE',
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            textTransform: 'uppercase',
-            textAlign: 'center',
-            marginBottom: '0px'
-          }}>
-            SERVICIOS CONFIABLES
-          </p>
-          <div style={{ 
-            width: '402px',
-            maxWidth: '100%',
-            height: '36px',
-            opacity: 1,
-            paddingTop: '8px',
-            paddingRight: '16px',
-            paddingBottom: '8px',
-            paddingLeft: '16px',
-            gap: '10px',
-            marginTop: '-20px',
-            borderBottom: '0.5px dashed',
-            borderColor: colors.primary.main,
-            borderImageSlice: 1,
-            borderImageWidth: 1,
-            borderImageOutset: 0,
-          }}></div>
-        </div>
+        {/* removed 'SERVICIOS CONFIABLES' label as requested */}
 
         {/* Título principal con palabra animada */}
         <div className="text-center mb-6 sm:mb-10 w-full max-w-lg md:max-w-5xl px-4">

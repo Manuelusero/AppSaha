@@ -1,4 +1,4 @@
-'use client';
+ 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,6 +6,49 @@ import { signIn } from 'next-auth/react';
 import { colors, typography } from '@/styles/tokens';
 import { useAuth } from '@/contexts';
 import { apiPost } from '@/utils/api';
+import { useLocationSearch } from '@/hooks';
+
+function SearchBox() {
+  const router = useRouter();
+  const [servicioSeleccionado, setServicioSeleccionado] = useState('');
+
+  const {
+    ubicacion,
+    setUbicacion,
+  } = useLocationSearch({ minChars: 3, debounceMs: 300 });
+
+  const handleBuscar = () => {
+    const params = new URLSearchParams();
+    if (servicioSeleccionado) params.append('servicio', servicioSeleccionado);
+    if (ubicacion) params.append('ubicacion', ubicacion);
+    router.push(`/select-specialty?${params.toString()}`);
+  };
+
+  return (
+    <div className="w-full px-4">
+      <div className="bg-white rounded-3xl p-4 shadow-md flex flex-col md:flex-row gap-3 items-center">
+        <input
+          type="text"
+          placeholder="¿Qué servicio necesitás?"
+          value={servicioSeleccionado}
+          onChange={(e) => setServicioSeleccionado(e.target.value)}
+          className="flex-1 px-4 py-3 rounded-full border focus:outline-none"
+        />
+        <input
+          type="text"
+          placeholder="Ubicación"
+          value={ubicacion}
+          onChange={(e) => setUbicacion(e.target.value)}
+          className="flex-1 px-4 py-3 rounded-full border focus:outline-none"
+        />
+        <button
+          onClick={handleBuscar}
+          className="px-6 py-3 rounded-full bg-[#244C87] text-white font-semibold"
+        >Buscar</button>
+      </div>
+    </div>
+  );
+}
 
 export default function Welcome() {
   const router = useRouter();
@@ -43,71 +86,14 @@ export default function Welcome() {
     >
       {/* Contenido Central */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md space-y-8">
-        {/* Logo Placeholder */}
-        <div 
-          className="w-48 h-48 rounded-full flex items-center justify-center"
-          style={{
-            backgroundColor: colors.neutral[100],
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-          }}
-        >
-              <img src="/LogoSerco.jpeg" alt="SaHa - Conecta Servicios" className="w-full h-full object-cover" />
+        {/* Logo: mobile vs desktop */}
+        <div className="w-48 h-48 rounded-full flex items-center justify-center overflow-hidden" style={{ boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)' }}>
+          <img src="/LogoMobile.png" alt="Logo" className="block md:hidden w-full h-full object-contain" />
+          <img src="/LogoDesktop.png" alt="Logo" className="hidden md:block w-full h-full object-contain" />
         </div>
 
-        {/* Título */}
-        <h2 
-          className="text-center"
-          style={{
-            fontFamily: 'Maitree, serif',
-            fontSize: '45px',
-            fontWeight: 700,
-            color: colors.primary.main,
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            marginBottom: '53px'
-          }}
-        >
-          Servicios Confiables
-        </h2>
-
-        {/* Botones */}
-        <div className="w-full space-y-4 px-4">
-          <button
-            onClick={handleAccederTrabajador}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
-            style={{
-              fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.medium,
-              color: '#F9F5ED',
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
-              borderColor: 'rgba(36, 76, 135, 0.3)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            Acceder Como Trabajador
-          </button>
-
-          <button
-            onClick={handleBuscarTrabajadores}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
-            style={{
-              fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.medium,
-              color: '#F9F5ED',
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
-              borderColor: 'rgba(36, 76, 135, 0.3)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            Buscar Trabajadores
-          </button>
-        </div>
+        {/* Buscador simple: servicio + ubicación (navega a select-specialty) */}
+        <SearchBox />
       </div>
 
       {/* Spacer para el bottom */}
