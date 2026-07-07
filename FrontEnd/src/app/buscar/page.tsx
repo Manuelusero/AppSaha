@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Header, Footer } from '@/components/layout';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useLocationSearch } from '@/hooks';
@@ -93,9 +94,12 @@ export default function Home() {
         paddingTop: '20px',
         paddingBottom: '20px'
       }}>
-        {/* Logo placeholder */}
-        <div className="text-gray-400 text-sm font-medium" style={{ fontFamily: typography.fontFamily.primary }}>
-          LOGO
+        {/* Logo */}
+        <div>
+          <Link href="/" aria-label="Ir a inicio">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Logo.png" alt="Logo" className="w-[100px] h-auto" />
+          </Link>
         </div>
         
         {/* Botón Ofrezco servicios - Glass effect */}

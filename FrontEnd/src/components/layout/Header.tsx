@@ -85,21 +85,14 @@ export default function Header({
         height: 'auto'
       }}
     >
-      {/* Logo - Espacio reservado para nuevo logo */}
+      {/* Logo */}
       <div 
         className="flex items-center gap-2 flex-shrink-0 cursor-pointer"
         onClick={() => router.push('/')}
+        aria-label="Ir a inicio"
       >
-        <div style={{ 
-          width: '100px', 
-          height: '45px',
-          opacity: 0,
-          borderRadius: borderRadius.xl,
-          transform: 'rotate(0deg)'
-        }} 
-        className="sm:w-[145px] sm:h-[66px]"
-        aria-label="Logo placeholder"
-        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/Logo.png" alt="Logo" style={{ width: '100px', height: 'auto' }} className="sm:w-[145px] sm:h-auto" />
       </div>
       
       {/* Menú de usuario o botón de login */}
