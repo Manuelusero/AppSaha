@@ -94,6 +94,45 @@ export default function Welcome() {
 
         {/* Buscador simple: servicio + ubicación (navega a select-specialty) */}
         <SearchBox />
+
+        {/* Botones: Acceder Como Trabajador / Buscar Trabajadores (añadidos según solicitud) */}
+        <div className="w-full space-y-4 px-4 mt-4">
+          <button
+            onClick={handleAccederTrabajador}
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            style={{
+              fontFamily: typography.fontFamily.primary,
+              fontSize: typography.fontSize.base,
+              fontWeight: typography.fontWeight.medium,
+              color: '#F9F5ED',
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              borderColor: 'rgba(36, 76, 135, 0.3)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            Acceder Como Trabajador
+          </button>
+
+          <button
+            onClick={handleBuscarTrabajadores}
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            style={{
+              fontFamily: typography.fontFamily.primary,
+              fontSize: typography.fontSize.base,
+              fontWeight: typography.fontWeight.medium,
+              color: '#F9F5ED',
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              borderColor: 'rgba(36, 76, 135, 0.3)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            Buscar Trabajadores
+          </button>
+        </div>
       </div>
 
       {/* Spacer para el bottom */}
