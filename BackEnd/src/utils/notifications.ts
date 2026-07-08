@@ -297,8 +297,19 @@ export async function sendEmailVerification(
     console.log(`📧 Verificación de email enviada a ${email}`);
     return { success: true };
   } catch (error) {
-    console.error('❌ Error enviando verificación de email:', error);
-    return { success: false };
+    // Intentar extraer más detalles del error de Resend
+    let details = null;
+    try {
+      // @ts-ignore
+      if (error?.response) details = error.response;
+      // @ts-ignore
+      else if (error?.message) details = error.message;
+      else details = String(error);
+    } catch (e) {
+      details = String(error);
+    }
+    console.error('❌ Error enviando verificación de email:', details);
+    return { success: false, error: details };
   }
 }
 
