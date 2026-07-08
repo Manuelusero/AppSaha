@@ -136,6 +136,12 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // Bloquear login para proveedores no verificados
+    if (user.role === 'PROVIDER' && !user.isEmailVerified) {
+      return res.status(403).json({
+        error: 'Email no verificado. Revisa tu correo para el enlace de verificación.'
+      });
+    }
     // Generar JWT
     const token = jwt.sign(
       { 
@@ -346,6 +352,36 @@ router.post('/pre-register', async (req, res) => {
   } catch (error) {
     console.error('❌ Error en pre-register:', error);
     res.status(500).json({ error: 'Error al pre-registrar usuario' });
+  }
+});
+
+
+// POST /api/auth/resend-verification - Reenvía email de verificación
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email es requerido' });
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (user.isEmailVerified) return res.status(400).json({ error: 'Email ya verificado' });
+
+    // Generar nuevo token
+    const verificationToken = jwt.sign(
+      { userId: user.id, type: 'email-verify' },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
+    const verificationLink = `${FRONTEND_URL}/provider-signup/continuar?token=${verificationToken}`;
+
+    await sendEmailVerification(user.email, user.name || 'Usuario', verificationLink);
+
+    res.json({ success: true, message: 'Email de verificación reenviado' });
+  } catch (error) {
+    console.error('❌ Error en resend-verification:', error);
+    res.status(500).json({ error: 'Error reenviando email de verificación' });
   }
 });
 
