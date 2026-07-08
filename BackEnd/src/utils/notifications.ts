@@ -296,6 +296,10 @@ export async function sendEmailVerification(
       });
       // Registrar respuesta mínima para diagnóstico (contiene messageId u otros metadatos)
       console.log(`📧 Verificación de email enviada a ${email} -`, resp);
+      if (resp?.error) {
+        console.error('❌ Resend API responded with error for verification send:', resp.error);
+        return { success: false, error: resp.error };
+      }
       return { success: true, resp };
   } catch (error) {
     // Intentar extraer más detalles del error de Resend

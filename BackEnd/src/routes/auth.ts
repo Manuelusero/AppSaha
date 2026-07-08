@@ -341,7 +341,13 @@ router.post('/pre-register', async (req, res) => {
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
     const verificationLink = `${FRONTEND_URL}/provider-signup/continuar?token=${verificationToken}`;
 
-    await sendEmailVerification(email, nombre, verificationLink);
+    const sendResult = await sendEmailVerification(email, nombre, verificationLink);
+    if (!sendResult || !sendResult.success) {
+      // Si no se pudo enviar, eliminar el usuario creado para evitar cuentas huérfanas en pruebas
+      try { await prisma.user.delete({ where: { id: user.id } }); } catch (e) { console.error('Error eliminando usuario tras fallo de envío:', e); }
+      console.error('❌ sendEmailVerification fallo:', sendResult?.error || 'unknown');
+      return res.status(500).json({ error: 'No se pudo enviar el email de verificación', details: sendResult?.error || null });
+    }
 
     res.status(201).json({
       success: true,
@@ -376,7 +382,11 @@ router.post('/resend-verification', async (req, res) => {
     const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
     const verificationLink = `${FRONTEND_URL}/provider-signup/continuar?token=${verificationToken}`;
 
-    await sendEmailVerification(user.email, user.name || 'Usuario', verificationLink);
+    const sendResult = await sendEmailVerification(user.email, user.name || 'Usuario', verificationLink);
+    if (!sendResult || !sendResult.success) {
+      console.error('❌ sendEmailVerification fallo (resend):', sendResult?.error || 'unknown');
+      return res.status(500).json({ error: 'No se pudo reenviar el email de verificación', details: sendResult?.error || null });
+    }
 
     res.json({ success: true, message: 'Email de verificación reenviado' });
   } catch (error) {
