@@ -47,27 +47,32 @@ export default function Welcome() {
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md space-y-8">
         {/* Logo: mobile vs desktop (no circular wrapper) */}
         <div className="flex items-center justify-center">
-          <img src="/LogoMobile.png" alt="Logo" className="block md:hidden w-48 h-auto object-contain" />
-          <img src="/LogoDesktop.png" alt="Logo" className="hidden md:block w-48 h-auto object-contain" />
+          <img src="/LogoMobile.png" alt="Logo" className="block md:hidden w-60 h-auto object-contain" />
+          <img src="/LogoDesktop.png" alt="Logo" className="hidden md:block w-85 h-auto object-contain" />
         </div>
 
-        {/* (Buscador removido — restaurado a la versión anterior) */}
-
         {/* Botones: Acceder Como Trabajador / Buscar Trabajadores (añadidos según solicitud) */}
-        <div className="w-full space-y-4 px-4 mt-4">
+        <div className="w-full px-4 mt-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
           <button
             onClick={handleAccederTrabajador}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            className="transition-all cursor-pointer"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
-              color: '#F9F5ED',
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
-              borderColor: 'rgba(36, 76, 135, 0.3)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              color: '#000000',
+              width: '433px',
+              height: '43px',
+              paddingTop: '10px',
+              paddingRight: '12px',
+              paddingBottom: '10px',
+              paddingLeft: '12px',
+              borderRadius: '24px',
+              backgroundColor: '#BFC6EE33',
+              border: 'none',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)'
             }}
           >
             Acceder Como Trabajador
@@ -75,17 +80,24 @@ export default function Welcome() {
 
           <button
             onClick={handleBuscarTrabajadores}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            className="transition-all cursor-pointer"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
-              color: '#F9F5ED',
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
-              borderColor: 'rgba(36, 76, 135, 0.3)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
+              color: '#000000',
+              width: '433px',
+              height: '43px',
+              paddingTop: '10px',
+              paddingRight: '12px',
+              paddingBottom: '10px',
+              paddingLeft: '12px',
+              borderRadius: '24px',
+              backgroundColor: '#BFC6EE33',
+              border: 'none',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)'
             }}
           >
             Buscar Trabajadores
