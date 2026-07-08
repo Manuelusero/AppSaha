@@ -275,7 +275,7 @@ export async function sendEmailVerification(
   verificationLink: string
 ) {
   try {
-    await resend.emails.send({
+    const resp = await resend.emails.send({
       from: FROM,
       to: email,
       subject: 'Verificá tu email para continuar — Serco',
@@ -293,9 +293,10 @@ export async function sendEmailVerification(
         <p style="color:#6B7280;font-size:13px;line-height:1.5;">Este enlace es válido por 7 días. Si no creaste una cuenta en Serco, podés ignorar este mensaje.</p>
         <p style="color:#374151;margin-top:24px;">Saludos,<br><strong>Equipo Serco</strong></p>
       `)
-    });
-    console.log(`📧 Verificación de email enviada a ${email}`);
-    return { success: true };
+      });
+      // Registrar respuesta mínima para diagnóstico (contiene messageId u otros metadatos)
+      console.log(`📧 Verificación de email enviada a ${email} -`, resp);
+      return { success: true, resp };
   } catch (error) {
     // Intentar extraer más detalles del error de Resend
     let details = null;
