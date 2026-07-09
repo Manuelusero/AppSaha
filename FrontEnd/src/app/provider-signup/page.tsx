@@ -650,7 +650,7 @@ export default function ProviderSignup() {
                 )}
 
                 <Input
-                  label="Nombre *"
+                  label="Nombre"
                   placeholder="JOSE"
                   value={values.nombre}
                   onChange={(value) => setFieldValue('nombre', capitalizeName(value))}
@@ -659,7 +659,7 @@ export default function ProviderSignup() {
                 />
 
                 <Input
-                  label="Apellido *"
+                  label="Apellido"
                   placeholder="PEREZ"
                   value={values.apellido}
                   onChange={(value) => setFieldValue('apellido', capitalizeName(value))}
@@ -668,7 +668,7 @@ export default function ProviderSignup() {
                 />
 
                 <Input
-                  label="Email *"
+                  label="Email"
                   type="email"
                   placeholder="algo@algo.com"
                   value={values.email}
@@ -678,8 +678,8 @@ export default function ProviderSignup() {
                 />
 
                 <div>
-                  <Input
-                    label="Telefono laboral *"
+                    <Input
+                    label="Telefono laboral"
                     type="tel"
                     placeholder="+54 1234 34 54"
                     value={values.telefono}
@@ -697,7 +697,7 @@ export default function ProviderSignup() {
 
                 <div className="relative">
                   <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
-                    Contraseña *
+                    Contraseña
                   </label>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -733,7 +733,7 @@ export default function ProviderSignup() {
 
                 <div className="relative">
                   <label className="block mb-2" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black }}>
-                    Repetir Contraseña *
+                    Repetir Contraseña
                   </label>
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -1014,9 +1014,9 @@ export default function ProviderSignup() {
             {/* PASO 3: Documentación */}
             {paso === 3 && (
               <div className="space-y-6">
-                {/* DNI* */}
+                {/* DNI */}
                 <Input
-                  label="DNI*"
+                  label="DNI"
                   placeholder="DNI"
                   value={values.dni}
                   onChange={(value) => setFieldValue('dni', value)}
