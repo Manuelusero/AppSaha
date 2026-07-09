@@ -41,6 +41,10 @@ export default function Welcome() {
       className="min-h-screen flex flex-col items-center justify-between p-6 relative overflow-hidden"
       style={{ 
         background: 'linear-gradient(180deg, #FFFFFF 0%, #3A5FA0 100%)',
+        // Use large-viewport unit to avoid mobile address-bar white gap on iOS
+        minHeight: '100svh',
+        // Respect safe area insets on devices with notch/home indicator
+        paddingBottom: 'env(safe-area-inset-bottom)'
       }}
     >
       {/* Contenido Central */}
@@ -56,12 +60,13 @@ export default function Welcome() {
           <button
             onClick={handleAccederTrabajador}
             className="transition-all cursor-pointer"
-            style={{
+              style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
               color: '#000000',
-              width: '433px',
+              width: '100%',
+              maxWidth: '433px',
               height: '43px',
               paddingTop: '10px',
               paddingRight: '12px',
@@ -81,12 +86,13 @@ export default function Welcome() {
           <button
             onClick={handleBuscarTrabajadores}
             className="transition-all cursor-pointer"
-            style={{
+              style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
               color: '#000000',
-              width: '433px',
+              width: '100%',
+              maxWidth: '433px',
               height: '43px',
               paddingTop: '10px',
               paddingRight: '12px',
