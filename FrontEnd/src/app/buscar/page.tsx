@@ -1,27 +1,25 @@
-'use client';
-          <button
-            onClick={() => router.push('/provider-signup')}
-            className="rounded-full backdrop-blur-md border shadow-lg transition-all hover:shadow-xl"
-            style={{
-              padding: '8px 12px',
-              gap: '10px',
-              opacity: 1,
-              fontFamily: typography.fontFamily.primary,
-              fontSize: '14px',
-              color: '#FFFFFF',
-              fontWeight: 500,
-              backgroundColor: 'rgba(191, 198, 238, 0.3)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            Ofrezco servicios
-          </button>
+ 'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Header, Footer } from '@/components/layout';
+import { colors, typography, spacing } from '@/styles/tokens';
+import { useLocationSearch } from '@/hooks';
+import { Modal } from '@/components/ui';
+
+// Array de profesiones para la animación
+const profesiones = [
+  'plomeros',
+  'pintores',
+  'herreros',
+  'modistas',
+  'jardineros',
+  'pintoras',
+  'limpiadores',
+  'profesores',
+  'trabajadores',
   'jardineras',
   'electricistas',
   'masajistas',
