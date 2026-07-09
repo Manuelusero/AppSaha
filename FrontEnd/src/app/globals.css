@@ -69,7 +69,11 @@ html {
 
 /* Soporte para notch y barras de iPhone */
 body {
-  background: var(--background);
+  /* Gradient background for full-viewport coverage (avoids white gap on iOS) */
+  background: linear-gradient(180deg, #FFFFFF 0%, #3A5FA0 100%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
   color: var(--foreground);
   font-family: 'Maitree', serif;
   overflow-x: hidden;
