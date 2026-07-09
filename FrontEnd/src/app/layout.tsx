@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts";
 import { SessionProvider } from "@/components/auth";
 import { CookieBanner } from "@/components/ui";
+import ViewportHeightSetter from '@/components/ViewportHeightSetter';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,6 +50,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} style={{ backgroundColor: '#FFFCF9' }}>
         <SessionProvider>
           <AuthProvider>
+            <ViewportHeightSetter />
             {children}
             <CookieBanner />
           </AuthProvider>

@@ -90,8 +90,10 @@ body {
   overscroll-behavior-y: none;
   -webkit-overflow-scrolling: touch;
 
-  /* Altura total considerando safe areas */
-  min-height: 100vh;
+  /* Altura total considerando safe areas y arreglo para mobile Safari */
+  /* Prefer dynamic --vh set by script; fallback to 100svh / 100vh */
+  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: 100svh;
   min-height: -webkit-fill-available;
 }
 
