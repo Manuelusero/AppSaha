@@ -134,7 +134,7 @@ export default function Home() {
         <div className="text-center mb-6 sm:mb-10 w-full max-w-lg md:max-w-5xl px-4">
 
           {/* ── MOBILE: apilado vertical (sin cambios) ── */}
-          <h1 className="md:hidden text-[45px] text-center" style={{ 
+          <h1 className="md:hidden text-[45px] text-center buscar-mobile-title" style={{ 
             fontFamily: typography.fontFamily.primary, 
             color: colors.primary.main,
             fontWeight: 500,
@@ -142,14 +142,14 @@ export default function Home() {
             lineHeight: '190%'
           }}>
             Encontrá<br />
-            <div className="relative flex items-center justify-center w-full overflow-hidden" style={{ marginBottom: '0', height: '85px', lineHeight: '85px' }}>
-              <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+            <div className="relative flex items-center justify-center w-full overflow-hidden buscar-profession-wrap" style={{ marginBottom: '0', height: '85px', lineHeight: '85px' }}>
+              <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2 buscar-profession-inner">
                 {[-1, 0, 1].map((offset) => {
                   const index = (profesionActual + offset + profesiones.length) % profesiones.length;
                   const profesion = profesiones[index];
                   const isCenter = offset === 0;
                   return (
-                    <div
+                      <div
                       key={`mobile-${index}-${offset}`}
                       className="transition-all duration-700 ease-in-out flex-shrink-0"
                       style={{ 
@@ -160,7 +160,7 @@ export default function Home() {
                         pointerEvents: 'none'
                       }}
                     >
-                      <span className="block text-center transition-all duration-700 whitespace-nowrap text-[45px]" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontWeight: 700, lineHeight: '85px' }}>
+                      <span className="block text-center transition-all duration-700 whitespace-nowrap buscar-profession-text" style={{ fontFamily: typography.fontFamily.primary, color: colors.primary.main, fontWeight: 700, lineHeight: '85px' }}>
                         {profesion}
                       </span>
                     </div>
@@ -168,7 +168,7 @@ export default function Home() {
                 })}
               </div>
             </div>
-            confiables en tu<br />zona
+            <span className="buscar-confiables">confiables en tu</span><br /><span className="buscar-zona">zona</span>
           </h1>
 
           {/* ── DESKTOP: todo en una línea horizontal ── */}
@@ -210,6 +210,23 @@ export default function Home() {
             <span>confiables en tu zona</span>
           </h1>
 
+          <style jsx>{`
+            /* Ajustes para pantallas muy pequeñas (<400px) */
+            @media (max-width: 400px) {
+              .buscar-mobile-title {
+                font-size: 34px !important;
+                line-height: 1.05 !important;
+              }
+              .buscar-profession-wrap { height: 60px !important; }
+              .buscar-profession-text { font-size: 34px !important; line-height: 60px !important; }
+              .buscar-confiables, .buscar-zona { display: inline-block; margin-top: 2px; margin-bottom: 2px; }
+              /* Reducir espacio vertical entre elementos del título */
+              .buscar-mobile-title br { content: ""; line-height: 1; }
+              .buscar-mobile-title { margin-bottom: 6px; }
+            }
+            /* Reducir espacio vertical entre palabras/lineas en general */
+            .buscar-mobile-title .buscar-profession-text { padding-top: 0; padding-bottom: 0; }
+          `}</style>
         </div>
 
         {/* Formulario de búsqueda */}
