@@ -94,7 +94,7 @@ export default function Welcome() {
         <div className="w-full space-y-4 px-4">
           <button
             onClick={handleAccederTrabajador}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40"
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
@@ -112,7 +112,7 @@ export default function Welcome() {
 
           <button
             onClick={handleBuscarTrabajadores}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40"
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
