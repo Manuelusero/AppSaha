@@ -62,7 +62,7 @@ export default function Welcome() {
             className="transition-all cursor-pointer"
               style={{
               fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.base,
+              fontSize: typography.fontSize.sm,
               fontWeight: typography.fontWeight.medium,
               color: '#000000',
               width: '100%',
@@ -88,7 +88,7 @@ export default function Welcome() {
             className="transition-all cursor-pointer"
               style={{
               fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.base,
+              fontSize: typography.fontSize.sm,
               fontWeight: typography.fontWeight.medium,
               color: '#000000',
               width: '100%',
