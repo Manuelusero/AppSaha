@@ -56,55 +56,19 @@ export default function Welcome() {
         </div>
 
         {/* Botones: Acceder Como Trabajador / Buscar Trabajadores (añadidos según solicitud) */}
-        <div className="w-full px-4 mt-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+        <div className="w-full px-4 mt-4 flex flex-col items-center gap-2.5">
           <button
             onClick={handleAccederTrabajador}
-            className="transition-all cursor-pointer"
-              style={{
-              fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.sm,
-              fontWeight: typography.fontWeight.medium,
-              color: '#000000',
-              width: '100%',
-              maxWidth: '433px',
-              height: '43px',
-              paddingTop: '10px',
-              paddingRight: '12px',
-              paddingBottom: '10px',
-              paddingLeft: '12px',
-              borderRadius: '24px',
-              backgroundColor: '#BFC6EE33',
-              border: 'none',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)'
-            }}
+            className="w-full max-w-[433px] h-[43px] px-3 py-2 rounded-[24px] bg-[rgba(191,198,238,0.2)] shadow-lg backdrop-blur-sm transition-all text-black font-medium"
+            style={{ fontFamily: typography.fontFamily.primary }}
           >
             Acceder Como Trabajador
           </button>
 
           <button
             onClick={handleBuscarTrabajadores}
-            className="transition-all cursor-pointer"
-              style={{
-              fontFamily: typography.fontFamily.primary,
-              fontSize: typography.fontSize.sm,
-              fontWeight: typography.fontWeight.medium,
-              color: '#000000',
-              width: '100%',
-              maxWidth: '433px',
-              height: '43px',
-              paddingTop: '10px',
-              paddingRight: '12px',
-              paddingBottom: '10px',
-              paddingLeft: '12px',
-              borderRadius: '24px',
-              backgroundColor: '#BFC6EE33',
-              border: 'none',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)'
-            }}
+            className="w-full max-w-[433px] h-[43px] px-3 py-2 rounded-[24px] bg-[rgba(191,198,238,0.2)] shadow-lg backdrop-blur-sm transition-all text-black font-medium"
+            style={{ fontFamily: typography.fontFamily.primary }}
           >
             Buscar Trabajadores
           </button>

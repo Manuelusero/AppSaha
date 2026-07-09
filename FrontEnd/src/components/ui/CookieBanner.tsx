@@ -211,7 +211,8 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-label="Aviso de cookies"
-      className="fixed bottom-16 sm:bottom-0 left-0 right-0 z-[9999] flex justify-center px-3 pb-3 sm:px-4 sm:pb-4 pointer-events-none"
+      className="fixed bottom-0 left-0 right-0 z-[9999] flex justify-center px-3 pb-3 sm:px-4 sm:pb-4 pointer-events-none"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div
         className="w-full sm:max-w-2xl pointer-events-auto"
