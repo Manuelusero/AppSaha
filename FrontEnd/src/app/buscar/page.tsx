@@ -98,7 +98,7 @@ export default function Home() {
         <div>
           <Link href="/" aria-label="Ir a inicio">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/Logo.png" alt="Logo" className="w-[100px] h-auto" />
+            <img src="/Logo.png" alt="Logo" className="w-[80px] h-auto" />
           </Link>
         </div>
         
