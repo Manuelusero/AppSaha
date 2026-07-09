@@ -1,25 +1,27 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Header, Footer } from '@/components/layout';
-import { colors, typography, spacing } from '@/styles/tokens';
-import { useLocationSearch } from '@/hooks';
-import { Modal } from '@/components/ui';
-
-// Array de profesiones para la animación
-const profesiones = [
-  'plomeros',
-  'pintores', 
-  'herreros',
-  'modistas',
-  'jardineros',
-  'pintoras',
-  'limpiadores',
-  'profesores',
-  'trabajadores',
+          <button
+            onClick={() => router.push('/provider-signup')}
+            className="rounded-full backdrop-blur-md border shadow-lg transition-all hover:shadow-xl"
+            style={{
+              padding: '8px 12px',
+              gap: '10px',
+              opacity: 1,
+              fontFamily: typography.fontFamily.primary,
+              fontSize: '14px',
+              color: '#FFFFFF',
+              fontWeight: 500,
+              backgroundColor: 'rgba(191, 198, 238, 0.3)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            Ofrezco servicios
+          </button>
   'jardineras',
   'electricistas',
   'masajistas',
@@ -113,7 +115,7 @@ export default function Home() {
             opacity: 1,
             fontFamily: typography.fontFamily.primary,
             fontSize: '14px',
-            color: '#FFFFFF',
+            color: '#000000',
             fontWeight: 500,
             backgroundColor: 'rgba(191, 198, 238, 0.3)',
             backdropFilter: 'blur(12px)',
@@ -146,7 +148,7 @@ export default function Home() {
           >
             SERVICIOS CONFIABLES
           </div>
-          <div style={{ width: '160px', borderTop: '1px dotted rgba(0,0,0,0.12)', marginTop: '8px' }} />
+          <div style={{ width: '220px', maxWidth: '80%', borderTop: '1px dotted rgba(0,0,0,0.12)', marginTop: '8px' }} />
         </div>
 
         {/* Título principal con palabra animada */}
@@ -277,6 +279,7 @@ export default function Home() {
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                 {servicios
                   .filter(s => servicioSeleccionado === '' || s.toLowerCase().includes(servicioSeleccionado.toLowerCase()))
+                  .sort((a,b) => a.localeCompare(b, 'es', { sensitivity: 'base' }))
                   .map((servicio) => (
                     <div
                       key={servicio}
@@ -718,13 +721,13 @@ export default function Home() {
 
           {/* Semi-círculo final con degradado azul - solo mobile */}
           <div className="md:hidden relative flex justify-center" style={{ marginTop: '0px', marginBottom: '0px' }}>
-            <div 
+                <div 
               style={{
                 width: '100%',
                 maxWidth: '600px',
                 height: '200px',
                 borderRadius: '300px 300px 0 0',
-                background: 'linear-gradient(180deg, #FFFCF9 0%, #8398B8 50%, #244C87 100%)',
+                    background: 'linear-gradient(180deg, #244C87 0%, #8398B8 50%, #FFFCF9 100%)',
                 position: 'relative',
                 overflow: 'hidden',
                 display: 'flex',

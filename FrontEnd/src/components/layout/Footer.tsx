@@ -40,22 +40,6 @@ export default function Footer({ variant = 'full' }: FooterProps) {
     textAlign: 'center' as const,
   };
 
-  if (variant === 'minimal') {
-    return (
-      <footer className="w-full text-white py-6 px-4" style={{ backgroundColor: colors.primary.main }}>
-        <div className="text-center">
-          <p style={{ 
-            fontFamily: typography.fontFamily.primary,
-            fontStyle: 'italic',
-            fontSize: typography.fontSize.base
-          }}>
-            Creado por Bren y Manu
-          </p>
-        </div>
-      </footer>
-    );
-  }
-
   return (
     <footer className="w-full text-white">
       {/* Resto del footer con fondo azul */}
@@ -212,11 +196,14 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                 SERCO
               </h3>
               <ul className="space-y-3">
-                <li>
+                <li style={{ margin: 0, padding: 0 }}>
                   <button 
                     onClick={() => router.push('/sobre-nosotros')} 
                     className="hover:opacity-80 transition-opacity" 
                     style={{ 
+                      display: 'block',
+                      margin: 0,
+                      padding: 0,
                       fontFamily: 'Maitree, serif', 
                       fontWeight: 400, 
                       fontSize: '16px', 
@@ -232,11 +219,14 @@ export default function Footer({ variant = 'full' }: FooterProps) {
                     Sobre nosotros
                   </button>
                 </li>
-                <li>
+                <li style={{ margin: 0, padding: 0 }}>
                   <button 
                     onClick={() => router.push('/contacto')} 
                     className="hover:opacity-80 transition-opacity" 
                     style={{ 
+                      display: 'block',
+                      margin: 0,
+                      padding: 0,
                       fontFamily: 'Maitree, serif', 
                       fontWeight: 400, 
                       fontSize: '16px', 
@@ -265,7 +255,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
               style={{ 
                 fontFamily: 'Maitree, serif', 
                 fontStyle: 'normal', 
-                fontSize: '16px', 
+                fontSize: '14px', 
                 lineHeight: '100%', 
                 letterSpacing: '0%', 
                 textAlign: 'center' 
