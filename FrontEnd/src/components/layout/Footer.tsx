@@ -144,7 +144,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
               >
                 Para Trabajadores
               </h3>
-              <ul className="space-y-3">
+              <ul className="space-y-3 flex flex-col items-center">
                 <li>
                   <a 
                     href="/provider-signup" 
