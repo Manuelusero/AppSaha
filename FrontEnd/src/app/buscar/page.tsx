@@ -105,21 +105,28 @@ export default function Home() {
         {/* Botón Ofrezco servicios - Glass effect */}
         <button
           onClick={() => router.push('/provider-signup')}
-          className="rounded-full backdrop-blur-md border shadow-lg transition-all hover:shadow-xl"
+          className="backdrop-blur-md border shadow-md transition-all hover:shadow-lg"
           style={{
-            width: '139px',
-            height: '39px',
-            gap: '10px',
+            minWidth: '160px',
+            height: '32px',
+            gap: '8px',
             opacity: 1,
             fontFamily: typography.fontFamily.primary,
             fontSize: '14px',
             color: '#000000',
             fontWeight: 500,
-            backgroundColor: 'rgba(191, 198, 238, 0.3)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            backgroundColor: 'rgba(191, 198, 238, 0.25)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
             borderColor: 'rgba(255, 255, 255, 0.3)',
+            borderRadius: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             cursor: 'pointer',
+            padding: '0 14px',
+            whiteSpace: 'nowrap',
+            lineHeight: '1'
           }}
         >
           Ofrezco servicios
@@ -134,14 +141,14 @@ export default function Home() {
             className="text-center"
             style={{
               fontFamily: `Avenir, ${typography.fontFamily.primary}`,
-              fontWeight: 800,
+              fontWeight: 500,
               fontStyle: 'normal',
-              fontSize: '15px',
+              fontSize: '12px',
               lineHeight: '100%',
               letterSpacing: '0%',
               textAlign: 'center',
               textTransform: 'uppercase',
-              color: colors.primary.main,
+              color: '#5E83AE',
             }}
           >
             SERVICIOS CONFIABLES
