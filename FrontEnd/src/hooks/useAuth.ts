@@ -31,11 +31,11 @@ export function useRequireAuth(options: UseRequireAuthOptions = {}) {
     if (requireRole && user?.role !== requireRole) {
       // Redirigir al dashboard correspondiente
       if (user?.role === 'PROVIDER') {
-        router.push('/dashboard-provider');
+        router.replace('/dashboard-provider');
       } else if (user?.role === 'CLIENT') {
-        router.push('/dashboard-client');
+        router.replace('/dashboard-client');
       } else {
-        router.push('/');
+        router.replace('/');
       }
     }
   }, [isAuthenticated, isLoading, user, requireRole, router, redirectTo]);
@@ -56,11 +56,11 @@ export function useRedirectIfAuthenticated(redirectTo: string = '/') {
     if (isAuthenticated) {
       // Redirigir según el rol
       if (user?.role === 'PROVIDER') {
-        router.push('/dashboard-provider');
+        router.replace('/dashboard-provider');
       } else if (user?.role === 'CLIENT') {
-        router.push('/dashboard-client');
+        router.replace('/dashboard-client');
       } else {
-        router.push(redirectTo);
+        router.replace(redirectTo);
       }
     }
   }, [isAuthenticated, isLoading, user, router, redirectTo]);

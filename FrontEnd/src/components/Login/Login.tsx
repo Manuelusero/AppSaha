@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { colors, typography } from '@/styles/tokens';
 
 type Props = {
@@ -75,7 +76,7 @@ function LoginContent({ onClose }: { onClose: () => void }) {
       // TODO: Reemplazar por la lógica real de login (api call / next-auth)
       await new Promise((resolve) => setTimeout(resolve, 1000));
       onClose();
-      router.push('/dashboard-provider');
+      router.replace('/dashboard-provider');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
@@ -83,11 +84,19 @@ function LoginContent({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleSocialLogin = (provider: 'google' | 'facebook' | 'apple') => {
-    console.log(`Iniciando login con ${provider}`);
-    alert(
-      `Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} será implementado próximamente.`
-    );
+  const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
+    try {
+      const res = await signIn(provider, { callbackUrl: '/dashboard-provider', redirect: false });
+      onClose();
+      if (res && (res as any).url) {
+        router.replace((res as any).url);
+      } else {
+        router.replace('/dashboard-provider');
+      }
+    } catch (err) {
+      console.error('Error OAuth:', err);
+      alert('Error iniciando sesión social. Por favor intenta de nuevo.');
+    }
   };
 
   return (

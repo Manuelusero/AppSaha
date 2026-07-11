@@ -1,6 +1,7 @@
 'use client';
 
 import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { colors, typography } from '@/styles/tokens';
 
 interface OAuthButtonsProps {
@@ -17,11 +18,26 @@ interface OAuthButtonsProps {
  * ```
  */
 export default function OAuthButtons({ 
-  callbackUrl = '/dashboard',
+  callbackUrl = '/dashboard-provider',
   showDivider = true 
 }: OAuthButtonsProps) {
-  const handleOAuthLogin = (provider: 'google' | 'facebook' | 'apple') => {
-    signIn(provider, { callbackUrl });
+  const router = useRouter();
+
+  const handleOAuthLogin = async (provider: 'google' | 'facebook' | 'apple') => {
+    // Use redirect: false so we control navigation and close any modals
+    const res = await signIn(provider, { callbackUrl, redirect: false });
+    // res.url may contain the provider callback; prefer it when present
+    if (res && (res as any).url) {
+      router.replace((res as any).url);
+      return;
+    }
+    // If AuthContext stored a providerId in localStorage, navigate to dashboard-provider
+    const storedProviderId = typeof window !== 'undefined' ? localStorage.getItem('providerId') : null;
+    if (storedProviderId) {
+      router.replace('/dashboard-provider');
+    } else {
+      router.replace(callbackUrl);
+    }
   };
 
   return (

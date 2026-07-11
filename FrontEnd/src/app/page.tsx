@@ -223,9 +223,11 @@ function LoginContent({ onClose }: { onClose: () => void }) {
       login(data.token, data.user, providerId);
       onClose();
       if (data.user.role === 'PROVIDER') {
-        router.push('/dashboard-provider');
+        const id = providerId || data.user.id;
+        // Navigate to provider public page and replace history so /login doesn't remain
+        router.replace(`/providers/${id}`);
       } else {
-        router.push('/buscar');
+        router.replace('/buscar');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
@@ -237,10 +239,23 @@ function LoginContent({ onClose }: { onClose: () => void }) {
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     try {
       if (provider === 'google') {
-        await signIn('google', { 
-          callbackUrl: '/dashboard-provider',
-          redirect: true
+        const res = await signIn('google', {
+          callbackUrl: '/',
+          redirect: false
         });
+        onClose();
+        // Prefer NextAuth returned url when present
+        if (res && (res as any).url) {
+          router.replace((res as any).url);
+          return;
+        }
+        // If providerId was stored by AuthContext during login, navigate to provider page
+        const storedProviderId = typeof window !== 'undefined' ? localStorage.getItem('providerId') : null;
+        if (storedProviderId) {
+          router.replace(`/providers/${storedProviderId}`);
+        } else {
+          router.replace('/');
+        }
       } else {
         // Facebook y Apple pendientes de configurar
         alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} estará disponible próximamente.\n\nPor ahora solo Google está habilitado.`);

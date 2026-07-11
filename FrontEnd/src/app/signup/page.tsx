@@ -92,8 +92,8 @@ export default function SignUp() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Redirigir al dashboard
-      router.push('/dashboard');
+      // Redirigir al dashboard del proveedor
+      router.replace('/dashboard-provider');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al registrar usuario');
     } finally {
