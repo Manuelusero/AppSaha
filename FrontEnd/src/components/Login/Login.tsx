@@ -87,12 +87,15 @@ function LoginContent({ onClose }: { onClose: () => void }) {
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     try {
       const res = await signIn(provider, { callbackUrl: '/dashboard-provider', redirect: false });
-      onClose();
       if (res && (res as any).url) {
-        router.replace((res as any).url);
-      } else {
-        router.replace('/dashboard-provider');
+        onClose();
+        // Navigate the browser to the provider authorization URL
+        window.location.href = (res as any).url;
+        return;
       }
+
+      // Fallback: allow next-auth to perform the redirect
+      await signIn(provider, { callbackUrl: '/dashboard-provider', redirect: true });
     } catch (err) {
       console.error('Error OAuth:', err);
       alert('Error iniciando sesión social. Por favor intenta de nuevo.');

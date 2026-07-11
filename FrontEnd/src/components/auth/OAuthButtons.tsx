@@ -26,18 +26,15 @@ export default function OAuthButtons({
   const handleOAuthLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     // Use redirect: false so we control navigation and close any modals
     const res = await signIn(provider, { callbackUrl, redirect: false });
-    // res.url may contain the provider callback; prefer it when present
+    // res.url may contain the provider auth URL; if so, navigate the browser there
     if (res && (res as any).url) {
-      router.replace((res as any).url);
+      window.location.href = (res as any).url;
       return;
     }
-    // If AuthContext stored a providerId in localStorage, navigate to dashboard-provider
-    const storedProviderId = typeof window !== 'undefined' ? localStorage.getItem('providerId') : null;
-    if (storedProviderId) {
-      router.replace('/dashboard-provider');
-    } else {
-      router.replace(callbackUrl);
-    }
+
+    // Fallback: some environments may not return the url for oauth when redirect:false
+    // In that case call signIn without redirect:false to let next-auth perform the redirect
+    await signIn(provider, { callbackUrl, redirect: true });
   };
 
   return (
