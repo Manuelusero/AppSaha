@@ -116,7 +116,7 @@ export default function Welcome() {
             onMouseLeave={() => setPressedWorker(false)}
             onTouchStart={() => setPressedWorker(true)}
             onTouchEnd={() => setPressedWorker(false)}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border"
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border cursor-pointer"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
@@ -141,7 +141,7 @@ export default function Welcome() {
             onMouseLeave={() => setPressedSearch(false)}
             onTouchStart={() => setPressedSearch(true)}
             onTouchEnd={() => setPressedSearch(false)}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border"
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border cursor-pointer"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
@@ -202,7 +202,7 @@ export default function Welcome() {
               <div className="flex flex-col gap-4">
                 <button
                   onClick={handleIniciarSesion}
-                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-40"
+                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-40 cursor-pointer"
                   style={{ 
                     fontFamily: typography.fontFamily.primary, 
                     fontSize: typography.fontSize.base,
@@ -220,7 +220,7 @@ export default function Welcome() {
                 
                 <button
                   onClick={handleRegistrarse}
-                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-40"
+                  className="w-full py-3 rounded-full transition-all hover:bg-opacity-40 cursor-pointer"
                   style={{ 
                     fontFamily: typography.fontFamily.primary, 
                     fontSize: typography.fontSize.base,
