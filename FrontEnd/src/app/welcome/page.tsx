@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { colors, typography } from '@/styles/tokens';
 import { Modal, LoadingSpinner } from '@/components/ui';
 
 export default function Welcome() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [mostrarModalCuenta, setMostrarModalCuenta] = useState(false);
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
@@ -47,6 +48,22 @@ export default function Welcome() {
     setMostrarModalCuenta(false);
     setMostrarLogin(false);
   };
+
+  // Si la URL tiene ?login=1 abrimos el modal de login (permite enlaces desde otras páginas)
+  useEffect(() => {
+    try {
+      if (searchParams?.get('login')) {
+        setMostrarLogin(true);
+
+        // Limpiar el query param sin hacer navegación completa
+        const url = new URL(window.location.href);
+        url.searchParams.delete('login');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch (e) {
+      // no-op en SSR o si window no está disponible
+    }
+  }, [searchParams]);
 
   return (
     <div 
@@ -283,7 +300,7 @@ export default function Welcome() {
       <style jsx>{`
         @keyframes slideUp {
           from {
-            transform: translateY(100%);
+            transform: translateY(100%); 
             opacity: 0;
           }
           to {

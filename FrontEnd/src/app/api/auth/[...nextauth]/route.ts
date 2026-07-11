@@ -100,7 +100,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Llamar a la API de SAHA para validar credenciales
+          // Llamar a la API de Serco para validar credenciales
           const apiUrl = getApiBaseUrl();
           const response = await fetch(`${apiUrl}/api/auth/login`, {
             method: 'POST',
@@ -109,7 +109,7 @@ export const authOptions: NextAuthOptions = {
               email: credentials.email,
               password: credentials.password
             })
-          });
+          }); 
 
           if (!response.ok) {
             return null;
@@ -218,8 +218,9 @@ export const authOptions: NextAuthOptions = {
    * Páginas personalizadas
    */
   pages: {
-    signIn: '/login',        // Página de login personalizada
-    error: '/login',         // Página de error → redirect a login
+    // Usamos el modal en la página de bienvenida; no redirigir a /login
+    signIn: '/',             // Página de login -> root (modal)
+    error: '/',              // Página de error -> root (modal)
     // newUser: '/welcome',  // Página para nuevos usuarios (opcional)
   },
 

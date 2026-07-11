@@ -210,7 +210,7 @@ export default function SignupClient() {
           <div className="mt-6 space-y-3 text-center">
             <p className="text-sm text-gray-600">
               ¿Ya tienes cuenta?{' '}
-              <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link href="/?login=1" className="text-blue-600 hover:text-blue-700 font-medium">
                 Inicia sesión
               </Link>
             </p>
