@@ -126,7 +126,7 @@ export default function SignupClient() {
             {/* Nombre */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre Completo *
+                Nombre Completo
               </label>
               <input
                 type="text"
@@ -144,7 +144,7 @@ export default function SignupClient() {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email *
+                Email
               </label>
               <input
                 type="email"

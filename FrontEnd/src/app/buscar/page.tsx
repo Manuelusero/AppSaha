@@ -107,9 +107,7 @@ export default function Home() {
           onClick={() => router.push('/provider-signup')}
           className="backdrop-blur-md border shadow-md transition-all hover:shadow-lg"
           style={{
-            minWidth: '160px',
-            height: '32px',
-            gap: '8px',
+            minWidth: '135px',
             opacity: 1,
             fontFamily: typography.fontFamily.primary,
             fontSize: '14px',
@@ -124,9 +122,7 @@ export default function Home() {
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
-            padding: '0 14px',
-            whiteSpace: 'nowrap',
-            lineHeight: '1'
+          
           }}
         >
           Ofrezco servicios

@@ -197,50 +197,36 @@ export default function Footer({ variant = 'full' }: FooterProps) {
               </h3>
               <ul className="space-y-3">
                 <li style={{ margin: 0, padding: 0 }}>
-                  <button 
-                    onClick={() => router.push('/sobre-nosotros')} 
+                    <a 
+                    href="/sobre-nosotros" 
                     className="hover:opacity-80 transition-opacity" 
                     style={{ 
-                      display: 'block',
-                      margin: 0,
-                      padding: 0,
                       fontFamily: 'Maitree, serif', 
                       fontWeight: 400, 
                       fontSize: '16px', 
                       lineHeight: '100%', 
                       letterSpacing: '0%', 
-                      textAlign: 'center', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      color: 'inherit' 
+                      textAlign: 'center' 
                     }}
                   >
-                    Sobre nosotros
-                  </button>
+                   Sobre Nosotros
+                  </a>
                 </li>
                 <li style={{ margin: 0, padding: 0 }}>
-                  <button 
-                    onClick={() => router.push('/contacto')} 
+                   <a 
+                    href="/contacto" 
                     className="hover:opacity-80 transition-opacity" 
                     style={{ 
-                      display: 'block',
-                      margin: 0,
-                      padding: 0,
                       fontFamily: 'Maitree, serif', 
                       fontWeight: 400, 
                       fontSize: '16px', 
                       lineHeight: '100%', 
                       letterSpacing: '0%', 
-                      textAlign: 'center', 
-                      background: 'none', 
-                      border: 'none', 
-                      cursor: 'pointer', 
-                      color: 'inherit' 
+                      textAlign: 'center' 
                     }}
                   >
                     Contacto
-                  </button>
+                  </a>
                 </li>
               </ul>
             </div>
