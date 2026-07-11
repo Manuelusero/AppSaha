@@ -3,18 +3,35 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { colors, typography } from '@/styles/tokens';
+import { Modal, LoadingSpinner } from '@/components/ui';
 
 export default function Welcome() {
   const router = useRouter();
   const [mostrarModalCuenta, setMostrarModalCuenta] = useState(false);
   const [mostrarLogin, setMostrarLogin] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [pressedWorker, setPressedWorker] = useState(false);
+  const [pressedSearch, setPressedSearch] = useState(false);
 
   const handleAccederTrabajador = () => {
     setMostrarModalCuenta(true);
   };
 
+  const navigateWithLoading = async (path: string) => {
+    // show loading modal if navigation takes longer than 150ms
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    setShowLoadingModal(false);
+    try {
+      timer = setTimeout(() => setShowLoadingModal(true), 150);
+      await router.push(path);
+    } finally {
+      if (timer) clearTimeout(timer);
+      setShowLoadingModal(false);
+    }
+  };
+
   const handleBuscarTrabajadores = () => {
-    router.push('/');
+    navigateWithLoading('/');
   };
 
   const handleIniciarSesion = () => {
@@ -94,17 +111,24 @@ export default function Welcome() {
         <div className="w-full space-y-4 px-4">
           <button
             onClick={handleAccederTrabajador}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            onMouseDown={() => setPressedWorker(true)}
+            onMouseUp={() => setPressedWorker(false)}
+            onMouseLeave={() => setPressedWorker(false)}
+            onTouchStart={() => setPressedWorker(true)}
+            onTouchEnd={() => setPressedWorker(false)}
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
               color: colors.primary.main,
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              backgroundColor: pressedWorker ? 'rgba(255,255,255,0.45)' : 'rgba(255, 255, 255, 0.3)',
               borderColor: 'rgba(36, 76, 135, 0.3)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+              userSelect: 'none'
             }}
           >
             Acceder Como Trabajador
@@ -112,17 +136,24 @@ export default function Welcome() {
 
           <button
             onClick={handleBuscarTrabajadores}
-            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border hover:bg-white/40 cursor-pointer"
+            onMouseDown={() => setPressedSearch(true)}
+            onMouseUp={() => setPressedSearch(false)}
+            onMouseLeave={() => setPressedSearch(false)}
+            onTouchStart={() => setPressedSearch(true)}
+            onTouchEnd={() => setPressedSearch(false)}
+            className="w-full py-4 rounded-full transition-all backdrop-blur-sm border"
             style={{
               fontFamily: typography.fontFamily.primary,
               fontSize: typography.fontSize.base,
               fontWeight: typography.fontWeight.medium,
               color: colors.primary.main,
-              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              backgroundColor: pressedSearch ? 'rgba(255,255,255,0.45)' : 'rgba(255, 255, 255, 0.3)',
               borderColor: 'rgba(36, 76, 135, 0.3)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+              cursor: 'pointer',
+              userSelect: 'none'
             }}
           >
             Buscar Trabajadores
@@ -209,6 +240,13 @@ export default function Welcome() {
           </div>
         </>
       )}
+
+      {/* Loading modal shown when navigation takes longer */}
+      <Modal isOpen={showLoadingModal} onClose={() => {}} title={undefined} maxWidth="sm" variant="default" showCloseButton={false} closeOnBackdropClick={false}>
+        <div className="flex flex-col items-center justify-center p-6">
+          <LoadingSpinner size="md" message="Cargando..." />
+        </div>
+      </Modal>
 
       {/* Login Modal - Slide from bottom */}
       {mostrarLogin && (
