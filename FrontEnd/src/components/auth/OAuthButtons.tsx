@@ -23,18 +23,9 @@ export default function OAuthButtons({
 }: OAuthButtonsProps) {
   const router = useRouter();
 
-  const handleOAuthLogin = async (provider: 'google' | 'facebook' | 'apple') => {
-    // Use redirect: false so we control navigation and close any modals
-    const res = await signIn(provider, { callbackUrl, redirect: false });
-    // res.url may contain the provider auth URL; if so, navigate the browser there
-    if (res && (res as any).url) {
-      window.location.href = (res as any).url;
-      return;
-    }
-
-    // Fallback: some environments may not return the url for oauth when redirect:false
-    // In that case call signIn without redirect:false to let next-auth perform the redirect
-    await signIn(provider, { callbackUrl, redirect: true });
+  const handleOAuthLogin = (provider: 'google' | 'facebook' | 'apple') => {
+    // Use the default redirect behavior — let NextAuth perform the OAuth redirect
+    signIn(provider, { callbackUrl });
   };
 
   return (

@@ -239,23 +239,9 @@ function LoginContent({ onClose }: { onClose: () => void }) {
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     try {
       if (provider === 'google') {
-        const res = await signIn('google', {
-          callbackUrl: '/',
-          redirect: false
-        });
         onClose();
-        // Prefer NextAuth returned url when present
-        if (res && (res as any).url) {
-          router.replace((res as any).url);
-          return;
-        }
-        // If providerId was stored by AuthContext during login, navigate to provider page
-        const storedProviderId = typeof window !== 'undefined' ? localStorage.getItem('providerId') : null;
-        if (storedProviderId) {
-          router.replace(`/providers/${storedProviderId}`);
-        } else {
-          router.replace('/');
-        }
+        // Delegate the full OAuth redirect to NextAuth
+        signIn('google', { callbackUrl: '/dashboard-provider' });
       } else {
         // Facebook y Apple pendientes de configurar
         alert(`Login con ${provider.charAt(0).toUpperCase() + provider.slice(1)} estará disponible próximamente.\n\nPor ahora solo Google está habilitado.`);

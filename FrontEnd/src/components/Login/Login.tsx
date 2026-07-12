@@ -86,16 +86,9 @@ function LoginContent({ onClose }: { onClose: () => void }) {
 
   const handleSocialLogin = async (provider: 'google' | 'facebook' | 'apple') => {
     try {
-      const res = await signIn(provider, { callbackUrl: '/dashboard-provider', redirect: false });
-      if (res && (res as any).url) {
-        onClose();
-        // Navigate the browser to the provider authorization URL
-        window.location.href = (res as any).url;
-        return;
-      }
-
-      // Fallback: allow next-auth to perform the redirect
-      await signIn(provider, { callbackUrl: '/dashboard-provider', redirect: true });
+      // Close modal then delegate redirect to NextAuth so the provider auth page opens
+      onClose();
+      signIn(provider, { callbackUrl: '/dashboard-provider' });
     } catch (err) {
       console.error('Error OAuth:', err);
       alert('Error iniciando sesión social. Por favor intenta de nuevo.');
