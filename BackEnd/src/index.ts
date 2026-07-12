@@ -67,6 +67,7 @@ const corsOptions = {
     
     const allowedOrigins = [
       process.env.FRONTEND_URL,
+      'https://sercoar.com',
       'https://serco-eosin.vercel.app',
       'https://app-saha.vercel.app',
     ]
