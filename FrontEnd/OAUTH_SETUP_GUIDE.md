@@ -1,5 +1,12 @@
 # 🔐 OAuth Implementation Guide - SAHA Platform
 
+## ⚠️ PROBLEMA RESUELTO - Redirección a /dashboard-provider
+
+✅ **Local:** Ya redirecciona correctamente a `/dashboard-provider` después de OAuth  
+⚠️ **Producción:** Falta configurar variables en Vercel Dashboard
+
+---
+
 ## Configuración Completa de NextAuth.js
 
 Implementación de OAuth para login con **Google**, **Facebook** y **Apple**.
@@ -428,6 +435,30 @@ export default function DebugSession() {
 ---
 
 ## ⚠️ Troubleshooting
+
+### ❌ Error: "Google OAuth button not showing in production"
+
+**Causa:** Las variables `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` no están configuradas en Vercel
+
+**Solución:**
+1. Ve a Vercel Dashboard → Proyecto SAHA → Settings → Environment Variables
+2. Agrega exactamente estas variables (verificando que NO sean placeholders):
+   ```
+   GOOGLE_CLIENT_ID=your-actual-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-actual-client-secret
+   NEXTAUTH_URL=https://your-vercel-domain.vercel.app
+   NEXTAUTH_SECRET=your-secret-hash
+   ```
+3. **Redeploy** el proyecto desde el tab "Deployments"
+4. Espera 2-3 minutos a que se propague
+
+### ❌ Error: "Redirect to wrong page after OAuth login (goes to / instead of /dashboard-provider)"
+
+**Causa:** Faltaba callback `redirect` en NextAuth
+
+**Solución:** ✅ **YA ESTÁ RESUELTO** en `/app/api/auth/[...nextauth]/route.ts`
+
+El callback `redirect` ahora respeta el `callbackUrl: '/dashboard-provider'` pasado en `signIn()`
 
 ### Error: "Redirect URI mismatch"
 

@@ -143,6 +143,17 @@ export const authOptions: NextAuthOptions = {
    */
   callbacks: {
     /**
+     * Redirect Callback - Controla a dónde redirigir después de signin/signout/error
+     * Respeta el callbackUrl pasado en signIn()
+     */
+    async redirect({ url, baseUrl }) {
+      // Si la URL es una URL completa y del mismo host, permite la redirección
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
+
+    /**
      * JWT Callback - Se ejecuta cuando se crea/actualiza el token
      * Aquí agregamos el rol del usuario al token y sincronizamos con backend
      */
