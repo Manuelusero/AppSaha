@@ -144,12 +144,14 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     /**
      * Redirect Callback - Controla a dónde redirigir después de signin/signout/error
-     * Respeta el callbackUrl pasado en signIn()
+     * Prioridad: 1) URL relativa (/dashboard), 2) Mismo host, 3) baseUrl
      */
     async redirect({ url, baseUrl }) {
-      // Si la URL es una URL completa y del mismo host, permite la redirección
+      // Siempre permitir URLs relativas (incluyendo los callbackUrl de signIn)
       if (url.startsWith('/')) return `${baseUrl}${url}`;
-      else if (new URL(url).origin === baseUrl) return url;
+      // Permitir URLs del mismo host
+      if (new URL(url).origin === baseUrl) return url;
+      // Fallback al baseUrl
       return baseUrl;
     },
 
@@ -229,10 +231,8 @@ export const authOptions: NextAuthOptions = {
    * Páginas personalizadas
    */
   pages: {
-    // Usamos el modal en la página de bienvenida; no redirigir a /login
-    signIn: '/',             // Página de login -> root (modal)
+    signIn: '/',             // Usar nuestro login custom en root (modal)
     error: '/',              // Página de error -> root (modal)
-    // newUser: '/welcome',  // Página para nuevos usuarios (opcional)
   },
 
   /**

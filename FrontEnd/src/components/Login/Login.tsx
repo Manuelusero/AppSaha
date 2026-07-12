@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { colors, typography } from '@/styles/tokens';
 
 type Props = {
@@ -12,6 +12,27 @@ type Props = {
 
 export default function Login({ isOpen, onClose }: Props) {
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Si hay sesión con token, guardar en localStorage y redirigir
+  useEffect(() => {
+    if (session?.user?.accessToken) {
+      // Guardar token en localStorage para fetchWithAuth
+      localStorage.setItem('token', session.user.accessToken);
+      localStorage.setItem('userId', session.user.id || '');
+      
+      if (session.user.role === 'PROVIDER') {
+        localStorage.setItem('providerId', session.user.id || '');
+      }
+      
+      console.log('✅ Token guardado en localStorage, redirigiendo a /dashboard-provider');
+      
+      // Esperar un poco y redirigir
+      setTimeout(() => {
+        router.replace('/dashboard-provider');
+      }, 100);
+    }
+  }, [session?.user?.accessToken, session?.user?.id, session?.user?.role, router]);
 
   if (!isOpen) return null;
 

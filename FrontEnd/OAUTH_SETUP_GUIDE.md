@@ -441,6 +441,7 @@ export default function DebugSession() {
 **Causa:** Las variables `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` no están configuradas en Vercel
 
 **Solución:**
+
 1. Ve a Vercel Dashboard → Proyecto SAHA → Settings → Environment Variables
 2. Agrega exactamente estas variables (verificando que NO sean placeholders):
    ```

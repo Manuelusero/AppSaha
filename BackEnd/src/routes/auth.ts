@@ -343,9 +343,21 @@ router.post('/pre-register', async (req, res) => {
 
     const sendResult = await sendEmailVerification(email, nombre, verificationLink);
     if (!sendResult || !sendResult.success) {
-      // Si no se pudo enviar, eliminar el usuario creado para evitar cuentas huérfanas en pruebas
-      try { await prisma.user.delete({ where: { id: user.id } }); } catch (e) { console.error('Error eliminando usuario tras fallo de envío:', e); }
       console.error('❌ sendEmailVerification fallo:', sendResult?.error || 'unknown');
+
+      // En entornos de desarrollo, no rompemos el flujo por un fallo del servicio de email.
+      // Devolvemos success:true junto con userId para que el frontend pueda continuar localmente.
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️ Resend falló en desarrollo — permitiendo continuar el flujo de registro (email no enviado)');
+        return res.status(201).json({
+          success: true,
+          userId: user.id,
+          warning: 'No se pudo enviar el email de verificación (servicio de correo no configurado en dev)'
+        });
+      }
+
+      // En producción, mantenemos el comportamiento estricto: eliminar usuario y devolver 500
+      try { await prisma.user.delete({ where: { id: user.id } }); } catch (e) { console.error('Error eliminando usuario tras fallo de envío:', e); }
       return res.status(500).json({ error: 'No se pudo enviar el email de verificación', details: sendResult?.error || null });
     }
 

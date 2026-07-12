@@ -1,8 +1,8 @@
  'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { colors, typography } from '@/styles/tokens';
 import { useAuth } from '@/contexts';
 import { apiPost } from '@/utils/api';
@@ -207,11 +207,33 @@ export default function Welcome() {
 function LoginContent({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const { login } = useAuth();
+  const { data: session } = useSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Detectar cuando hay sesión de OAuth y guardar token
+  useEffect(() => {
+    if (session?.user?.accessToken) {
+      // Guardar token en localStorage para fetchWithAuth
+      localStorage.setItem('token', session.user.accessToken);
+      localStorage.setItem('userId', session.user.id || '');
+      
+      if (session.user.role === 'PROVIDER') {
+        localStorage.setItem('providerId', session.user.id || '');
+      }
+      
+      console.log('✅ Token OAuth guardado en localStorage, redirigiendo a /dashboard-provider');
+      
+      // Redirigir a dashboard
+      setTimeout(() => {
+        onClose();
+        router.replace('/dashboard-provider');
+      }, 100);
+    }
+  }, [session?.user?.accessToken, session?.user?.id, session?.user?.role, onClose, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
