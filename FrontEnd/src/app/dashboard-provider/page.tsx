@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { colors, typography } from '@/styles/tokens';
+import { useSession } from 'next-auth/react';
 import { apiGet, apiPut, apiUpload, getProfileImageUrl, getPortfolioImageUrl, PROVIDER_ID_KEY, fetchWithAuth, serviceCategoryLabels } from '@/utils';
 import { getEspecialidades } from '../data/especialidades';
 import { ProviderHeader } from '@/components/layout';
@@ -162,9 +163,27 @@ export default function DashboardProvider() {
   const pendingCount = bookings.filter(b => b.status === 'pending').length;
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
+
+  const { data: session, status } = useSession();
+
   useEffect(() => {
+    // Wait for session loading to complete so we can persist providerId after OAuth
+    if (status === 'loading') return;
+
+    // If session exists and user is provider, ensure providerId is stored
+    if (session?.user && session.user.role === 'PROVIDER') {
+      try {
+        const current = localStorage.getItem(PROVIDER_ID_KEY);
+        if (!current) {
+          localStorage.setItem(PROVIDER_ID_KEY, String(session.user.id));
+        }
+      } catch (e) {
+        console.warn('No se pudo acceder a localStorage para providerId:', e);
+      }
+    }
+
     const providerId = localStorage.getItem(PROVIDER_ID_KEY);
-    
+
     if (!providerId) {
       router.push('/login');
       return;
