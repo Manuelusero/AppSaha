@@ -56,12 +56,16 @@ export async function apiGet<T = unknown>(endpoint: string): Promise<T> {
   if (!response.ok) {
     // Si es 401, limpiar token y redirigir a login
     if (response.status === 401) {
-      console.error('❌ Token inválido o expirado, redirigiendo a login...');
+      // Do not perform an unconditional redirect here: some flows (OAuth callbacks)
+      // may complete while a background request returns 401. Instead, clear
+      // authentication state and surface an error so the caller can decide how
+      // to handle it (show modal, redirect, etc.). This avoids interrupting
+      // in-progress OAuth redirects.
+      console.error('❌ Token inválido o expirado (401) — cleared local auth state.');
       localStorage.removeItem('token');
       localStorage.removeItem('providerId');
       localStorage.removeItem('userId');
-      window.location.href = '/login';
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      throw new Error('UNAUTHORIZED');
     }
     
     const error = await response.json().catch(() => ({ error: 'Error desconocido' }));
@@ -86,12 +90,12 @@ export async function apiPost<T = unknown>(
   if (!response.ok) {
     // Si es 401, limpiar token y redirigir a login
     if (response.status === 401) {
-      console.error('❌ Token inválido o expirado, redirigiendo a login...');
+      // Same behavior as GET: clear local auth state but do not redirect automatically.
+      console.error('❌ Token inválido o expirado (401) — cleared local auth state.');
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem('providerId');
       localStorage.removeItem('userId');
-      window.location.href = '/login';
-      throw new Error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      throw new Error('UNAUTHORIZED');
     }
     
     const error = await response.json().catch(() => ({ error: 'Error desconocido' }));

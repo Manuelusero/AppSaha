@@ -2,8 +2,9 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Remitente provisional. Cuando haya dominio verificado en Resend cambiar por ej: notificaciones@serco.com.ar
-const FROM = 'Serco <onboarding@resend.dev>';
+// Remitente: preferir la variable de entorno `RESEND_FROM` (ej. "Serco <no-reply@tu-dominio.com>")
+// Si no está definida, usamos un remitente provisional.
+const FROM = process.env.RESEND_FROM || 'Serco <onboarding@resend.dev>';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
 
 // ─── Helper: Mapear urgencia numérica a texto ────────────────────────────────

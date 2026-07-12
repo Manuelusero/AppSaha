@@ -245,9 +245,10 @@ function LoginContent({ onClose }: { onClose: () => void }) {
       login(data.token, data.user, providerId);
       onClose();
       if (data.user.role === 'PROVIDER') {
-        const id = providerId || data.user.id;
-        // Navigate to provider public page and replace history so /login doesn't remain
-        router.replace(`/providers/${id}`);
+        // After credential login, send providers to the provider dashboard
+        // so they land in the same place as OAuth logins.
+        onClose();
+        router.replace('/dashboard-provider');
       } else {
         router.replace('/buscar');
       }

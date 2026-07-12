@@ -21,6 +21,10 @@ const __dirname = path.dirname(__filename);
 // Configurar variables de entorno
 dotenv.config();
 
+// Debug: mostrar si la API key de Resend está disponible (no imprimir la clave)
+console.log('🔎 Config check: RESEND_API_KEY set?', !!process.env.RESEND_API_KEY);
+console.log('🔎 Config check: FRONTEND_URL =', process.env.FRONTEND_URL || 'not set');
+
 const app = express();
 const PORT = process.env.PORT || 8000;
 
