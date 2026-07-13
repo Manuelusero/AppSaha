@@ -612,7 +612,7 @@ router.post('/:id/send-budget', authenticateToken, async (req: any, res) => {
     console.log('✅ Presupuesto guardado. Token generado:', clientDataToken);
 
     // URL que el proveedor puede compartir con el cliente
-    const clientDataUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/client-contact/${clientDataToken}`;
+    const clientDataUrl = `${process.env.FRONTEND_URL || 'https://sercoar.com'}/client-contact/${clientDataToken}`;
 
     // ENVIAR PRESUPUESTO AL CLIENTE por el método que eligió
     try {

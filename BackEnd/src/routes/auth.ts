@@ -338,7 +338,7 @@ router.post('/pre-register', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://sercoar.com';
     const verificationLink = `${FRONTEND_URL}/provider-signup/continuar?token=${verificationToken}`;
 
     const sendResult = await sendEmailVerification(email, nombre, verificationLink);
@@ -391,7 +391,7 @@ router.post('/resend-verification', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://sercoar.com';
     const verificationLink = `${FRONTEND_URL}/provider-signup/continuar?token=${verificationToken}`;
 
     const sendResult = await sendEmailVerification(user.email, user.name || 'Usuario', verificationLink);

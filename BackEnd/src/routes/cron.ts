@@ -43,7 +43,7 @@ router.get('/remind-incomplete', verifyCronSecret, async (req, res) => {
       }
     });
 
-    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'https://sercoar.com';
     const results = [];
 
     for (const user of incompleteProviders) {

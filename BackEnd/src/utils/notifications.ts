@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Remitente: preferir la variable de entorno `RESEND_FROM` (ej. "Serco <no-reply@tu-dominio.com>")
 // Si no está definida, usamos un remitente provisional asociado al dominio real `sercoar.com`.
 const FROM = process.env.RESEND_FROM || 'Serco <noreply@sercoar.com>';
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://app-saha.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://sercoar.com';
 
 // ─── Helper: Mapear urgencia numérica a texto ────────────────────────────────
 
