@@ -58,15 +58,16 @@ export const Input: React.FC<InputProps> = ({
         placeholder={placeholder}
         required={required}
         disabled={disabled}
-        className={`w-full px-4 py-3 rounded-full border-2 focus:outline-none bg-white ${
-          disabled ? 'opacity-50 cursor-not-allowed' : ''
+        className={`w-full px-4 py-3 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 bg-white transition-all duration-300 ${
+          disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''
         } ${className}`}
         style={{ 
           fontFamily: typography.fontFamily.primary,
           fontSize: typography.fontSize.base,
           color: colors.neutral.black,
           borderColor: getBorderColor(),
-          transition: 'border-color 300ms ease-in-out',
+          boxShadow: isFocused ? `0 0 0 2px ${colors.primary.pale}` : 'none',
+          transition: 'border-color 300ms ease-in-out, box-shadow 300ms ease-in-out',
         }}
       />
       {error && (

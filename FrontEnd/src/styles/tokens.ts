@@ -134,6 +134,7 @@ export const typography = {
   fontFamily: {
     primary: "'Maitree', serif",     // 🎯 Fuente principal - Usada en TODA la app
     secondary: "'Inter', sans-serif", // Alternativa (no implementada aún)
+    serif: "'Maitree', serif",       // Explícito para títulos con tipografía serif
     system: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif",
   },
   

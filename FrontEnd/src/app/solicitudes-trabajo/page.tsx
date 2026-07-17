@@ -164,29 +164,29 @@ export default function SolicitudesTrabajo() {
   // Contenido del detalle expandido — accordion en mobile, siempre visible en desktop
   const detalleContent = (solicitud: Solicitud) => (
     <>
-      <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+      <p style={{ fontFamily: typography.fontFamily.serif, fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
         Cliente: <span style={{ fontWeight: 400 }}>{solicitud.clienteNombre}</span>
       </p>
 
-      <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+      <p style={{ fontFamily: typography.fontFamily.serif, fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
         Ubicación: <span style={{ fontWeight: 400 }}>{solicitud.ubicacion}</span>
       </p>
 
       {solicitud.urgencia && (
-        <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+        <p style={{ fontFamily: typography.fontFamily.serif, fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
           Urgencia: <span style={{ fontWeight: 400 }}>{solicitud.urgencia}</span>
         </p>
       )}
 
       {solicitud.descripcion && (
-        <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
+        <p style={{ fontFamily: typography.fontFamily.serif, fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginBottom: '3px' }}>
           Descripción: <span style={{ fontWeight: 400 }}>{solicitud.descripcion}</span>
         </p>
       )}
 
       {solicitud.fotos && solicitud.fotos.length > 0 && (
         <>
-          <p style={{ fontFamily: 'Maitree, serif', fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginTop: '10px', marginBottom: '6px' }}>
+          <p style={{ fontFamily: typography.fontFamily.serif, fontSize: '12px', fontWeight: 600, color: colors.neutral.black, marginTop: '10px', marginBottom: '6px' }}>
             Foto del problema:
           </p>
           <img
@@ -202,14 +202,14 @@ export default function SolicitudesTrabajo() {
         <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
           <button
             onClick={(e) => { e.stopPropagation(); setPresupuestoSolicitud(solicitud); }}
-            style={{ flex: 1, padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+            style={{ flex: 1, padding: '9px', backgroundColor: '#E8D4C8', color: '#6B4E3D', border: 'none', borderRadius: '10px', fontFamily: typography.fontFamily.serif, fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
           >
             Enviar Presupuesto
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); handleRechazar(solicitud); }}
             disabled={rejectingId === solicitud.id}
-            style={{ flex: 1, padding: '9px', backgroundColor: rejectingId === solicitud.id ? '#F9FAFB' : '#FEE2E2', color: '#B91C1C', border: 'none', borderRadius: '10px', fontFamily: 'Maitree, serif', fontSize: '13px', fontWeight: 500, cursor: rejectingId === solicitud.id ? 'wait' : 'pointer', opacity: rejectingId === solicitud.id ? 0.7 : 1 }}
+            style={{ flex: 1, padding: '9px', backgroundColor: rejectingId === solicitud.id ? '#F9FAFB' : '#FEE2E2', color: '#B91C1C', border: 'none', borderRadius: '10px', fontFamily: typography.fontFamily.serif, fontSize: '13px', fontWeight: 500, cursor: rejectingId === solicitud.id ? 'wait' : 'pointer', opacity: rejectingId === solicitud.id ? 0.7 : 1 }}
           >
             {rejectingId === solicitud.id ? 'Rechazando...' : 'Rechazar'}
           </button>
@@ -240,7 +240,7 @@ export default function SolicitudesTrabajo() {
       `}</style>
       <main className="main-content">
         {isLoading && (
-          <div style={{ textAlign: 'center', padding: '80px 0', fontFamily: 'Maitree, serif', color: '#9CA3AF' }}>
+          <div style={{ textAlign: 'center', padding: '80px 0', fontFamily: typography.fontFamily.serif, color: '#9CA3AF' }}>
             Cargando solicitudes...
           </div>
         )}
@@ -250,7 +250,7 @@ export default function SolicitudesTrabajo() {
             <>
               {/* Vista con solicitudes */}
               <h1 style={{
-                fontFamily: 'Maitree, serif',
+                fontFamily: typography.fontFamily.serif,
                 fontSize: '32px',
                 fontWeight: 600,
                 color: colors.neutral.black,
@@ -309,7 +309,7 @@ export default function SolicitudesTrabajo() {
                           border: isActive ? 'none' : '1.5px solid #E5E7EB',
                           backgroundColor: isActive ? '#244C87' : '#FFFFFF',
                           color: isActive ? '#FFFFFF' : colors.neutral[600],
-                          fontFamily: 'Maitree, serif',
+                          fontFamily: typography.fontFamily.serif,
                           fontSize: '14px',
                           fontWeight: isActive ? 600 : 400,
                           cursor: 'pointer',
@@ -398,7 +398,7 @@ export default function SolicitudesTrabajo() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         {/* Mobile: 'Servicio Solicitado' cuando está expandida */}
                         <p className="md:hidden" style={{
-                          fontFamily: 'Maitree, serif',
+                          fontFamily: typography.fontFamily.serif,
                           fontWeight: 600,
                           fontSize: '13px',
                           color: colors.neutral.black,

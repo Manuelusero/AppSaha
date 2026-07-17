@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts';
-import { colors, gradients, spacing, borderRadius, shadows, withOpacity } from '@/styles/tokens';
+import { colors, gradients, spacing, borderRadius, shadows, withOpacity, typography } from '@/styles/tokens';
 import { apiGet, getProfileImageUrl } from '@/utils';
+import GeolocationButton from '@/components/ui/GeolocationButton';
 
 interface HeaderProps {
   variant?: 'landing' | 'minimal';
@@ -97,7 +98,16 @@ export default function Header({
       
       {/* Menú de usuario o botón de login */}
       {showAuthButton && (
-        <>
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Geolocation Button - Solo para clientes */}
+          {isClientUser && (
+            <GeolocationButton
+              onLocation={(lat, lng) => {
+                // TODO: Guardar ubicación en estado global si es necesario
+                console.log('Ubicación:', lat, lng);
+              }}
+            />
+          )}
           {isProviderUser && providerData ? (
             <div className="relative profile-menu-container">
               <div 
@@ -180,7 +190,7 @@ export default function Header({
                       border: 'none',
                       backgroundColor: 'transparent',
                       cursor: 'pointer',
-                      fontFamily: 'Maitree, serif',
+                      fontFamily: typography.fontFamily.serif,
                       fontSize: '16px',
                       color: colors.primary.main,
                       display: 'flex',
@@ -210,7 +220,7 @@ export default function Header({
                       border: 'none',
                       backgroundColor: 'transparent',
                       cursor: 'pointer',
-                      fontFamily: 'Maitree, serif',
+                      fontFamily: typography.fontFamily.serif,
                       fontSize: '16px',
                       color: colors.primary.main,
                       display: 'flex',
@@ -238,7 +248,7 @@ export default function Header({
                       border: 'none',
                       backgroundColor: 'transparent',
                       cursor: 'pointer',
-                      fontFamily: 'Maitree, serif',
+                      fontFamily: typography.fontFamily.serif,
                       fontSize: '16px',
                       color: colors.error.main,
                       display: 'flex',
@@ -285,7 +295,7 @@ export default function Header({
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: colors.neutral.white,
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.serif,
                   fontSize: '18px',
                   fontWeight: 600,
                   flexShrink: 0,
@@ -322,7 +332,7 @@ export default function Header({
                 }}>
                   <button
                     onClick={() => { setShowProfileMenu(false); router.push('/dashboard-client'); }}
-                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: 'Maitree, serif', fontSize: '16px', color: colors.primary.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
+                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: typography.fontFamily.serif, fontSize: '16px', color: colors.primary.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.neutral[100]}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >
@@ -335,7 +345,7 @@ export default function Header({
 
                   <button
                     onClick={() => { setShowProfileMenu(false); router.push('/buscar'); }}
-                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: 'Maitree, serif', fontSize: '16px', color: colors.primary.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
+                    style={{ width: '100%', padding: spacing[3], textAlign: 'left', border: 'none', backgroundColor: 'transparent', cursor: 'pointer', fontFamily: typography.fontFamily.serif, fontSize: '16px', color: colors.primary.main, display: 'flex', alignItems: 'center', gap: spacing[2], transition: 'background-color 200ms ease' }}
                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.neutral[100]}
                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                   >
@@ -368,7 +378,7 @@ export default function Header({
               onClick={onLoginClick || (() => router.push('/login'))}
               className="text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 whitespace-nowrap flex-shrink-0"
               style={{ 
-                fontFamily: 'Maitree, serif',
+                fontFamily: typography.fontFamily.serif,
                 fontWeight: 600,
                 fontStyle: 'normal',
                 fontSize: '14px',
@@ -404,7 +414,7 @@ export default function Header({
               Ofrezco servicios
             </button>
           )}
-        </>
+        </div>
       )}
     </header>
   );

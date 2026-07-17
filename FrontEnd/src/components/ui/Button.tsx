@@ -20,31 +20,58 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   className = '',
 }) => {
-  const baseStyles = 'px-8 py-3 rounded-full font-medium';
-  
-  const variantStyles = {
-    primary: `text-white hover:bg-[${colors.primary.dark}] disabled:bg-gray-400`,
-    outline: `border-2 text-white disabled:border-gray-400 disabled:text-gray-400`,
-    secondary: `bg-white border-2 hover:bg-gray-50 disabled:bg-gray-200`,
+  // Estilos base - usar solo clases Tailwind que NO dependen de interpolación dinámica
+  const getBaseClasses = () => {
+    const base = 'px-8 py-3 rounded-full font-medium transition-all duration-300';
+    const focus = 'focus:outline-none focus:ring-2 focus:ring-offset-2';
+    const ring = `focus:ring-[${colors.primary.main}]`;
+    const width = fullWidth ? 'w-full' : '';
+    const cursor = disabled ? 'cursor-not-allowed' : 'cursor-pointer';
+    
+    return `${base} ${focus} ${width} ${cursor} ${className}`;
   };
 
-  // Estilos inline para usar tokens (compatible con style props)
-  const getBackgroundColor = () => {
-    if (disabled) return undefined;
-    if (variant === 'primary') return colors.primary.main;
-    return undefined;
-  };
+  // Determinar estilos según el variant y estado
+  const getStyles = () => {
+    let bgColor = colors.neutral.white;
+    let borderColor = colors.neutral[300];
+    let textColor = colors.neutral.black;
+    let hoverBg = colors.neutral.white;
+    let hoverBorder = colors.neutral[300];
 
-  const getBorderColor = () => {
-    if (disabled) return undefined;
-    if (variant === 'outline' || variant === 'secondary') return colors.primary.main;
-    return undefined;
-  };
+    if (!disabled) {
+      if (variant === 'primary') {
+        bgColor = colors.primary.main;
+        textColor = colors.neutral.white;
+        hoverBg = colors.primary.dark || colors.primary.main;
+        borderColor = colors.primary.main;
+      } else if (variant === 'outline') {
+        bgColor = 'transparent';
+        borderColor = colors.primary.main;
+        textColor = colors.primary.main;
+        hoverBg = colors.primary.pale;
+      } else if (variant === 'secondary') {
+        bgColor = colors.neutral.white;
+        borderColor = colors.primary.main;
+        textColor = colors.primary.main;
+        hoverBg = colors.neutral[100];
+      }
+    } else {
+      // Disabled state: opacidad + grayscale
+      bgColor = colors.neutral[200];
+      borderColor = colors.neutral[300];
+      textColor = colors.neutral[600];
+    }
 
-  const getTextColor = () => {
-    if (disabled) return undefined;
-    if (variant === 'outline' || variant === 'secondary') return colors.primary.main;
-    return undefined;
+    return {
+      backgroundColor: bgColor,
+      borderColor: borderColor,
+      color: textColor,
+      borderWidth: variant !== 'primary' ? '2px' : '0px',
+      transition: 'all 300ms ease-in-out',
+      opacity: disabled ? 0.6 : 1,
+      filter: disabled ? 'grayscale(100%)' : 'grayscale(0%)',
+    };
   };
 
   return (
@@ -52,16 +79,19 @@ export const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`${baseStyles} ${variantStyles[variant]} ${
-        fullWidth ? 'w-full' : ''
-      } ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${className}`}
-      style={{ 
-        fontFamily: typography.fontFamily.primary,
-        fontSize: typography.fontSize.base,
-        backgroundColor: getBackgroundColor(),
-        borderColor: getBorderColor(),
-        color: getTextColor(),
-        transition: 'background-color 300ms ease-in-out, border-color 300ms ease-in-out, color 300ms ease-in-out',
+      className={getBaseClasses()}
+      style={getStyles()}
+      onMouseEnter={(e) => {
+        if (!disabled) {
+          const target = e.currentTarget;
+          if (variant === 'primary') {
+            target.style.filter = 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))';
+          }
+        }
+      }}
+      onMouseLeave={(e) => {
+        const target = e.currentTarget;
+        target.style.filter = disabled ? 'grayscale(100%)' : 'grayscale(0%)';
       }}
     >
       {children}

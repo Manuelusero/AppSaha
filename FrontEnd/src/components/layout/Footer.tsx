@@ -83,7 +83,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
               <h3 
                 className="mb-6" 
                 style={{ 
-                  fontFamily: 'Maitree, serif', 
+                  fontFamily: typography.fontFamily.serif, 
                   fontWeight: 400, 
                   fontSize: '24px', 
                   lineHeight: '100%', 

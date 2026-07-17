@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header, Footer } from '@/components/layout';
+import GeolocationButton from '@/components/ui/GeolocationButton';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useLocationSearch } from '@/hooks';
 import { Modal } from '@/components/ui';
@@ -334,8 +335,20 @@ export default function Home() {
                 setTimeout(() => setMostrarUbicaciones(false), 300);
               }}
               placeholder="Ciudad, pueblo o localidad"
-              className="w-full pl-10 sm:pl-12 pr-4 sm:pr-5 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
+              className="w-full pl-10 sm:pl-12 pr-14 sm:pr-16 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
             />
+            
+            {/* Botón de geolocalización */}
+            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
+              <GeolocationButton
+                onLocation={(lat, lng) => {
+                  const formatted = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+                  setUbicacion(formatted);
+                  setMostrarUbicaciones(false);
+                }}
+                disabled={cargandoUbicaciones}
+              />
+            </div>
             
             {/* Dropdown de ubicaciones - Muestra resultados de la API */}
             {mostrarUbicaciones && ubicacion.length >= 3 && (
@@ -407,7 +420,7 @@ export default function Home() {
         <div className="max-w-2xl md:max-w-5xl mx-auto">
           {/* Título */}
           <h2 className="font-normal text-4xl sm:text-5xl text-center mb-12 md:mb-16" style={{ 
-            fontFamily: 'Maitree, serif', 
+            fontFamily: typography.fontFamily.serif, 
             color: colors.primary.main,
             lineHeight: '1.2',
             fontWeight: 600
@@ -525,7 +538,7 @@ export default function Home() {
                 width: 'calc(50% - 16.5px - 20px - 24px)'
               }}>
                 <p style={{
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.serif,
                   fontSize: '16px',
                   fontWeight: 400,
                   lineHeight: '100%',
@@ -558,7 +571,7 @@ export default function Home() {
                 textAlign: 'right'
               }}>
                 <p style={{
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.serif,
                   fontSize: '16px',
                   fontWeight: 400,
                   lineHeight: '100%',
@@ -590,7 +603,7 @@ export default function Home() {
                 width: 'calc(50% - 16.5px - 20px - 24px)'
               }}>
                 <p style={{
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.serif,
                   fontSize: '16px',
                   fontWeight: 400,
                   lineHeight: '100%',
@@ -623,7 +636,7 @@ export default function Home() {
                 textAlign: 'right'
               }}>
                 <p style={{
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.serif,
                   fontSize: '16px',
                   fontWeight: 400,
                   lineHeight: '100%',
@@ -655,7 +668,7 @@ export default function Home() {
                 width: 'calc(50% - 16.5px - 20px - 24px)'
               }}>
                 <p style={{
-                  fontFamily: 'Maitree, serif',
+                  fontFamily: typography.fontFamily.serif,
                   fontSize: '16px',
                   fontWeight: 400,
                   lineHeight: '100%',
@@ -704,7 +717,7 @@ export default function Home() {
                 />
                 <p
                   style={{
-                    fontFamily: 'Maitree, serif',
+                    fontFamily: typography.fontFamily.serif,
                     fontSize: '14px',
                     fontWeight: 400,
                     color: colors.neutral.black,
@@ -740,7 +753,7 @@ export default function Home() {
               }}
             >
               <p style={{
-                fontFamily: 'Maitree, serif',
+                fontFamily: typography.fontFamily.serif,
                 fontSize: '16px',
                 fontWeight: 400,
                 lineHeight: '100%',
@@ -757,7 +770,7 @@ export default function Home() {
           {/* Párrafo final - solo desktop */}
           <div className="hidden md:flex justify-center mt-20 mb-16">
             <p style={{
-              fontFamily: 'Maitree, serif',
+              fontFamily: typography.fontFamily.serif,
               fontSize: '20px',
               fontWeight: 400,
               lineHeight: '1.6',

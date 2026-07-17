@@ -88,10 +88,11 @@ export default function FileUpload({
           onChange={handleFileChange}
           accept={accept}
           required={required && !value}
-          className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none"
+          className="w-full px-4 py-3 rounded-full border-2 focus:outline-none focus:ring-2 focus:ring-offset-2"
           style={{
             fontFamily: typography.fontFamily.primary,
-            fontSize: typography.fontSize.base
+            fontSize: typography.fontSize.base,
+            borderColor: colors.neutral[300],
           }}
         />
 

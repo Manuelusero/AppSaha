@@ -62,16 +62,17 @@ export default function ProfessionSelector({
           onClick={() => setIsOpen(!isOpen)}
           readOnly
           required={required}
-          className="w-full px-4 py-3 rounded-full border-2 border-gray-300 focus:border-[#244C87] focus:outline-none cursor-pointer"
+          className="w-full px-4 py-3 rounded-full border-2 focus:outline-none cursor-pointer"
           style={{
             fontFamily: typography.fontFamily.primary,
             fontSize: typography.fontSize.base,
-            color: colors.neutral.black
+            color: colors.neutral.black,
+            borderColor: colors.neutral[300],
           }}
           placeholder={placeholder}
         />
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white border-2 rounded-full shadow-lg max-h-60 overflow-y-auto">
             {options.map((option) => (
               <div
                 key={option}

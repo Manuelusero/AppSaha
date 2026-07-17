@@ -42,8 +42,8 @@ export default function SpecialtyChips({
               onClick={() => onToggle(specialty)}
               className={`px-4 py-2 rounded-full border-2 transition-colors ${
                 isSelected
-                  ? 'bg-[#244C87] text-white border-[#244C87]'
-                  : 'bg-white border-black hover:border-[#244C87]'
+                  ? `bg-${colors.primary.main} text-white border-${colors.primary.main}`
+                  : `bg-white border-${colors.neutral[300]} hover:border-${colors.primary.main}`
               }`}
               style={{
                 fontFamily: typography.fontFamily.primary,
