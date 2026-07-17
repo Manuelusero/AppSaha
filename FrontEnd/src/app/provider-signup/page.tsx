@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useSession, signIn } from 'next-auth/react';
 import { getEspecialidades } from '../data/especialidades';
@@ -8,7 +8,7 @@ import { Footer } from '@/components/layout';
 import { Input, Button } from '@/components/ui';
 import WorkZoneMap from '@/components/ui/WorkZoneMap';
 import { colors, typography, spacing } from '@/styles/tokens';
-import { useForm } from '@/hooks';
+import { useForm, useWheelScroll } from '@/hooks';
 import { getRequiredApiBaseUrl } from '@/utils/constants';
 
 const servicios = [
@@ -170,6 +170,16 @@ export default function ProviderSignup() {
   const [paso, setPaso] = useState(1); // 1: Datos Personales, 2: Datos Profesionales, 3: Documentación, 4: Extras
   const [emailPendiente, setEmailPendiente] = useState(false);
   const [mostrarModalEmail, setMostrarModalEmail] = useState(false);
+
+  // Refs para dropdowns - permitir scroll de página
+  const profesionesDropdownRef = useRef<HTMLDivElement>(null);
+  const ubicacionesDropdownRef = useRef<HTMLDivElement>(null);
+  const profesionAdicionalDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Hooks de scroll para dropdowns
+  useWheelScroll(profesionesDropdownRef);
+  useWheelScroll(ubicacionesDropdownRef);
+  useWheelScroll(profesionAdicionalDropdownRef);
 
   // Auto-advance to paso 2 when returning from email verification link
   useEffect(() => {
@@ -791,7 +801,7 @@ export default function ProviderSignup() {
                       placeholder="Seleccionar profesión"
                     />
                     {mostrarProfesiones && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                      <div ref={profesionesDropdownRef} className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                         {servicios.map((servicio) => (
                           <div
                             key={servicio}
@@ -859,7 +869,7 @@ export default function ProviderSignup() {
                           placeholder="Seleccionar profesión"
                         />
                         {profesionAdicionalAbierta === index && (
-                          <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                          <div ref={profesionAdicionalDropdownRef} className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                             {servicios
                               .filter(servicio => {
                                 // Filtrar la profesión principal
@@ -950,7 +960,7 @@ export default function ProviderSignup() {
                     placeholder="autocompleta"
                   />
                   {mostrarUbicaciones && ubicacionesFiltradas.length > 0 && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
+                    <div ref={ubicacionesDropdownRef} className="absolute z-10 w-full mt-1 bg-white border-2 border-gray-300 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
                       {ubicacionesFiltradas.map((ciudad) => (
                         <div
                           key={ciudad}

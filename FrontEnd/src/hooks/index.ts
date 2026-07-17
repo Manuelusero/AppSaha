@@ -10,3 +10,4 @@ export { useLocalStorage } from './useLocalStorage';
 export { useToggle } from './useToggle';
 export { useIntersectionObserver } from './useIntersectionObserver';
 export { useCookieConsent } from './useCookieConsent';
+export { useWheelScroll } from './useWheelScroll';
