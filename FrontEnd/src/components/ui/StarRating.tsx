@@ -70,7 +70,7 @@ export const StarRating: React.FC<StarRatingProps> = ({
                 readonly ? 'cursor-default' : 'cursor-pointer hover:scale-110'
               }`}
               style={{
-                color: isFilled ? '#FFC107' : colors.neutral[300],
+                color: isFilled ? colors.accent.gold : colors.neutral[300],
                 border: 'none',
                 background: 'none',
                 padding: '2px',

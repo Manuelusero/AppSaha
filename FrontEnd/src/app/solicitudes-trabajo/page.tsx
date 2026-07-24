@@ -349,48 +349,34 @@ export default function SolicitudesTrabajo() {
                 </div>
               </div>
 
-              {/* Lista de solicitudes — mobile: 1 col / desktop: flex-wrap */}
-              <style>{`
-                .solicitudes-grid {
-                  display: flex;
-                  flex-direction: column;
-                  gap: 16px;
-                  align-items: stretch;
-                }
-                @media (min-width: 768px) {
-                  .solicitudes-grid {
-                    flex-direction: row;
-                    flex-wrap: wrap;
-                    gap: 20px;
-                    align-items: flex-start;
-                  }
-                  .solicitud-card {
-                    flex: 0 0 220px;
-                    width: 220px;
-                  }
-                }
-              `}</style>
-              <div className="solicitudes-grid">
+              {/* Lista de solicitudes — mobile: 1 col / desktop: grid de 220px */}
+              <div className="flex flex-col gap-4 md:flex-row md:flex-wrap md:gap-5 md:items-start">
                 {solicitudesFiltradas.map((solicitud) => {
                   const estadoStyles = getEstadoStyles(solicitud.estado);
                   const isExpanded = expandedId === solicitud.id;
                   const isPendiente = solicitud.estado === 'pendiente';
+                  const [isHovered, setIsHovered] = useState(false);
 
                   return (
                     <div
                       key={solicitud.id}
                       onClick={() => setExpandedId(isExpanded ? null : solicitud.id)}
-                      className="solicitud-card"
+                      onMouseEnter={() => setIsHovered(true)}
+                      onMouseLeave={() => setIsHovered(false)}
+                      className="md:w-[220px] md:flex-shrink-0"
                       style={{
                         backgroundColor: '#FFFFFF',
                         borderRadius: '20px',
                         padding: '14px 16px',
                         boxShadow: isExpanded
                           ? '0 4px 16px rgba(0,0,0,0.12)'
+                          : isHovered
+                          ? '0 8px 24px rgba(36, 76, 135, 0.15)'
                           : '0 2px 8px rgba(0,0,0,0.08)',
                         cursor: 'pointer',
-                        transition: 'box-shadow 0.2s',
-                        border: isExpanded ? '2px solid #E8D4C8' : '2px solid transparent',
+                        transition: 'all 0.2s ease-out',
+                        border: isExpanded ? '2px solid #E8D4C8' : isHovered ? '2px solid #244C87' : '2px solid transparent',
+                        transform: isHovered && !isExpanded ? 'translateY(-4px)' : 'translateY(0)',
                         minWidth: 0,
                       }}
                     >

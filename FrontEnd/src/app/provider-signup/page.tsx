@@ -196,13 +196,18 @@ export default function ProviderSignup() {
           if (data.apellido) setFieldValue('apellido', data.apellido);
           if (data.email) setFieldValue('email', data.email);
           if (data.telefono) setFieldValue('telefono', data.telefono);
-          if (data.password) setFieldValue('password', data.password);
-          if (data.password) setFieldValue('confirmarPassword', data.password);
-        } catch { /* ignore */ }
+          if (data.password) {
+            setFieldValue('password', data.password);
+            setFieldValue('confirmarPassword', data.password);
+            console.log('✅ Contraseña restaurada desde localStorage en paso 2');
+          }
+        } catch (e) {
+          console.error('Error restaurando datos de localStorage:', e);
+        }
       }
       setPaso(2);
     }
-  }, []);
+  }, [setFieldValue]);
   const [mostrarModalExito, setMostrarModalExito] = useState(false);
 
   // Auto-completar datos con OAuth cuando se obtiene la sesión
@@ -413,6 +418,26 @@ export default function ProviderSignup() {
     
     console.log('Formulario enviado - iniciando registro...');
     
+    // Recuperar contraseña del localStorage si no está en el estado (puede ocurrir después de navegar entre pasos)
+    let passwordToUse = values.password;
+    let confirmPasswordToUse = values.confirmarPassword;
+    
+    if (!passwordToUse || passwordToUse.length === 0) {
+      const saved = localStorage.getItem('registroTemporal');
+      if (saved) {
+        try {
+          const data = JSON.parse(saved);
+          if (data.password) {
+            passwordToUse = data.password;
+            confirmPasswordToUse = data.password;
+            console.log('📝 Contraseña recuperada de localStorage');
+          }
+        } catch (e) {
+          console.error('Error recuperando contraseña de localStorage:', e);
+        }
+      }
+    }
+    
     // GUARDAR DATOS EN LOCALSTORAGE PRIMERO (antes de cualquier validación o llamada al backend)
     const registroCompleto = {
       nombre: values.nombre,
@@ -437,17 +462,29 @@ export default function ProviderSignup() {
     console.log('Datos guardados en localStorage:', registroCompleto);
     
     // Validaciones
-    if (values.password !== values.confirmarPassword) {
+    if (passwordToUse !== confirmPasswordToUse) {
       alert('Las contraseñas no coinciden');
       return;
     }
 
     // Validar que la contraseña tenga al menos una mayúscula y un número
-    const tieneMayuscula = /[A-Z]/.test(values.password);
-    const tieneNumero = /[0-9]/.test(values.password);
+    const tieneMayuscula = /[A-Z]/.test(passwordToUse);
+    const tieneNumero = /[0-9]/.test(passwordToUse);
     
     if (!tieneMayuscula || !tieneNumero) {
       alert('La contraseña debe contener al menos una mayúscula y un número');
+      return;
+    }
+    
+    // Validar que la contraseña no esté vacía
+    if (!passwordToUse || passwordToUse.length === 0) {
+      alert('La contraseña es requerida');
+      return;
+    }
+    
+    // Validar longitud mínima
+    if (passwordToUse.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -464,7 +501,7 @@ export default function ProviderSignup() {
     formData.append('apellido', values.apellido);
     formData.append('email', values.email);
     formData.append('telefono', values.telefono);
-    formData.append('password', values.password);
+    formData.append('password', passwordToUse);
 
     // Include pre-register ID if user verified email at paso 1
     const preRegisterId = localStorage.getItem('preRegisterId');

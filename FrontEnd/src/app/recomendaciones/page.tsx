@@ -87,107 +87,9 @@ export default function RecomendacionesPage() {
 
   return (
     <div style={{ backgroundColor: '#FFFCF9', minHeight: '100vh', fontFamily: "'Maitree', serif" }}>
-      <style>{`
-        .main-content {
-          padding: 24px;
-          padding-top: calc(4rem + 32px);
-        }
-        .reco-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 16px;
-          margin-top: 24px;
-        }
-        .reco-card {
-          flex: 0 0 100%;
-          background: #fff;
-          border-radius: 12px;
-          padding: 20px;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .link-card {
-          background: #fff;
-          border-radius: 12px;
-          padding: 20px;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-          margin-top: 24px;
-        }
-        .link-input-row {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 10px;
-        }
-        .link-input {
-          flex: 1;
-          padding: 10px 12px;
-          border: 1.5px solid #E5E7EB;
-          border-radius: 8px;
-          font-size: 13px;
-          font-family: 'Maitree', serif;
-          color: #6B7280;
-          background: #F9FAFB;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          cursor: default;
-          outline: none;
-        }
-        .copy-btn {
-          padding: 10px 16px;
-          border-radius: 8px;
-          border: none;
-          background: #244C87;
-          color: #fff;
-          font-size: 13px;
-          font-family: 'Maitree', serif;
-          font-weight: 600;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: background 0.15s;
-        }
-        .copy-btn:hover {
-          background: #1A3A65;
-        }
-        .copy-btn.copied {
-          background: #10B981;
-        }
-        .stats-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-top: 24px;
-        }
-        .empty-state {
-          text-align: center;
-          padding: 64px 24px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 12px;
-        }
-        @media (min-width: 768px) {
-          .main-content {
-            padding: 68px;
-            padding-top: calc(4rem + 40px);
-          }
-          .reco-card {
-            flex: 0 0 calc(50% - 8px);
-          }
-        }
-        @media (min-width: 1200px) {
-          .reco-card {
-            flex: 0 0 calc(33.333% - 11px);
-          }
-        }
-      `}</style>
-
       <ProviderHeader activePage="recomendaciones" />
 
-      <main className="main-content">
+      <main className="px-6 py-6 pt-[calc(4rem+32px)] md:px-16 md:py-16 md:pt-[calc(4rem+40px)]">
         {/* Título */}
         <h1
           style={{
@@ -204,7 +106,7 @@ export default function RecomendacionesPage() {
         </p>
 
         {/* Link compartible */}
-        <div className="link-card">
+        <div className="rounded-lg bg-white shadow-sm mt-6 p-5">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
@@ -239,16 +141,24 @@ export default function RecomendacionesPage() {
               </p>
             </div>
           </div>
-          <div className="link-input-row">
+          <div className="flex items-center gap-2 mt-2">
             <input
-              className="link-input"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-xs font-family-serif text-gray-500 bg-gray-50 overflow-hidden text-ellipsis whitespace-nowrap"
               type="text"
               readOnly
               value={linkRecomendacion}
               title={linkRecomendacion}
             />
             <button
-              className={`copy-btn${copied ? ' copied' : ''}`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold text-white transition-colors ${
+                copied 
+                  ? 'bg-green-500 hover:bg-green-600' 
+                  : 'bg-primary-main hover:bg-primary-dark'
+              }`}
+              style={{
+                backgroundColor: copied ? colors.success.main : colors.primary.main,
+                fontFamily: typography.fontFamily.primary,
+              }}
               onClick={handleCopyLink}
             >
               {copied ? '✓ Copiado' : 'Copiar'}
@@ -258,7 +168,7 @@ export default function RecomendacionesPage() {
 
         {/* Stats */}
         {recomendaciones.length > 0 && (
-          <div className="stats-row">
+          <div className="flex items-center gap-3 mt-6">
             <div
               style={{
                 display: 'flex',
@@ -322,7 +232,7 @@ export default function RecomendacionesPage() {
             Cargando recomendaciones...
           </div>
         ) : recomendaciones.length === 0 ? (
-          <div className="empty-state">
+          <div className="text-center py-16 px-6 flex flex-col items-center gap-3">
             <div
               style={{
                 width: '72px',
@@ -352,19 +262,32 @@ export default function RecomendacionesPage() {
             </p>
           </div>
         ) : (
-          <div className="reco-grid">
-            {recomendaciones.map((reco) => (
-              <div className="reco-card" key={reco.id}>
-                {/* Top: estrellas + fecha */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <StarDisplay rating={reco.calificacion} />
-                  <span style={{ fontSize: typography.fontSize.xs, color: '#9CA3AF', marginTop: '1px' }}>
-                    {formatFecha(reco.fecha)}
-                  </span>
-                </div>
+          <div className="flex flex-wrap gap-4 mt-6 md:grid md:grid-cols-2 lg:grid-cols-3">
+            {recomendaciones.map((reco) => {
+              const [isHovered, setIsHovered] = useState(false);
+              
+              return (
+                <div
+                  key={reco.id}
+                  className="w-full bg-white rounded-lg p-5 shadow-sm flex flex-col gap-2"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                  style={{
+                    transition: 'all 0.2s ease-out',
+                    boxShadow: isHovered ? '0 8px 24px rgba(36, 76, 135, 0.12)' : undefined,
+                    transform: isHovered ? 'translateY(-4px)' : undefined,
+                  }}
+                >
+                  {/* Top: estrellas + fecha */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <StarDisplay rating={reco.calificacion} />
+                    <span style={{ fontSize: typography.fontSize.xs, color: '#9CA3AF', marginTop: '1px' }}>
+                      {formatFecha(reco.fecha)}
+                    </span>
+                  </div>
 
-                {/* Nombre del cliente */}
-                <p
+                  {/* Nombre del cliente */}
+                  <p
                   style={{
                     fontSize: typography.fontSize.sm,
                     fontWeight: typography.fontWeight.semibold,
@@ -386,8 +309,9 @@ export default function RecomendacionesPage() {
                 >
                   &ldquo;{reco.mensaje}&rdquo;
                 </p>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
