@@ -5,6 +5,7 @@
 Componente reutilizable para mostrar estados vacíos cuando no hay contenido disponible.
 
 ### Características
+
 - Icono personalizable (emoji o elemento React)
 - Título y descripción
 - Botón de acción opcional
@@ -44,13 +45,13 @@ import { EmptyState } from '@/components/ui';
 
 ### Props
 
-| Prop | Tipo | Requerido | Descripción |
-|------|------|----------|-------------|
-| `title` | `string` | Sí | Título principal del estado vacío |
-| `description` | `string` | No | Descripción detallada |
-| `icon` | `string \| ReactNode` | No | Emoji o elemento React para mostrar |
-| `actionButton` | `{ label: string, onClick: () => void }` | No | Botón opcional con acción |
-| `className` | `string` | No | Clases CSS personalizadas |
+| Prop           | Tipo                                     | Requerido | Descripción                         |
+| -------------- | ---------------------------------------- | --------- | ----------------------------------- |
+| `title`        | `string`                                 | Sí        | Título principal del estado vacío   |
+| `description`  | `string`                                 | No        | Descripción detallada               |
+| `icon`         | `string \| ReactNode`                    | No        | Emoji o elemento React para mostrar |
+| `actionButton` | `{ label: string, onClick: () => void }` | No        | Botón opcional con acción           |
+| `className`    | `string`                                 | No        | Clases CSS personalizadas           |
 
 ---
 
@@ -59,6 +60,7 @@ import { EmptyState } from '@/components/ui';
 Sistema de notificaciones con auto-dismiss y soporte para múltiples tipos.
 
 ### Características
+
 - 4 tipos: `success`, `error`, `warning`, `info`
 - Auto-dismiss después de 3 segundos (configurable)
 - Icono y color según tipo
@@ -73,31 +75,28 @@ El `ToastProvider` y `ToastDisplay` ya están integrados en [src/app/layout.tsx]
 ### Uso
 
 ```tsx
-import { useToast } from '@/contexts/ToastContext';
+import { useToast } from "@/contexts/ToastContext";
 
 export function MiComponente() {
   const { addToast, removeToast, clearAll } = useToast();
 
   const handleGuardar = async () => {
     try {
-      await apiPost('/endpoint', data);
-      addToast('Guardado con éxito', 'success', 3000);
+      await apiPost("/endpoint", data);
+      addToast("Guardado con éxito", "success", 3000);
     } catch (error) {
-      addToast('Error al guardar', 'error', 5000);
+      addToast("Error al guardar", "error", 5000);
     }
   };
 
-  return (
-    <button onClick={handleGuardar}>
-      Guardar
-    </button>
-  );
+  return <button onClick={handleGuardar}>Guardar</button>;
 }
 ```
 
 ### Métodos del Hook
 
 #### `addToast(message, type, duration)`
+
 Muestra una notificación.
 
 - `message` (string): Texto a mostrar
@@ -106,10 +105,11 @@ Muestra una notificación.
 - **Retorna**: ID único de la notificación
 
 ```tsx
-const id = addToast('Cambios guardados', 'success');
+const id = addToast("Cambios guardados", "success");
 ```
 
 #### `removeToast(id)`
+
 Cierra una notificación manualmente.
 
 ```tsx
@@ -117,6 +117,7 @@ removeToast(id);
 ```
 
 #### `clearAll()`
+
 Cierra todas las notificaciones.
 
 ```tsx
@@ -127,32 +128,32 @@ clearAll();
 
 ```tsx
 // Notificación sin auto-cerrar (usuario debe cerrar manualmente)
-addToast('Esta es una notificación importante', 'warning', 0);
+addToast("Esta es una notificación importante", "warning", 0);
 
 // Notificación después de acción asincrónica
 const handleEliminar = async (id: string) => {
   try {
     await apiDelete(`/item/${id}`);
-    addToast('Elemento eliminado correctamente', 'success');
+    addToast("Elemento eliminado correctamente", "success");
     // Recargar lista, etc.
   } catch (error) {
-    addToast('No se pudo eliminar: ' + error.message, 'error', 5000);
+    addToast("No se pudo eliminar: " + error.message, "error", 5000);
   }
 };
 
 // Encadenar múltiples toasts
-addToast('Iniciando...');
-setTimeout(() => addToast('Completado', 'success'), 2000);
+addToast("Iniciando...");
+setTimeout(() => addToast("Completado", "success"), 2000);
 ```
 
 ### Colores por Tipo
 
-| Tipo | Color Fondo | Color Borde | Color Texto | Ícono |
-|------|------------|-----------|-----------|-------|
-| `success` | Verde claro | Verde | Verde oscuro | ✓ |
-| `error` | Rojo claro | Rojo | Rojo oscuro | ✕ |
-| `warning` | Amarillo claro | Amarillo | Amarillo oscuro | ⚠ |
-| `info` | Azul claro | Azul | Azul oscuro | ⓘ |
+| Tipo      | Color Fondo    | Color Borde | Color Texto     | Ícono |
+| --------- | -------------- | ----------- | --------------- | ----- |
+| `success` | Verde claro    | Verde       | Verde oscuro    | ✓     |
+| `error`   | Rojo claro     | Rojo        | Rojo oscuro     | ✕     |
+| `warning` | Amarillo claro | Amarillo    | Amarillo oscuro | ⚠     |
+| `info`    | Azul claro     | Azul        | Azul oscuro     | ⓘ     |
 
 ---
 
@@ -161,11 +162,13 @@ setTimeout(() => addToast('Completado', 'success'), 2000);
 Se han mejorado los hover states en componentes interactivos para mejor feedback visual:
 
 ### Solicitudes de Trabajo
+
 - **Efecto**: Elevación (translateY -4px) + aumento de sombra + borde primario
 - **Transición**: 0.2s ease-out suave
 - **Ubicación**: [FrontEnd/src/app/solicitudes-trabajo/page.tsx](FrontEnd/src/app/solicitudes-trabajo/page.tsx)
 
 ### Recomendaciones
+
 - **Efecto**: Elevación (translateY -4px) + aumento de sombra azulado
 - **Transición**: 0.2s ease-out suave
 - **Ubicación**: [FrontEnd/src/app/recomendaciones/page.tsx](FrontEnd/src/app/recomendaciones/page.tsx)
@@ -177,17 +180,20 @@ Estos efectos crean mejor feedback visual sin cambiar la estructura o interfaz.
 ## Resumen de Cambios
 
 ### Archivos Creados
+
 - ✅ `FrontEnd/src/components/ui/EmptyState.tsx` - Componente reutilizable
 - ✅ `FrontEnd/src/components/ui/Toast.tsx` - Componente visual de notificaciones
 - ✅ `FrontEnd/src/contexts/ToastContext.tsx` - Context + hooks
 
 ### Archivos Modificados
+
 - ✅ `FrontEnd/src/components/ui/index.ts` - Exportaciones
 - ✅ `FrontEnd/src/app/layout.tsx` - Integración ToastProvider
 - ✅ `FrontEnd/src/app/solicitudes-trabajo/page.tsx` - Hover states
 - ✅ `FrontEnd/src/app/recomendaciones/page.tsx` - Hover states
 
 ### Compilación
+
 - ✅ Build exitoso: 24/24 páginas generadas
 - ✅ TypeScript: Sin errores
 - ✅ Tiempo: ~5-10 segundos
