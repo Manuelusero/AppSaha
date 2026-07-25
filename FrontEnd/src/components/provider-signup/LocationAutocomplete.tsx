@@ -71,9 +71,27 @@ export default function LocationAutocomplete({
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        const value = `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
-        onChange(value);
-        setIsFetchingLocation(false);
+        (async () => {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=es`,
+              { headers: { 'User-Agent': 'SERCO-App/1.0' } }
+            );
+            if (res.ok) {
+              const data = await res.json();
+              const addr = data.address || {};
+              const name = addr.city || addr.town || addr.village || addr.municipality || data.display_name?.split(',')[0] || `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+              onChange(name);
+            } else {
+              onChange(`${latitude.toFixed(4)},${longitude.toFixed(4)}`);
+            }
+          } catch (err) {
+            console.error('Reverse geocode error', err);
+            onChange(`${latitude.toFixed(4)},${longitude.toFixed(4)}`);
+          } finally {
+            setIsFetchingLocation(false);
+          }
+        })();
       },
       (err) => {
         console.error('Error al obtener ubicación:', err);

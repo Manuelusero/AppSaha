@@ -305,11 +305,32 @@ export default function Home() {
 
           {/* Selector de ubicación */}
           <div className="relative md:flex-1 mb-3 md:mb-0">
-            <div className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-gray-400">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+            <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2">
+              <GeolocationButton
+                compact
+                onLocation={async (lat, lng) => {
+                  // Reverse geocode via Nominatim to get nearest city/town
+                  try {
+                    const res = await fetch(
+                      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=es`,
+                      { headers: { 'User-Agent': 'SERCO-App/1.0' } }
+                    );
+                    if (res.ok) {
+                      const data = await res.json();
+                      const addr = data.address || {};
+                      const name = addr.city || addr.town || addr.village || addr.municipality || data.display_name?.split(',')[0] || `${lat.toFixed(4)},${lng.toFixed(4)}`;
+                      setUbicacion(name);
+                      setMostrarUbicaciones(false);
+                    } else {
+                      setUbicacion(`${lat.toFixed(4)},${lng.toFixed(4)}`);
+                    }
+                  } catch (err) {
+                    console.error('Reverse geocode error', err);
+                    setUbicacion(`${lat.toFixed(4)},${lng.toFixed(4)}`);
+                  }
+                }}
+                disabled={cargandoUbicaciones}
+              />
             </div>
             <input
               type="text"
@@ -338,17 +359,7 @@ export default function Home() {
               className="w-full pl-10 sm:pl-12 pr-14 sm:pr-16 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
             />
             
-            {/* Botón de geolocalización */}
-            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2">
-              <GeolocationButton
-                onLocation={(lat, lng) => {
-                  const formatted = `${lat.toFixed(4)},${lng.toFixed(4)}`;
-                  setUbicacion(formatted);
-                  setMostrarUbicaciones(false);
-                }}
-                disabled={cargandoUbicaciones}
-              />
-            </div>
+            {/* (geolocation moved to left icon area) */}
             
             {/* Dropdown de ubicaciones - Muestra resultados de la API */}
             {mostrarUbicaciones && ubicacion.length >= 3 && (

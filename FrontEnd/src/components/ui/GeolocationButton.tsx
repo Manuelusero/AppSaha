@@ -4,9 +4,10 @@ import { colors, typography, spacing, borderRadius, shadows, withOpacity } from 
 interface GeolocationButtonProps {
   onLocation: (lat: number, lng: number) => void;
   disabled?: boolean;
+  compact?: boolean;
 }
 
-export default function GeolocationButton({ onLocation, disabled = false }: GeolocationButtonProps) {
+export default function GeolocationButton({ onLocation, disabled = false, compact = false }: GeolocationButtonProps) {
   const [loading, setLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +52,7 @@ export default function GeolocationButton({ onLocation, disabled = false }: Geol
         disabled={disabled || loading}
         onMouseEnter={() => !loading && setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="flex items-center justify-center transition-all duration-300 w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10"
+        className={`flex items-center justify-center transition-all duration-300 ${compact ? 'w-6 h-6 sm:w-7 sm:h-7' : 'w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10'}`}
         style={{
           borderRadius: borderRadius.full,
           backgroundColor: withOpacity(colors.primary.pale, 0.1),
@@ -65,7 +66,7 @@ export default function GeolocationButton({ onLocation, disabled = false }: Geol
         {loading ? (
           // Spinner
           <svg 
-            className="animate-spin w-4 h-4 sm:w-5 sm:h-5" 
+            className={`animate-spin ${compact ? 'w-3 h-3 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-5 sm:h-5'}`} 
             viewBox="0 0 24 24"
             style={{ color: colors.primary.main }}
           >
@@ -80,7 +81,7 @@ export default function GeolocationButton({ onLocation, disabled = false }: Geol
           </svg>
         ) : (
           // Location icon
-          <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke={colors.primary.main} strokeWidth="2" style={{ maxWidth: '18px', maxHeight: '18px' }}>
+          <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke={colors.primary.main} strokeWidth="2" style={{ maxWidth: compact ? '14px' : '18px', maxHeight: compact ? '14px' : '18px' }}>
             <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
           </svg>
         )}
