@@ -376,7 +376,7 @@ export default function Home() {
                     fontFamily: typography.fontFamily.primary,
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: colors.neutral.black
+                    color: '#000000'  
                   }}>Usar mi ubicación actual</span>
                 </div>
 
