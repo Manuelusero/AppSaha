@@ -272,14 +272,8 @@ export default function Home() {
                 setTimeout(() => setMostrarServicios(false), 200);
               }}
               placeholder="¿Qué necesitas?"
-              className="w-full px-4 sm:px-5 py-3 sm:py-4 pr-12 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
+              className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
             />
-            {/* Flecha hacia abajo */}
-            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-            </div>
             
             {/* Dropdown de servicios */}
             {mostrarServicios && (
@@ -339,11 +333,10 @@ export default function Home() {
             {/* Dropdown de ubicaciones - Muestra resultados de la API + opción de usar ubicación */}
             {mostrarUbicaciones && (
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
-                {/* Opción "Usar mi ubicación" */}
+                {/* Opción "Usar mi ubicación actual" */}
                 <div
                   onMouseDown={async (e) => {
                     e.preventDefault();
-                    // Geolocation logic here
                     if ('geolocation' in navigator) {
                       navigator.geolocation.getCurrentPosition(
                         async (position) => {
@@ -375,19 +368,29 @@ export default function Home() {
                       );
                     }
                   }}
-                  className="px-4 sm:px-5 py-2 sm:py-3 hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 flex items-center gap-2"
+                  className="px-4 sm:px-5 py-2 sm:py-3 hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 flex items-center gap-3"
                 >
-                  <svg className="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6v12h12v-4m0-5l7-7m0 0v5m0-5H12" />
-                  </svg>
-                  <span className="text-gray-900 text-sm sm:text-base font-medium">Usar mi ubicación</span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/IconoLocation.png" alt="ubicación" className="w-4 h-4 flex-shrink-0" />
+                  <span style={{
+                    fontFamily: typography.fontFamily.primary,
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    color: colors.neutral.black
+                  }}>Usar mi ubicación actual</span>
                 </div>
 
                 {/* Resultados de búsqueda */}
                 {ubicacion.length >= 3 && (
                   <>
                     {cargandoUbicaciones ? (
-                      <div className="px-4 sm:px-5 py-3 text-gray-500 text-sm sm:text-base text-center">
+                      <div style={{
+                        padding: '12px 16px',
+                        textAlign: 'center',
+                        fontFamily: typography.fontFamily.primary,
+                        fontSize: '14px',
+                        color: '#999'
+                      }}>
                         Buscando ubicaciones...
                       </div>
                     ) : ubicacionesSugeridas.length > 0 ? (
@@ -400,16 +403,34 @@ export default function Home() {
                           }}
                           className="px-4 sm:px-5 py-2 sm:py-3 hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
                         >
-                          <div className="text-gray-900 text-sm sm:text-base font-medium">
+                          <div style={{
+                            fontFamily: typography.fontFamily.primary,
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            color: colors.neutral.black
+                          }}>
                             {sugerencia.name}
                           </div>
-                          <div className="text-gray-500 text-xs sm:text-sm truncate">
+                          <div style={{
+                            fontFamily: typography.fontFamily.primary,
+                            fontSize: '12px',
+                            color: '#999',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
                             {sugerencia.display_name}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="px-4 sm:px-5 py-3 text-gray-500 text-sm sm:text-base text-center">
+                      <div style={{
+                        padding: '12px 16px',
+                        textAlign: 'center',
+                        fontFamily: typography.fontFamily.primary,
+                        fontSize: '14px',
+                        color: '#999'
+                      }}>
                         No se encontraron ubicaciones
                       </div>
                     )}
