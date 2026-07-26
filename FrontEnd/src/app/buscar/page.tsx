@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Header, Footer } from '@/components/layout';
-import GeolocationButton from '@/components/ui/GeolocationButton';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useLocationSearch } from '@/hooks';
 import { Modal } from '@/components/ui';
@@ -273,8 +272,14 @@ export default function Home() {
                 setTimeout(() => setMostrarServicios(false), 200);
               }}
               placeholder="¿Qué necesitas?"
-              className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
+              className="w-full px-4 sm:px-5 py-3 sm:py-4 pr-12 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
             />
+            {/* Flecha hacia abajo */}
+            <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
+            </div>
             
             {/* Dropdown de servicios */}
             {mostrarServicios && (
@@ -305,33 +310,6 @@ export default function Home() {
 
           {/* Selector de ubicación */}
           <div className="relative md:flex-1 mb-3 md:mb-0">
-            <div className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2">
-              <GeolocationButton
-                compact
-                onLocation={async (lat, lng) => {
-                  // Reverse geocode via Nominatim to get nearest city/town
-                  try {
-                    const res = await fetch(
-                      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=es`,
-                      { headers: { 'User-Agent': 'SERCO-App/1.0' } }
-                    );
-                    if (res.ok) {
-                      const data = await res.json();
-                      const addr = data.address || {};
-                      const name = addr.city || addr.town || addr.village || addr.municipality || data.display_name?.split(',')[0] || `${lat.toFixed(4)},${lng.toFixed(4)}`;
-                      setUbicacion(name);
-                      setMostrarUbicaciones(false);
-                    } else {
-                      setUbicacion(`${lat.toFixed(4)},${lng.toFixed(4)}`);
-                    }
-                  } catch (err) {
-                    console.error('Reverse geocode error', err);
-                    setUbicacion(`${lat.toFixed(4)},${lng.toFixed(4)}`);
-                  }
-                }}
-                disabled={cargandoUbicaciones}
-              />
-            </div>
             <input
               type="text"
               value={ubicacion}
@@ -341,55 +319,101 @@ export default function Home() {
                 // Mostrar dropdown si hay al menos 3 caracteres
                 if (value.length >= 3) {
                   setMostrarUbicaciones(true);
-                } else {
-                  setMostrarUbicaciones(false);
+                } else if (value.length === 0) {
+                  // Mostrar el dropdown cuando se borra todo (para ver opción de usar ubicación)
+                  setMostrarUbicaciones(true);
                 }
               }}
               onFocus={() => {
-                // Solo mostrar si ya hay texto escrito y hay sugerencias
-                if (ubicacion.length >= 3 && ubicacionesSugeridas.length > 0) {
-                  setMostrarUbicaciones(true);
-                }
+                // Siempre mostrar dropdown al hacer foco
+                setMostrarUbicaciones(true);
               }}
               onBlur={() => {
                 // Delay más largo para permitir hacer click en una opción
                 setTimeout(() => setMostrarUbicaciones(false), 300);
               }}
               placeholder="Ciudad, pueblo o localidad"
-              className="w-full pl-10 sm:pl-12 pr-14 sm:pr-16 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
+              className="w-full px-4 sm:px-5 py-3 sm:py-4 rounded-full border-2 border-gray-200 focus:border-indigo-500 focus:outline-none text-gray-700 placeholder-gray-400 text-sm sm:text-base transition-all"
             />
-            
-            {/* (geolocation moved to left icon area) */}
-            
-            {/* Dropdown de ubicaciones - Muestra resultados de la API */}
-            {mostrarUbicaciones && ubicacion.length >= 3 && (
+
+            {/* Dropdown de ubicaciones - Muestra resultados de la API + opción de usar ubicación */}
+            {mostrarUbicaciones && (
               <div className="absolute z-10 w-full mt-2 bg-white border-2 border-gray-200 rounded-2xl shadow-lg max-h-60 overflow-y-auto">
-                {cargandoUbicaciones ? (
-                  <div className="px-4 sm:px-5 py-3 text-gray-500 text-sm sm:text-base text-center">
-                    Buscando ubicaciones...
-                  </div>
-                ) : ubicacionesSugeridas.length > 0 ? (
-                  ubicacionesSugeridas.map((sugerencia) => (
-                    <div
-                      key={sugerencia.display_name}
-                      onMouseDown={(e) => {
-                        e.preventDefault(); // Prevenir que el input pierda el foco
-                        seleccionarUbicacion(sugerencia.name);
-                      }}
-                      className="px-4 sm:px-5 py-2 sm:py-3 hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
-                    >
-                      <div className="text-gray-900 text-sm sm:text-base font-medium">
-                        {sugerencia.name}
+                {/* Opción "Usar mi ubicación" */}
+                <div
+                  onMouseDown={async (e) => {
+                    e.preventDefault();
+                    // Geolocation logic here
+                    if ('geolocation' in navigator) {
+                      navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                          const { latitude, longitude } = position.coords;
+                          try {
+                            const res = await fetch(
+                              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=es`,
+                              { headers: { 'User-Agent': 'SERCO-App/1.0' } }
+                            );
+                            if (res.ok) {
+                              const data = await res.json();
+                              const addr = data.address || {};
+                              const name = addr.city || addr.town || addr.village || addr.municipality || data.display_name?.split(',')[0] || `${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+                              setUbicacion(name);
+                              setMostrarUbicaciones(false);
+                            } else {
+                              setUbicacion(`${latitude.toFixed(4)},${longitude.toFixed(4)}`);
+                              setMostrarUbicaciones(false);
+                            }
+                          } catch (err) {
+                            console.error('Reverse geocode error', err);
+                            setUbicacion(`${latitude.toFixed(4)},${longitude.toFixed(4)}`);
+                            setMostrarUbicaciones(false);
+                          }
+                        },
+                        () => {
+                          console.error('Error getting geolocation');
+                        }
+                      );
+                    }
+                  }}
+                  className="px-4 sm:px-5 py-2 sm:py-3 hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6v12h12v-4m0-5l7-7m0 0v5m0-5H12" />
+                  </svg>
+                  <span className="text-gray-900 text-sm sm:text-base font-medium">Usar mi ubicación</span>
+                </div>
+
+                {/* Resultados de búsqueda */}
+                {ubicacion.length >= 3 && (
+                  <>
+                    {cargandoUbicaciones ? (
+                      <div className="px-4 sm:px-5 py-3 text-gray-500 text-sm sm:text-base text-center">
+                        Buscando ubicaciones...
                       </div>
-                      <div className="text-gray-500 text-xs sm:text-sm truncate">
-                        {sugerencia.display_name}
+                    ) : ubicacionesSugeridas.length > 0 ? (
+                      ubicacionesSugeridas.map((sugerencia) => (
+                        <div
+                          key={sugerencia.display_name}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            seleccionarUbicacion(sugerencia.name);
+                          }}
+                          className="px-4 sm:px-5 py-2 sm:py-3 hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 last:border-0"
+                        >
+                          <div className="text-gray-900 text-sm sm:text-base font-medium">
+                            {sugerencia.name}
+                          </div>
+                          <div className="text-gray-500 text-xs sm:text-sm truncate">
+                            {sugerencia.display_name}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 sm:px-5 py-3 text-gray-500 text-sm sm:text-base text-center">
+                        No se encontraron ubicaciones
                       </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 sm:px-5 py-3 text-gray-500 text-sm sm:text-base text-center">
-                    No se encontraron ubicaciones
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -769,7 +793,7 @@ export default function Home() {
                 fontWeight: 400,
                 lineHeight: '100%',
                 letterSpacing: '0%',
-                color: '#FFFFFF',
+                color: '#000000',
                 textAlign: 'center',
                 maxWidth: '480px'
               }}>
