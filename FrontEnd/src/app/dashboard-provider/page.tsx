@@ -451,6 +451,8 @@ export default function DashboardProvider() {
       setShowDeleteModal(false);
     }
   };
+
+  const handleDeletePortfolioImage = async (imgUrl: string) => {
     if (!editedData) return;
     const providerId = localStorage.getItem(PROVIDER_ID_KEY);
     if (!providerId) return;
