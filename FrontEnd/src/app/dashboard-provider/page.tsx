@@ -50,9 +50,8 @@ export default function DashboardProvider() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const profilePhotoInputRef = useRef<HTMLInputElement>(null);
   const profesionInputRef = useRef<HTMLInputElement>(null);
-  const [showProfesionDropdown, setShowProfesionDropdown] = useState(false);
-  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
-  const [viewerIsOwner, setViewerIsOwner] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const profesionOpciones = [
     { value: 'PLOMERIA', label: 'Plomeros' },
@@ -422,7 +421,36 @@ export default function DashboardProvider() {
     }
   };
 
-  const handleDeletePhoto = async (imgUrl: string) => {
+  const handleLogout = () => {
+    localStorage.removeItem(PROVIDER_ID_KEY);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!providerData) return;
+
+    setDeletingAccount(true);
+    try {
+      const providerId = localStorage.getItem(PROVIDER_ID_KEY);
+      if (!providerId) return;
+
+      await fetchWithAuth(`/providers/${providerId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      alert('Cuenta eliminada correctamente');
+      handleLogout();
+    } catch (error) {
+      console.error('Error al eliminar cuenta:', error);
+      alert('Error al eliminar la cuenta. Intentá de nuevo.');
+    } finally {
+      setDeletingAccount(false);
+      setShowDeleteModal(false);
+    }
+  };
     if (!editedData) return;
     const providerId = localStorage.getItem(PROVIDER_ID_KEY);
     if (!providerId) return;
@@ -477,6 +505,27 @@ export default function DashboardProvider() {
             <div className="space-y-3">
               <button onClick={() => { setShowUnsavedModal(false); handleSaveEdit(); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>Guardar Cambios</button>
               <button onClick={() => { setShowUnsavedModal(false); setEditMode(false); setEditedData(null); router.back(); }} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#B45B39', cursor: 'pointer', border: 'none' }}>No, seguir sin guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal eliminar cuenta */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => setShowDeleteModal(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 mx-4" style={{ maxWidth: '400px', width: '100%', backgroundColor: '#FFF8F0' }} onClick={e => e.stopPropagation()}>
+            <div className="flex justify-end mb-4">
+              <button onClick={() => setShowDeleteModal(false)} style={{ cursor: 'pointer' }}>
+                <svg width="24" height="24" fill="none" stroke={colors.neutral.black} strokeWidth="2" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <h2 style={{ fontFamily: 'Maitree, serif', fontSize: '24px', fontWeight: 600, color: '#B45B39', textAlign: 'center', marginBottom: '16px' }}>Eliminar cuenta</h2>
+            <p style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral[600], textAlign: 'center', marginBottom: '32px' }}>
+              ¿Estás seguro? Esta acción no se puede deshacer y se eliminarán todos tus datos.
+            </p>
+            <div className="space-y-3">
+              <button onClick={() => setShowDeleteModal(false)} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: colors.neutral.black, backgroundColor: '#E5E7EB', cursor: 'pointer', border: 'none' }}>Cancelar</button>
+              <button onClick={handleDeleteAccount} disabled={deletingAccount} className="w-full py-3 rounded-full hover:opacity-90 transition-opacity disabled:opacity-50" style={{ fontFamily: typography.fontFamily.primary, fontSize: typography.fontSize.base, color: '#FFFFFF', backgroundColor: '#DC2626', cursor: deletingAccount ? 'not-allowed' : 'pointer', border: 'none' }}>{deletingAccount ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}</button>
             </div>
           </div>
         </div>
@@ -737,23 +786,6 @@ export default function DashboardProvider() {
                   ))}
                 </div>
 
-                {/* Botón Pedir Presupuesto */}
-                <div className="flex justify-end" style={{ marginBottom: '24px' }}>
-                  {!viewerIsOwner && (
-                    <button
-                      onClick={() => {
-                        const p = new URLSearchParams();
-                        p.append('servicio', profesionLabel);
-                        p.append('ubicacion', currentData.ubicacion || '');
-                        p.append('professionals', currentData.id.toString());
-                        router.push(`/job-request?${p.toString()}`);
-                      }}
-                      style={{ fontFamily: 'Maitree, serif', fontSize: '14px', fontWeight: 400, backgroundColor: '#244C87', color: '#FFFFFF', border: 'none', minWidth: '160px', height: '46px', borderRadius: '24px', cursor: 'pointer', padding: '10px 16px' }}
-                    >
-                      Pedir presupuesto
-                    </button>
-                  )}
-                </div>
 
                 <div className="border-t border-gray-300 mb-6"></div>
 
@@ -825,6 +857,28 @@ export default function DashboardProvider() {
                     <p style={{ fontFamily: 'Maitree, serif', fontSize: '20px', fontWeight: 400, color: '#000', lineHeight: '1.5' }}>{currentData.descripcion}</p>
                   </div>
                 )}
+
+                {/* Botón Eliminar Cuenta */}
+                <div className="mt-12 pt-8 border-t border-gray-300">
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    style={{
+                      fontFamily: typography.fontFamily.primary,
+                      fontSize: typography.fontSize.base,
+                      color: '#DC2626',
+                      backgroundColor: 'transparent',
+                      border: '2px solid #DC2626',
+                      minWidth: '160px',
+                      height: '46px',
+                      borderRadius: '24px',
+                      cursor: 'pointer',
+                      padding: '10px 16px',
+                      width: '100%'
+                    }}
+                  >
+                    Eliminar Cuenta
+                  </button>
+                </div>
 
               </div>
             </div>

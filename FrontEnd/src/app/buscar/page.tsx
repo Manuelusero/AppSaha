@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { Header, Footer } from '@/components/layout';
+import { Footer } from '@/components/layout';
 import { colors, typography, spacing } from '@/styles/tokens';
 import { useLocationSearch } from '@/hooks';
 import { Modal } from '@/components/ui';
@@ -64,16 +63,16 @@ export default function Home() {
 
   // Animación automática de desplazamiento de profesiones con pausa en el centro
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
-    
+    let timeout: ReturnType<typeof setTimeout>;
+
     const nextProfesion = () => {
       setProfesionActual((prev) => (prev + 1) % profesiones.length);
       // Esperar más tiempo en la siguiente iteración (pausa en el centro)
       timeout = setTimeout(nextProfesion, 2000);
     };
-    
+
     timeout = setTimeout(nextProfesion, 2000);
-    
+
     return () => clearTimeout(timeout);
   }, []);
 
@@ -788,47 +787,28 @@ export default function Home() {
               </div>
             ))}
           </div>
-
-          {/* Semi-círculo final con degradado azul - solo mobile */}
-          <div className="md:hidden relative flex justify-center" style={{ marginTop: '0px', marginBottom: '0px' }}>
-                <div 
-              style={{
-                width: '100%',
-                maxWidth: '600px',
-                height: '200px',
-                borderRadius: '300px 300px 0 0',
-                    background: 'linear-gradient(180deg, #244C87 0%, #8398B8 50%, #FFFCF9 100%)',
-                position: 'relative',
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingTop: '20px',
-                paddingLeft: '40px',
-                paddingRight: '40px'
-              }}
-            >
-              <p style={{
-                fontFamily: typography.fontFamily.serif,
-                fontSize: '16px',
-                fontWeight: 400,
-                lineHeight: '100%',
-                letterSpacing: '0%',
-                color: '#000000',
-                textAlign: 'center',
-                maxWidth: '480px'
-              }}>
-                Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir a que profesional deseas contactar.
-              </p>
-            </div>
-          </div>
+          {/* Párrafo final - solo móvil */}
+          <p className="md:hidden" style={{
+            fontFamily: typography.fontFamily.serif,
+            fontSize: '16px',
+            fontWeight: 400,
+            lineHeight: '1.6',
+            color: '#244C87',
+            textAlign: 'center',
+            maxWidth: '480px',
+            marginTop: '32px',
+            marginLeft: 'auto',
+            marginRight: 'auto'
+          }}>
+            Y listo! Te enviaremos los presupuestos en menos de 48hs para que puedas elegir a que profesional deseas contactar.
+          </p>
 
           {/* Párrafo final - solo desktop */}
           <div className="hidden md:flex justify-center mt-20 mb-16">
             <p style={{
               fontFamily: typography.fontFamily.serif,
               fontSize: '20px',
-              fontWeight: 400,
+              fontWeight: 600,
               lineHeight: '1.6',
               color: '#244C87',
               textAlign: 'center',
@@ -840,7 +820,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Click outside handlers */}
       {(mostrarServicios || mostrarUbicaciones) && (
         <div 
           className="fixed inset-0 z-0"
